@@ -131,7 +131,7 @@ class Context {
       moduleConfiguration: moduleConfiguration ?? this.moduleConfiguration,
       themeId: themeId ?? this.themeId,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      updatedAt: updatedAt ?? DateTime.now(),
     );
   }
 

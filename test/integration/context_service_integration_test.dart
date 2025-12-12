@@ -104,13 +104,15 @@ void main() {
       expect(deserializedContext.updatedAt, equals(originalContext.updatedAt));
     });
 
-    test('Context copyWith works correctly', () {
+    test('Context copyWith works correctly', () async {
       final originalContext = Context.create(
         id: 'test-context-3',
         ownerId: 'test-user-3',
         type: ContextType.project,
         name: 'Original Name',
       );
+
+      await Future.delayed(const Duration(milliseconds: 1));
 
       final updatedContext = originalContext.copyWith(
         name: 'Updated Name',
