@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../lib/shared/models/timeline_event.dart';
 import '../../lib/shared/models/context.dart';
 import '../../lib/shared/models/fuzzy_date.dart';
+import '../../lib/shared/models/user.dart';
 import '../test_config.dart';
 
 /// **Feature: users-timeline, Property 35: Quick Entry Creation**

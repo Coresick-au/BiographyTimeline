@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../features/demo/demo_page.dart';
+import 'navigation/main_navigation.dart';
 
 class UsersTimelineApp extends ConsumerWidget {
   const UsersTimelineApp({super.key});
@@ -13,7 +13,7 @@ class UsersTimelineApp extends ConsumerWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const DemoPage(),
+      home: const EnhancedNavigation(),
       debugShowCheckedModeBanner: false,
     );
   }

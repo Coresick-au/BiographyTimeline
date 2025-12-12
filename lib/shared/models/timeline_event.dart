@@ -74,7 +74,9 @@ class TimelineEvent {
       fuzzyDate: fuzzyDate,
       location: location,
       eventType: eventType,
-      customAttributes: customAttributes ?? _getDefaultCustomAttributes(eventType),
+      customAttributes: (customAttributes == null || customAttributes.isEmpty) 
+          ? _getDefaultCustomAttributes(eventType) 
+          : customAttributes,
       assets: assets ?? [],
       title: title,
       description: description,

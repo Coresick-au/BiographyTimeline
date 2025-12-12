@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
+import 'dart:math' as math;
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import '../services/timeline_renderer_interface.dart';
@@ -454,5 +456,3 @@ class MapViewRenderer extends BaseTimelineRenderer {
   }
 }
 
-import 'dart:async';
-import 'dart:math' as math;

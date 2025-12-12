@@ -13,7 +13,8 @@ final timelineServiceProvider = Provider<TimelineService>((ref) {
 /// Provider for current timeline configuration
 final timelineConfigProvider = StateProvider<TimelineRenderConfig>((ref) {
   return const TimelineRenderConfig(
-    viewMode: TimelineViewMode.lifeStream,
+    viewMode: TimelineViewMode.chronological,
+    showPrivateEvents: true,
   );
 });
 

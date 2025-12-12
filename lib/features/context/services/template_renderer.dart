@@ -2,185 +2,70 @@ import 'package:flutter/material.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import '../../../shared/models/timeline_theme.dart';
+import '../../../core/templates/enhanced_template_renderer.dart';
 import '../widgets/event_cards/personal_event_card.dart';
 import '../widgets/event_cards/pet_event_card.dart';
 import '../widgets/event_cards/project_event_card.dart';
 import '../widgets/event_cards/business_event_card.dart';
 
 /// Factory for creating context-appropriate event card widgets
+/// This now delegates to the enhanced template renderer
 abstract class TemplateRenderer {
+  /// Initialize the template system
+  static Future<void> initialize() async {
+    await EnhancedTemplateRenderer.initialize();
+  }
+
   /// Creates an event card widget based on the context type and event
+  /// Using the enhanced template renderer for better context awareness
   static Widget createEventCard({
     required TimelineEvent event,
-    required ContextType contextType,
+    required Context context,
     required TimelineTheme theme,
     VoidCallback? onTap,
     VoidCallback? onEdit,
     VoidCallback? onDelete,
   }) {
-    switch (contextType) {
-      case ContextType.person:
-        return PersonalEventCard(
-          event: event,
-          theme: theme,
-          onTap: onTap,
-          onEdit: onEdit,
-          onDelete: onDelete,
-        );
-      case ContextType.pet:
-        return PetEventCard(
-          event: event,
-          theme: theme,
-          onTap: onTap,
-          onEdit: onEdit,
-          onDelete: onDelete,
-        );
-      case ContextType.project:
-        return ProjectEventCard(
-          event: event,
-          theme: theme,
-          onTap: onTap,
-          onEdit: onEdit,
-          onDelete: onDelete,
-        );
-      case ContextType.business:
-        return BusinessEventCard(
-          event: event,
-          theme: theme,
-          onTap: onTap,
-          onEdit: onEdit,
-          onDelete: onDelete,
-        );
-    }
+    return EnhancedTemplateRenderer.createEventCard(
+      event: event,
+      context: context,
+      theme: theme,
+      onTap: onTap,
+      onEdit: onEdit,
+      onDelete: onDelete,
+    );
   }
 
   /// Creates a custom attribute editor widget based on context type
+  /// Using the enhanced template renderer for better field definitions
   static Widget createAttributeEditor({
-    required String eventType,
-    required ContextType contextType,
-    required Map<String, dynamic> attributes,
+    required TimelineEvent event,
+    required Context context,
     required Function(Map<String, dynamic>) onAttributesChanged,
   }) {
-    switch (contextType) {
-      case ContextType.person:
-        return PersonalAttributeEditor(
-          eventType: eventType,
-          attributes: attributes,
-          onAttributesChanged: onAttributesChanged,
-        );
-      case ContextType.pet:
-        return PetAttributeEditor(
-          eventType: eventType,
-          attributes: attributes,
-          onAttributesChanged: onAttributesChanged,
-        );
-      case ContextType.project:
-        return ProjectAttributeEditor(
-          eventType: eventType,
-          attributes: attributes,
-          onAttributesChanged: onAttributesChanged,
-        );
-      case ContextType.business:
-        return BusinessAttributeEditor(
-          eventType: eventType,
-          attributes: attributes,
-          onAttributesChanged: onAttributesChanged,
-        );
-    }
+    return EnhancedTemplateRenderer.createAttributeEditor(
+      event: event,
+      context: context,
+      onAttributesChanged: onAttributesChanged,
+    );
   }
 
   /// Gets available event types for a context
+  /// Using the enhanced template renderer for comprehensive event type management
   static List<String> getAvailableEventTypes(ContextType contextType) {
-    switch (contextType) {
-      case ContextType.person:
-        return ['photo', 'text', 'milestone', 'travel', 'celebration'];
-      case ContextType.pet:
-        return ['photo', 'text', 'pet_milestone', 'vet_visit', 'weight_check', 'training'];
-      case ContextType.project:
-        return ['photo', 'text', 'renovation_progress', 'milestone', 'budget_update', 'completion'];
-      case ContextType.business:
-        return ['photo', 'text', 'business_milestone', 'revenue_update', 'team_update', 'launch'];
-    }
+    return EnhancedTemplateRenderer.getAvailableEventTypes(contextType);
   }
 
   /// Gets display name for an event type
+  /// Using the enhanced template renderer for consistent naming
   static String getEventTypeDisplayName(String eventType) {
-    switch (eventType) {
-      case 'photo':
-        return 'Photo Event';
-      case 'text':
-        return 'Text Entry';
-      case 'milestone':
-        return 'Milestone';
-      case 'travel':
-        return 'Travel';
-      case 'celebration':
-        return 'Celebration';
-      case 'pet_milestone':
-        return 'Pet Milestone';
-      case 'vet_visit':
-        return 'Vet Visit';
-      case 'weight_check':
-        return 'Weight Check';
-      case 'training':
-        return 'Training Session';
-      case 'renovation_progress':
-        return 'Renovation Progress';
-      case 'budget_update':
-        return 'Budget Update';
-      case 'completion':
-        return 'Project Completion';
-      case 'business_milestone':
-        return 'Business Milestone';
-      case 'revenue_update':
-        return 'Revenue Update';
-      case 'team_update':
-        return 'Team Update';
-      case 'launch':
-        return 'Product Launch';
-      default:
-        return eventType;
-    }
+    return EnhancedTemplateRenderer.getEventTypeDisplayName(eventType);
   }
 
   /// Gets the appropriate icon for an event type
+  /// Using the enhanced template renderer for consistent iconography
   static IconData getEventTypeIcon(String eventType) {
-    switch (eventType) {
-      case 'photo':
-        return Icons.photo;
-      case 'text':
-        return Icons.text_fields;
-      case 'milestone':
-        return Icons.flag;
-      case 'travel':
-        return Icons.flight;
-      case 'celebration':
-        return Icons.celebration;
-      case 'pet_milestone':
-        return Icons.pets;
-      case 'vet_visit':
-        return Icons.local_hospital;
-      case 'weight_check':
-        return Icons.monitor_weight;
-      case 'training':
-        return Icons.school;
-      case 'renovation_progress':
-        return Icons.construction;
-      case 'budget_update':
-        return Icons.attach_money;
-      case 'completion':
-        return Icons.check_circle;
-      case 'business_milestone':
-        return Icons.business;
-      case 'revenue_update':
-        return Icons.trending_up;
-      case 'team_update':
-        return Icons.group;
-      case 'launch':
-        return Icons.rocket_launch;
-      default:
-        return Icons.event;
-    }
+    return EnhancedTemplateRenderer.getEventTypeIcon(eventType);
   }
 }
 

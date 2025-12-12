@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
+import '../../../shared/models/user.dart';
 
 /// Timeline visualization modes supported by the renderer
 enum TimelineViewMode {
   lifeStream,
   mapView,
   bentoGrid,
+  chronological,
+  clustered,
+  story,
 }
 
 /// Configuration for timeline rendering
@@ -272,4 +277,3 @@ abstract class BaseTimelineRenderer implements ITimelineRenderer {
   }
 }
 
-import 'dart:typed_data';

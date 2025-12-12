@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import 'timeline_renderer_interface.dart';
@@ -145,8 +146,8 @@ class TimelineService {
         // Check spatial proximity (if both have coordinates)
         if (event.location != null && otherEvent.location != null) {
           final distance = _calculateDistance(
-            event.location!.toJson(),
-            otherEvent.location!.toJson(),
+            event.location!.toJson().cast<String, double>(),
+            otherEvent.location!.toJson().cast<String, double>(),
           );
           if (distance > distanceThresholdKm) continue;
         }
@@ -323,4 +324,3 @@ extension on double {
   double sqrt() => math.sqrt(this);
 }
 
-import 'dart:math' as math;

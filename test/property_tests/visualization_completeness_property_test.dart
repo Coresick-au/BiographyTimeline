@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/material.dart';
 
 import '../../lib/shared/models/timeline_event.dart';
 import '../../lib/shared/models/context.dart';
+import '../../lib/shared/models/user.dart';
 import '../../lib/features/timeline/services/timeline_renderer_interface.dart';
 import '../../lib/features/timeline/services/timeline_service.dart';
 
@@ -58,7 +60,7 @@ void main() {
           List.generate(faker.randomGenerator.integer(5, min: 0), (_) => uuid.v4())
         );
         final showPrivateEvents = faker.randomGenerator.boolean();
-        final zoomLevel = faker.randomGenerator.decimal(range: 0.1, min: 5.0);
+        final zoomLevel = faker.randomGenerator.decimal() * 4.9 + 0.1;
         
         // Test: Create configuration
         final config = TimelineRenderConfig(
@@ -101,8 +103,8 @@ void main() {
         // Generate random timeline data
         final events = List.generate(faker.randomGenerator.integer(10, min: 1), (_) => _generateRandomEvent());
         final contexts = List.generate(faker.randomGenerator.integer(3, min: 1), (_) => _generateRandomContext());
-        final earliestDate = events.map((e) => e.occurredAt).reduce((a, b) => a.isBefore(b) ? a : b);
-        final latestDate = events.map((e) => e.occurredAt).reduce((a, b) => a.isAfter(b) ? a : b);
+        final earliestDate = events.map((e) => e.timestamp).reduce((a, b) => a.isBefore(b) ? a : b);
+        final latestDate = events.map((e) => e.timestamp).reduce((a, b) => a.isAfter(b) ? a : b);
         final clusteredEvents = _generateClusteredEvents(events);
         final metadata = {'test': faker.lorem.word()};
         
@@ -210,7 +212,7 @@ void main() {
         final eventToUpdate = timelineService.events.first;
         final updatedEvent = eventToUpdate.copyWith(
           title: faker.lorem.sentence(),
-          description: faker.lorem.paragraph(),
+          description: faker.lorem.sentences(3).join(' '),
         );
         await timelineService.updateEvent(updatedEvent);
         
@@ -259,7 +261,7 @@ void main() {
         
         // Verify date range
         final dateRange = stats['dateRange'] as Map<String, dynamic>;
-        final eventDates = events.map((e) => e.occurredAt).toList();
+        final eventDates = events.map((e) => e.timestamp).toList();
         eventDates.sort();
         expect(dateRange['start'], equals(eventDates.first));
         expect(dateRange['end'], equals(eventDates.last));
@@ -307,7 +309,7 @@ TimelineEvent _generateRandomEvent() {
     },
     assets: [],
     title: faker.lorem.sentence(),
-    description: faker.lorem.paragraph(),
+    description: faker.lorem.sentences(3).join(' '),
     participantIds: [],
     privacyLevel: PrivacyLevel.values[faker.randomGenerator.integer(PrivacyLevel.values.length)],
     createdAt: faker.date.dateTime(),

@@ -1,7 +1,11 @@
 import '../services/timeline_renderer_interface.dart';
-import '../renderers/life_stream_renderer.dart';
-import '../renderers/map_view_renderer.dart';
-import '../renderers/bento_grid_renderer.dart';
+import '../renderers/chronological_timeline_renderer.dart';
+import '../renderers/clustered_timeline_renderer.dart';
+import '../renderers/map_timeline_renderer.dart';
+import '../renderers/story_timeline_renderer.dart';
+import '../renderers/life_stream_timeline_renderer.dart';
+import '../renderers/enhanced_map_timeline_renderer.dart';
+import '../renderers/bento_grid_timeline_renderer.dart';
 
 /// Factory for creating timeline renderers
 class TimelineRendererFactory {
@@ -12,12 +16,27 @@ class TimelineRendererFactory {
     TimelineRenderData data,
   ) {
     switch (viewMode) {
-      case TimelineViewMode.lifeStream:
-        return LifeStreamRenderer(config, data);
+      case TimelineViewMode.chronological:
+        return ChronologicalTimelineRenderer(config, data);
+      case TimelineViewMode.clustered:
+        return ClusteredTimelineRenderer(config, data);
       case TimelineViewMode.mapView:
-        return MapViewRenderer(config, data);
+        final renderer = EnhancedMapTimelineRenderer();
+        renderer.initialize(config);
+        renderer.updateData(data);
+        return renderer;
+      case TimelineViewMode.story:
+        return StoryTimelineRenderer(config, data);
+      case TimelineViewMode.lifeStream:
+        final renderer = LifeStreamTimelineRenderer();
+        renderer.initialize(config);
+        renderer.updateData(data);
+        return renderer;
       case TimelineViewMode.bentoGrid:
-        return BentoGridRenderer(config, data);
+        final renderer = BentoGridTimelineRenderer();
+        renderer.initialize(config);
+        renderer.updateData(data);
+        return renderer;
       default:
         throw ArgumentError('Unsupported view mode: $viewMode');
     }
@@ -36,10 +55,16 @@ class TimelineRendererFactory {
   /// Get display name for a view mode
   static String getViewModeDisplayName(TimelineViewMode viewMode) {
     switch (viewMode) {
+      case TimelineViewMode.chronological:
+        return 'Chronological';
+      case TimelineViewMode.clustered:
+        return 'Clustered';
+      case TimelineViewMode.mapView:
+        return 'Enhanced Map';
+      case TimelineViewMode.story:
+        return 'Story View';
       case TimelineViewMode.lifeStream:
         return 'Life Stream';
-      case TimelineViewMode.mapView:
-        return 'Map View';
       case TimelineViewMode.bentoGrid:
         return 'Grid View';
       default:
@@ -50,10 +75,16 @@ class TimelineRendererFactory {
   /// Get description for a view mode
   static String getViewModeDescription(TimelineViewMode viewMode) {
     switch (viewMode) {
+      case TimelineViewMode.chronological:
+        return 'Traditional timeline with infinite scroll';
+      case TimelineViewMode.clustered:
+        return 'Events grouped by time periods and themes';
+      case TimelineViewMode.mapView:
+        return 'Geographic visualization with location clustering';
+      case TimelineViewMode.story:
+        return 'Narrative flow with scrollytelling';
       case TimelineViewMode.lifeStream:
         return 'Chronological timeline with infinite scroll';
-      case TimelineViewMode.mapView:
-        return 'Animated playback with location clustering';
       case TimelineViewMode.bentoGrid:
         return 'Life overview with density patterns';
       default:
@@ -64,10 +95,16 @@ class TimelineRendererFactory {
   /// Get icon for a view mode
   static String getViewModeIcon(TimelineViewMode viewMode) {
     switch (viewMode) {
-      case TimelineViewMode.lifeStream:
+      case TimelineViewMode.chronological:
         return 'timeline';
+      case TimelineViewMode.clustered:
+        return 'category';
       case TimelineViewMode.mapView:
         return 'map';
+      case TimelineViewMode.story:
+        return 'auto_stories';
+      case TimelineViewMode.lifeStream:
+        return 'timeline';
       case TimelineViewMode.bentoGrid:
         return 'grid_view';
       default:
