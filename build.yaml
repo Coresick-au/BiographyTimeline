@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # Creates `toJson()` and `fromJson()` methods
+          explicit_to_json: true
+          # Includes fields with null values in JSON output
+          include_if_null: false
+          # Generates code for all annotated classes
+          any_map: false
+          # Checks for required parameters
+          checked: true
+          # Disallows extra keys in fromJson
+          disallow_unrecognized_keys: false

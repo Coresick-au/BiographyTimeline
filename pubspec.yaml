@@ -1,0 +1,54 @@
+name: users_timeline
+description: A collaborative digital historiography platform that transforms personal photo collections into rich, interactive timelines.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  
+  # Local Database
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  
+  # Media Processing
+  photo_manager: ^3.0.0
+  exif: ^3.3.0
+  
+  # Rich Text Editor
+  flutter_quill: ^9.4.4
+  
+  # Maps
+  google_maps_flutter: ^2.5.0
+  
+  # Face Detection
+  google_mlkit_face_detection: ^0.10.0
+  
+  # Utilities
+  uuid: ^4.2.1
+  intl: ^0.19.0
+  json_annotation: ^4.8.1
+  
+  # HTTP and Networking
+  http: ^1.1.2
+  
+  # File handling
+  path_provider: ^2.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+  faker: ^2.1.0
+
+flutter:
+  uses-material-design: true
