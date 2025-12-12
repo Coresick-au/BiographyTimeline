@@ -10,6 +10,7 @@ import '../timeline/widgets/quick_entry_button.dart';
 import '../timeline/widgets/timeline_view.dart';
 import 'widgets/context_card.dart';
 import 'widgets/timeline_event_card.dart';
+import 'timeline_progress_demo.dart';
 
 class DemoPage extends ConsumerStatefulWidget {
   const DemoPage({super.key});
@@ -303,11 +304,18 @@ class _DemoPageState extends ConsumerState<DemoPage> {
           ),
         ],
       ),
-      floatingActionButton: QuickEntryButton(
-        contextType: selectedContextType,
-        contextId: selectedContext.id,
-        ownerId: selectedContext.ownerId,
-        onEventCreated: _addNewEvent,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const TimelineProgressDemo(),
+            ),
+          );
+        },
+        icon: const Icon(Icons.timeline),
+        label: const Text('Timeline Engine'),
+        backgroundColor: theme.getColor('primary'),
+        foregroundColor: Colors.white,
       ),
     );
   }

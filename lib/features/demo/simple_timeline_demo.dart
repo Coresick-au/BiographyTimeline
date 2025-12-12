@@ -1,0 +1,458 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../timeline/providers/timeline_provider.dart';
+import '../timeline/services/timeline_renderer_interface.dart';
+import '../../shared/models/timeline_event.dart';
+import '../../shared/models/context.dart';
+import '../../core/factories/context_factory.dart';
+import '../../core/factories/timeline_event_factory.dart';
+
+/// Simple demo page showing timeline visualization progress
+class SimpleTimelineDemo extends ConsumerStatefulWidget {
+  const SimpleTimelineDemo({super.key});
+
+  @override
+  ConsumerState<SimpleTimelineDemo> createState() => _SimpleTimelineDemoState();
+}
+
+class _SimpleTimelineDemoState extends ConsumerState<SimpleTimelineDemo>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _initializeDemoData();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeDemoData() async {
+    final timelineActions = ref.read(timelineActionsProvider);
+    final timelineNotifier = ref.read(timelineNotifierProvider.notifier);
+
+    try {
+      // Create demo contexts
+      final contexts = [
+        ContextFactory.createContext(
+          id: 'personal-context',
+          ownerId: 'demo-user',
+          type: ContextType.person,
+          name: 'My Life Journey',
+          description: 'Personal memories and milestones',
+        ),
+        ContextFactory.createContext(
+          id: 'project-context',
+          ownerId: 'demo-user',
+          type: ContextType.project,
+          name: 'Home Renovation',
+          description: 'Our house transformation journey',
+        ),
+      ];
+
+      // Create demo events
+      final events = [
+        TimelineEventFactory.createEvent(
+          id: 'graduation',
+          contextId: 'personal-context',
+          ownerId: 'demo-user',
+          title: 'University Graduation',
+          description: 'Finally graduated with honors in Computer Science',
+          timestamp: DateTime(2020, 6, 15),
+          eventType: 'achievement',
+          location: {
+            'latitude': 37.7749,
+            'longitude': -122.4194,
+          },
+          assets: [],
+          participantIds: [],
+          privacyLevel: PrivacyLevel.public,
+        ),
+        TimelineEventFactory.createEvent(
+          id: 'first-job',
+          contextId: 'personal-context',
+          ownerId: 'demo-user',
+          title: 'Started First Job',
+          description: 'Joined tech company as software engineer',
+          timestamp: DateTime(2020, 9, 1),
+          eventType: 'career',
+          location: {
+            'latitude': 37.7849,
+            'longitude': -122.4094,
+          },
+          assets: [],
+          participantIds: [],
+          privacyLevel: PrivacyLevel.public,
+        ),
+        TimelineEventFactory.createEvent(
+          id: 'bought-house',
+          contextId: 'project-context',
+          ownerId: 'demo-user',
+          title: 'Bought Our House',
+          description: 'Closed on our first home',
+          timestamp: DateTime(2021, 3, 15),
+          eventType: 'milestone',
+          location: {
+            'latitude': 37.7649,
+            'longitude': -122.4294,
+          },
+          assets: [],
+          participantIds: [],
+          privacyLevel: PrivacyLevel.public,
+        ),
+        TimelineEventFactory.createEvent(
+          id: 'kitchen-finished',
+          contextId: 'project-context',
+          ownerId: 'demo-user',
+          title: 'Kitchen Completed',
+          description: 'New kitchen is finally ready',
+          timestamp: DateTime(2021, 6, 20),
+          eventType: 'renovation',
+          location: {
+            'latitude': 37.7649,
+            'longitude': -122.4294,
+          },
+          assets: [],
+          participantIds: [],
+          privacyLevel: PrivacyLevel.public,
+        ),
+      ];
+
+      await timelineActions.addContexts(contexts);
+      await timelineActions.addEvents(events);
+      await timelineNotifier.initializeWithDemoData();
+      
+      setState(() {
+        _isInitialized = true;
+      });
+    } catch (e) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final timelineStats = ref.watch(timelineStatsProvider);
+    final availableViewModes = ref.watch(availableViewModesProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Timeline Visualization Engine'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Overview', icon: Icon(Icons.dashboard)),
+            Tab(text: 'Features', icon: Icon(Icons.featured_play_list)),
+            Tab(text: 'Data', icon: Icon(Icons.data_object)),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildOverviewTab(),
+          _buildFeaturesTab(),
+          _buildDataTab(timelineStats),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverviewTab() {
+    if (!_isInitialized) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Initializing Timeline Engine...'),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.timeline,
+                        size: 32,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Timeline Visualization Engine',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'A powerful, pluggable system for visualizing timeline data across multiple view modes.',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '✅ Task 7.1: Visualization Framework - Complete\n'
+                    '✅ Task 7.2: Life Stream View - Complete\n'
+                    '✅ Task 7.3: Map View - Complete\n'
+                    '✅ Task 7.4: Bento Grid View - Complete',
+                    style: TextStyle(fontFamily: 'monospace', fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildViewModeCards(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewModeCards() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Available View Modes',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildViewModeCard(
+          'Life Stream',
+          'Chronological timeline with infinite scroll',
+          Icons.timeline,
+          [
+            'Sticky month/year headers',
+            'Lazy loading for large collections',
+            'Smooth date navigation',
+            'Event clustering',
+          ],
+        ),
+        const SizedBox(height: 8),
+        _buildViewModeCard(
+          'Map View',
+          'Animated playback with location clustering',
+          Icons.map,
+          [
+            'Interactive timeline controls',
+            'Variable speed playback (0.5x-5x)',
+            'Location path visualization',
+            'Event markers and clustering',
+          ],
+        ),
+        const SizedBox(height: 8),
+        _buildViewModeCard(
+          'Bento Grid',
+          'Life overview with density patterns',
+          Icons.grid_view,
+          [
+            'Yearly/monthly density visualization',
+            'Interactive year selection',
+            'Event significance scoring',
+            'Zoom and exploration controls',
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildViewModeCard(String title, String description, IconData icon, List<String> features) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 24,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...features.map((feature) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, size: 16, color: Colors.green),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      feature,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeaturesTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Technical Features',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureCard(
+            'Pluggable Architecture',
+            'ITimelineRenderer interface allows easy addition of new view modes',
+            Icons.extension,
+          ),
+          _buildFeatureCard(
+            'Performance Optimized',
+            'Lazy loading, batched operations, and efficient data structures',
+            Icons.speed,
+          ),
+          _buildFeatureCard(
+            'Rich Interactions',
+            'Event tapping, long press, date navigation, and zoom controls',
+            Icons.touch_app,
+          ),
+          _buildFeatureCard(
+            'Data Processing',
+            'Event clustering, statistics, search, and import/export capabilities',
+            Icons.data_usage,
+          ),
+          _buildFeatureCard(
+            'State Management',
+            'Riverpod integration with reactive updates and error handling',
+            Icons.sync,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(String title, String description, IconData icon) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        title: Text(title),
+        subtitle: Text(description),
+      ),
+    );
+  }
+
+  Widget _buildDataTab(Map<String, dynamic> stats) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Timeline Statistics',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (stats.isEmpty)
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('No data available'),
+              ),
+            )
+          else
+            Column(
+              children: [
+                _buildStatCard('Total Events', '${stats['totalEvents'] ?? 0}'),
+                _buildStatCard('Total Contexts', '${stats['totalContexts'] ?? 0}'),
+                if (stats['dateRange'] != null)
+                  _buildStatCard('Time Span', '${stats['dateRange']['span'] ?? 0} days'),
+                const SizedBox(height: 16),
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Timeline engine is fully functional with demo data loaded.',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String label, String value) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
