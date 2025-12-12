@@ -57,10 +57,28 @@ class Story {
 
   /// Gets all media assets referenced in the story
   List<MediaAsset> get referencedMedia {
-    return blocks
+    final media = <MediaAsset>[];
+    
+    // Include background media
+    media.addAll(blocks
         .where((block) => block.backgroundMedia != null)
-        .map((block) => block.backgroundMedia!)
-        .toList();
+        .map((block) => block.backgroundMedia!));
+    
+    // Include media from content (image/video blocks)
+    for (final block in blocks) {
+      if (block.type == BlockType.image || block.type == BlockType.video) {
+        final mediaJson = block.content['mediaAsset'];
+        if (mediaJson != null) {
+          try {
+            media.add(MediaAsset.fromJson(mediaJson));
+          } catch (_) {
+            // Skip invalid media references
+          }
+        }
+      }
+    }
+    
+    return media;
   }
 
   /// Checks if the story has any content

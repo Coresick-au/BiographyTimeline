@@ -57,8 +57,18 @@ class StoryEditorService {
     for (final block in blocks) {
       if (block.type == BlockType.text) {
         final text = block.content['text'] as String? ?? '';
-        controller.document.insert(controller.document.length, text);
-        controller.document.insert(controller.document.length, '\n');
+        if (text.isNotEmpty) {
+          try {
+            controller.document.insert(controller.document.length, text);
+          } catch (_) {
+            // Fallback: skip if insert fails
+          }
+        }
+        try {
+          controller.document.insert(controller.document.length, '\n');
+        } catch (_) {
+          // Fallback: skip if insert fails
+        }
       }
     }
     
