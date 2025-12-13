@@ -49,59 +49,132 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
 
   Widget _buildBottomNavigationBar() {
     return Container(
+      height: 80,
       decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            blurRadius: 30,
+            offset: const Offset(0, -10),
           ),
         ],
       ),
-      child: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        child: Row(
+          children: [
+            _buildCustomNavItem(
+              icon: Icons.timeline_outlined,
+              activeIcon: Icons.timeline,
+              label: 'Timeline',
+              index: 0,
+            ),
+            _buildCustomNavItem(
+              icon: Icons.auto_stories_outlined,
+              activeIcon: Icons.auto_stories,
+              label: 'Stories',
+              index: 1,
+            ),
+            _buildCustomNavItem(
+              icon: Icons.people_outline,
+              activeIcon: Icons.people,
+              label: 'Connections',
+              index: 2,
+            ),
+            _buildCustomNavItem(
+              icon: Icons.photo_library_outlined,
+              activeIcon: Icons.photo_library,
+              label: 'Media',
+              index: 3,
+            ),
+            _buildCustomNavItem(
+              icon: Icons.settings_outlined,
+              activeIcon: Icons.settings,
+              label: 'Settings',
+              index: 4,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomNavItem({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required int index,
+  }) {
+    final isSelected = _currentIndex == index;
+    final color = isSelected 
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+    
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
           setState(() {
             _currentIndex = index;
           });
           _pageController.animateToPage(
             index,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
           );
         },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.timeline),
-            activeIcon: Icon(Icons.timeline),
-            label: 'Timeline',
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.all(isSelected ? 8.0 : 4.0),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ] : null,
+                ),
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  color: color,
+                  size: isSelected ? 26 : 24,
+                ),
+              ),
+              const SizedBox(height: 4),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  color: color,
+                  fontSize: isSelected ? 12 : 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+                child: Text(label),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.auto_stories),
-            activeIcon: Icon(Icons.auto_stories),
-            label: 'Stories',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            activeIcon: Icon(Icons.people),
-            label: 'Connections',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.photo_library),
-            activeIcon: Icon(Icons.photo_library),
-            label: 'Media',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            activeIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -311,30 +384,105 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
 
   Widget _buildBottomNavigationBar(List<NavigationItem> items, int currentIndex) {
     return Container(
+      height: 80,
       decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            blurRadius: 30,
+            offset: const Offset(0, -10),
           ),
         ],
       ),
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (index) {
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        child: Row(
+          children: items.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return _buildEnhancedCustomNavItem(
+              icon: item.icon,
+              activeIcon: item.activeIcon,
+              label: item.title,
+              index: index,
+              currentIndex: currentIndex,
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedCustomNavItem({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required int index,
+    required int currentIndex,
+  }) {
+    final isSelected = currentIndex == index;
+    final color = isSelected 
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+    
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
           ref.read(navigationProvider.notifier).setIndex(index);
         },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        items: items.map((item) => BottomNavigationBarItem(
-          icon: Icon(item.icon),
-          activeIcon: Icon(item.activeIcon),
-          label: item.title,
-        )).toList(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.all(isSelected ? 8.0 : 4.0),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ] : null,
+                ),
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  color: color,
+                  size: isSelected ? 26 : 24,
+                ),
+              ),
+              const SizedBox(height: 4),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  color: color,
+                  fontSize: isSelected ? 12 : 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+                child: Text(label),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

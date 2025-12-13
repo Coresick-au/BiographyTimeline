@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/widgets/theme_switcher.dart';
 
 /// Settings screen placeholder
 class SettingsScreen extends ConsumerWidget {
@@ -8,19 +9,34 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
+      appBar: AppBar(
+        title: const Text('Settings'),
+        elevation: 0,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // Profile Section
           Card(
+            elevation: 2,
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 child: const Icon(Icons.person, color: Colors.white),
               ),
-              title: const Text('User Profile'),
-              subtitle: const Text('Manage your account and preferences'),
-              trailing: const Icon(Icons.chevron_right),
+              title: Text(
+                'User Profile',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              subtitle: Text(
+                'Manage your account and preferences',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              trailing: Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Profile settings coming soon!')),
@@ -33,25 +49,53 @@ class SettingsScreen extends ConsumerWidget {
           
           // Timeline Settings
           Card(
+            elevation: 2,
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.timeline),
-                  title: const Text('Timeline Settings'),
-                  subtitle: const Text('Configure timeline display and behavior'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.timeline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Timeline Settings',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Configure timeline display and behavior',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Timeline settings coming soon!')),
                     );
                   },
                 ),
-                const Divider(height: 1),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
                 ListTile(
-                  leading: const Icon(Icons.view_carousel),
-                  title: const Text('Default View'),
-                  subtitle: const Text('Chronological'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.view_carousel,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Default View',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Chronological',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('View settings coming soon!')),
@@ -64,27 +108,108 @@ class SettingsScreen extends ConsumerWidget {
           
           const SizedBox(height: 16),
           
-          // Privacy & Security
+          // Appearance & Theme
           Card(
+            elevation: 2,
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.privacy_tip),
-                  title: const Text('Privacy'),
-                  subtitle: const Text('Manage your privacy settings'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.palette,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Theme',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Choose your app theme',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: const ThemeSwitcherButton(),
+                ),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.color_lens,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Color Scheme',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Customize colors and appearance',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Color customization coming soon!')),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Privacy & Security
+          Card(
+            elevation: 2,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Icon(
+                    Icons.privacy_tip,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Privacy',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Manage your privacy settings',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Privacy settings coming soon!')),
                     );
                   },
                 ),
-                const Divider(height: 1),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
                 ListTile(
-                  leading: const Icon(Icons.security),
-                  title: const Text('Security'),
-                  subtitle: const Text('Security and authentication'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.security,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Security',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Security and authentication',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Security settings coming soon!')),
@@ -99,37 +224,80 @@ class SettingsScreen extends ConsumerWidget {
           
           // Data & Storage
           Card(
+            elevation: 2,
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.storage),
-                  title: const Text('Storage'),
-                  subtitle: const Text('Manage data and storage'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.storage,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Storage',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Manage data and storage',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Storage settings coming soon!')),
                     );
                   },
                 ),
-                const Divider(height: 1),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
                 ListTile(
-                  leading: const Icon(Icons.download),
-                  title: const Text('Export Data'),
-                  subtitle: const Text('Download your timeline data'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.download,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Export Data',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Download your timeline data',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Export feature coming soon!')),
                     );
                   },
                 ),
-                const Divider(height: 1),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
                 ListTile(
-                  leading: const Icon(Icons.upload),
-                  title: const Text('Import Data'),
-                  subtitle: const Text('Import timeline from backup'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.upload,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Import Data',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Import timeline from backup',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Import feature coming soon!')),
@@ -144,12 +312,22 @@ class SettingsScreen extends ConsumerWidget {
           
           // App Settings
           Card(
+            elevation: 2,
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.notifications),
-                  title: const Text('Notifications'),
-                  subtitle: const Text('Manage notifications'),
+                  leading: Icon(
+                    Icons.notifications,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Notifications',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Manage notifications',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   trailing: Switch(
                     value: true,
                     onChanged: (value) {
@@ -159,11 +337,23 @@ class SettingsScreen extends ConsumerWidget {
                     },
                   ),
                 ),
-                const Divider(height: 1),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
                 ListTile(
-                  leading: const Icon(Icons.dark_mode),
-                  title: const Text('Dark Mode'),
-                  subtitle: const Text('Theme appearance'),
+                  leading: Icon(
+                    Icons.dark_mode,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Dark Mode',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Theme appearance',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   trailing: Switch(
                     value: false,
                     onChanged: (value) {
@@ -173,12 +363,27 @@ class SettingsScreen extends ConsumerWidget {
                     },
                   ),
                 ),
-                const Divider(height: 1),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
                 ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text('Language'),
-                  subtitle: const Text('English'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.language,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Language',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'English',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Language settings coming soon!')),
@@ -193,23 +398,51 @@ class SettingsScreen extends ConsumerWidget {
           
           // Support
           Card(
+            elevation: 2,
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.help_outline),
-                  title: const Text('Help & Support'),
-                  subtitle: const Text('Get help and contact support'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.help_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'Help & Support',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'Get help and contact support',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     _showHelpDialog(context);
                   },
                 ),
-                const Divider(height: 1),
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                ),
                 ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: const Text('About'),
-                  subtitle: const Text('App version and information'),
-                  trailing: const Icon(Icons.chevron_right),
+                  leading: Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    'About',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    'App version and information',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onTap: () {
                     _showAboutDialog(context);
                   },
@@ -222,6 +455,7 @@ class SettingsScreen extends ConsumerWidget {
           
           // Danger Zone
           Card(
+            elevation: 2,
             color: Theme.of(context).colorScheme.errorContainer,
             child: ListTile(
               leading: Icon(

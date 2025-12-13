@@ -826,6 +826,18 @@ class RelationshipService {
     _activities.add(activity);
     _activitiesController.add(List.unmodifiable(_activities));
   }
+
+  // Public method for testing purposes to add a relationship
+  void addRelationshipForTest(Relationship relationship) {
+    _relationships.add(relationship);
+    _relationshipsController.add(List.unmodifiable(_relationships));
+  }
+
+  // Public method for testing purposes to add a shared event
+  void addSharedEventForTest(SharedEvent event) {
+    _sharedEvents.add(event);
+    _sharedEventsController.add(List.unmodifiable(_sharedEvents));
+  }
 }
 
 // Extension methods for math operations

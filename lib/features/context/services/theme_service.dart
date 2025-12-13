@@ -16,9 +16,12 @@ class ThemeService {
 
   /// Sets the theme for a specific context
   Future<void> setThemeForContext(ContextType contextType) async {
+    print('🎨 THEME SERVICE: Setting theme for context: $contextType');
     final theme = TimelineTheme.forContextType(contextType);
+    print('🎨 THEME SERVICE: Created theme: ${theme.name} with primary: ${theme.getColor('primary')}');
     _currentTheme = theme;
     _themeController.add(theme);
+    print('🎨 THEME SERVICE: Theme updated and broadcasted');
   }
 
   /// Gets theme for a context type
@@ -59,34 +62,274 @@ class ThemeService {
     final backgroundColor = timelineTheme.getColor('background');
     final surfaceColor = timelineTheme.getColor('surface');
 
+    print('🎨 THEME SERVICE: Creating beautiful theme with primary: $primaryColor');
+
     return ThemeData(
-      primarySwatch: _createMaterialColor(primaryColor),
-      primaryColor: primaryColor,
-      scaffoldBackgroundColor: backgroundColor,
-      cardColor: surfaceColor,
+      useMaterial3: true,
+      brightness: Brightness.light,
+      
+      // Color scheme with beautiful gradients and harmonious colors
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        brightness: Brightness.light,
+        primary: primaryColor,
+        secondary: secondaryColor,
+        surface: surfaceColor,
+        background: backgroundColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Colors.black87,
+        onBackground: Colors.black87,
+      ).copyWith(
+        primary: primaryColor,
+        secondary: secondaryColor,
+        surface: surfaceColor,
+        background: backgroundColor,
+        surfaceVariant: surfaceColor.withOpacity(0.8),
+        outline: primaryColor.withOpacity(0.2),
+        outlineVariant: primaryColor.withOpacity(0.1),
+      ),
+
+      // Beautiful typography with better fonts and spacing
+      textTheme: TextTheme(
+        displayLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+          color: Colors.black87,
+          height: 1.2,
+        ),
+        displayMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.25,
+          color: Colors.black87,
+          height: 1.3,
+        ),
+        headlineLarge: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0,
+          color: Colors.black87,
+          height: 1.3,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.15,
+          color: Colors.black87,
+          height: 1.4,
+        ),
+        titleLarge: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.15,
+          color: Colors.black87,
+          height: 1.4,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.15,
+          color: Colors.black87,
+          height: 1.5,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0.5,
+          color: Colors.black87,
+          height: 1.5,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0.25,
+          color: Colors.black87,
+          height: 1.4,
+        ),
+        labelLarge: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.1,
+          color: primaryColor,
+          height: 1.3,
+        ),
+      ),
+
+      // Enhanced app bar with beautiful styling
       appBarTheme: AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+          letterSpacing: 0.15,
+        ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
+          size: 24,
+        ),
+        actionsIconTheme: IconThemeData(
+          color: Colors.white,
+          size: 24,
+        ),
       ),
+
+      // Beautiful cards with shadows and modern styling
+      cardTheme: CardTheme(
+        color: surfaceColor,
+        elevation: 2,
+        shadowColor: Colors.black.withOpacity(0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+
+      // Enhanced elevated buttons with gradients
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
+          elevation: 2,
+          shadowColor: primaryColor.withOpacity(0.3),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
       ),
+
+      // Modern floating action button
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: secondaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
+
+      // Beautiful chips
       chipTheme: ChipThemeData(
         backgroundColor: primaryColor.withOpacity(0.1),
-        labelStyle: TextStyle(color: primaryColor),
+        selectedColor: primaryColor.withOpacity(0.2),
+        disabledColor: Colors.grey.withOpacity(0.1),
+        labelStyle: TextStyle(
+          color: primaryColor,
+          fontWeight: FontWeight.w500,
+        ),
+        secondaryLabelStyle: TextStyle(
+          color: primaryColor.withOpacity(0.8),
+        ),
+        brightness: Brightness.light,
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
       ),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        background: backgroundColor,
-        surface: surfaceColor,
+
+      // Enhanced input decoration
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surfaceColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor.withOpacity(0.2)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor.withOpacity(0.2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+        labelStyle: TextStyle(
+          color: primaryColor.withOpacity(0.7),
+          fontWeight: FontWeight.w500,
+        ),
+        hintStyle: TextStyle(
+          color: Colors.grey.withOpacity(0.6),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
+
+      // Bottom navigation bar with modern styling
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: surfaceColor,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: Colors.grey.withOpacity(0.6),
+        selectedLabelStyle: TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 12,
+        ),
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+
+      // Modern list tiles
+      listTileTheme: ListTileThemeData(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        tileColor: Colors.transparent,
+        selectedTileColor: primaryColor.withOpacity(0.1),
+        iconColor: primaryColor,
+        textColor: Colors.black87,
+        titleTextStyle: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
+        subtitleTextStyle: TextStyle(
+          fontSize: 14,
+          color: Colors.grey.withOpacity(0.7),
+        ),
+      ),
+
+      // Beautiful dividers
+      dividerTheme: DividerThemeData(
+        color: Colors.grey.withOpacity(0.2),
+        thickness: 1,
+        space: 1,
+      ),
+
+      // Modern dialog theme
+      dialogTheme: DialogTheme(
+        backgroundColor: surfaceColor,
+        elevation: 8,
+        shadowColor: Colors.black.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
+        contentTextStyle: TextStyle(
+          fontSize: 16,
+          color: Colors.black87,
+        ),
+      ),
+
+      // Enhanced scaffold
+      scaffoldBackgroundColor: backgroundColor,
     );
   }
 

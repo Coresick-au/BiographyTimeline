@@ -364,6 +364,7 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'Event Types',
@@ -372,7 +373,7 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
             ),
           ),
           const SizedBox(height: 8),
-          Expanded(
+          Flexible(
             child: _eventTypeStats.isEmpty
                 ? Center(
                     child: Text(
@@ -381,6 +382,7 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
                     ),
                   )
                 : Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: _eventTypeStats.entries.map((entry) {
                       final percentage = _totalEvents > 0 
                           ? (entry.value / _totalEvents * 100).round()

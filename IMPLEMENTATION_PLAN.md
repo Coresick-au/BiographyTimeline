@@ -136,9 +136,9 @@
   - [x] Create confidence scoring that includes face match data for shared events
   - _Requirements: 4.2_
 
-- [ ] 8.4 Write property test for shared event detection
-  - [ ] **Property 16: Shared Event Detection Accuracy**
-  - [ ] Validates: Requirements 4.2_
+- [x] 8.4 Write property test for shared event detection ✅ **COMPLETED**
+  - [x] **Property 16: Shared Event Detection Accuracy**
+  - [x] Validates: Requirements 4.2_
 
 - [x] 8.5 Implement River visualization for merged timelines ✅ **COMPLETED**
   - [x] Create CustomPainter for Sankey-style timeline merging visualization
@@ -146,19 +146,19 @@
   - [x] Add interactive elements for exploring merged timeline segments
   - _Requirements: 4.3_
 
-- [ ] 8.6 Write property test for River visualization
-  - [ ] **Property 17: River Visualization Rendering**
-  - [ ] Validates: Requirements 4.3_
+- [x] 8.6 Write property test for River visualization ✅ **COMPLETED**
+  - [x] **Property 17: River Visualization Rendering**
+  - [x] Validates: Requirements 4.3_
 
-- [ ] 8.7 Add collaborative event editing ✅ **COMPLETED**
+- [x] 8.7 Add collaborative event editing ✅ **COMPLETED**
   - [x] Implement multi-user story contribution for shared events
-  - [ ] Create conflict resolution for simultaneous edits
-  - [ ] Add attribution and version tracking for collaborative content
+  - [x] Create conflict resolution for simultaneous edits
+  - [x] Add attribution and version tracking for collaborative content
   - _Requirements: 4.4_
 
-- [ ] 8.8 Write property test for collaborative editing
-  - [ ] **Property 18: Collaborative Event Editing**
-  - [ ] Validates: Requirements 4.4_
+- [x] 8.8 Write property test for collaborative editing ✅ **COMPLETED**
+  - [x] **Property 18: Collaborative Event Editing**
+  - [x] Validates: Requirements 4.4_
 
 - [x] 8.9 Build relationship lifecycle management ✅ **COMPLETED**
   - [x] Implement relationship termination with content management options
