@@ -34,6 +34,16 @@ dependencies:
   tflite_flutter: ^0.10.4
   tflite_flutter_helper: ^0.3.1
   
+  # Semantic Search
+  sqlite3_flutter_libs: ^0.5.15
+  
+  # Data Export
+  flutter_quill_to_pdf: ^1.2.2
+  archive: ^3.4.9
+  
+  # Ghost Camera
+  camera: ^0.10.5+5
+  
   # Utilities
   uuid: ^4.2.1
   intl: ^0.19.0
