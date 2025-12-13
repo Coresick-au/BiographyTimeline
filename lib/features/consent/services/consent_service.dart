@@ -159,10 +159,10 @@ class ConsentService {
 
   /// Check if user has granted consent for a specific type
   bool hasConsent(String userId, ConsentType consentType, {String? featureId}) {
-    final userConsents = _consentRecords.values.where((record) => 
+    var userConsents = _consentRecords.values.where((record) => 
         record.userId == userId && 
         record.consentType == consentType &&
-        record.isValid);
+        record.isValid).toList();
 
     if (featureId != null) {
       userConsents.retainWhere((record) => record.featureId == featureId);
@@ -309,7 +309,7 @@ class ConsentService {
     _addAuditEntry(ConsentAuditEntry(
       id: const Uuid().v4(),
       userId: 'system',
-      action: ConsentAuditAction.created,
+      action: ConsentAuditAction.modified,
       timestamp: DateTime.now(),
       metadata: {'templateId': template.id},
     ));

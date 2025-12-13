@@ -289,6 +289,16 @@ class AppThemes {
     accentColor: Color(0xFF6B7280),
   );
 
+  /// Sepia theme with warm vintage tones
+  static const AppTheme sepia = AppTheme(
+    id: 'sepia',
+    name: 'Sepia',
+    description: 'Warm vintage tones for comfortable reading',
+    mode: ThemeMode.light,
+    colorScheme: ColorPalettes.sepiaColorScheme,
+    accentColor: Color(0xFF8B6F47),
+  );
+
   /// High contrast light theme for accessibility
   static const AppTheme highContrastLight = AppTheme(
     id: 'high_contrast_light',
@@ -316,6 +326,7 @@ class AppThemes {
     light,
     dark,
     neutral,
+    sepia,
     highContrastLight,
     highContrastDark,
   ];

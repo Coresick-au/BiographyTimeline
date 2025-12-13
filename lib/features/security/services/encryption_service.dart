@@ -52,7 +52,7 @@ class EncryptionService {
         iterations: _config.defaultIterations,
         salt: base64.encode(salt),
         iv: base64.encode(iv),
-        tag: base64.encode(encryptedResult['tag']),
+        tag: base64.encode(encryptedResult['tag'] ?? []),
         createdAt: DateTime.now(),
         additionalData: additionalData,
       );
@@ -67,7 +67,7 @@ class EncryptionService {
       ));
       
       return EncryptedData(
-        data: base64.encode(encryptedResult['ciphertext']),
+        data: base64.encode(encryptedResult['ciphertext'] ?? []),
         metadata: metadata,
       );
       
@@ -149,8 +149,8 @@ class EncryptionService {
       
       final keyPairObj = EncryptionKeyPair(
         keyId: id,
-        publicKey: keyPair['public'],
-        privateKey: keyPair['private'], // This should be encrypted with master key
+        publicKey: keyPair['public'] ?? '',
+        privateKey: keyPair['private'] ?? '', // This should be encrypted with master key
         algorithm: 'RSA-2048',
         createdAt: DateTime.now(),
         usageScopes: usageScopes ?? [],

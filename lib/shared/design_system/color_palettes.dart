@@ -166,6 +166,59 @@ class ColorPalettes {
   );
 
   // ============================================================================
+  // SEPIA THEME PALETTE (Warm vintage tones)
+  // ============================================================================
+  
+  static const ColorScheme sepiaColorScheme = ColorScheme(
+    brightness: Brightness.light,
+    
+    // Primary colors - Warm brown
+    primary: Color(0xFF8B6F47),
+    onPrimary: Color(0xFFFFFFFF),
+    primaryContainer: Color(0xFFF0E6D9),
+    onPrimaryContainer: Color(0xFF2D1F0F),
+    
+    // Secondary colors - Muted gold
+    secondary: Color(0xFFB08D57),
+    onSecondary: Color(0xFFFFFFFF),
+    secondaryContainer: Color(0xFFF5EDE1),
+    onSecondaryContainer: Color(0xFF2D2416),
+    
+    // Tertiary colors - Soft olive
+    tertiary: Color(0xFF6B8E6B),
+    onTertiary: Color(0xFFFFFFFF),
+    tertiaryContainer: Color(0xFFE6F0E6),
+    onTertiaryContainer: Color(0xFF1A2E1A),
+    
+    // Error colors - Warm red
+    error: Color(0xFFC53030),
+    onError: Color(0xFFFFFFFF),
+    errorContainer: Color(0xFFFFE5E5),
+    onErrorContainer: Color(0xFF7F1D1D),
+    
+    // Surface colors - Cream
+    surface: Color(0xFFF4ECD8),
+    onSurface: Color(0xFF5C4033),
+    surfaceVariant: Color(0xFFEBE0C9),
+    onSurfaceVariant: Color(0xFF6B5D54),
+    
+    // Background colors - Vintage paper
+    background: Color(0xFFFAF6F0),
+    onBackground: Color(0xFF5C4033),
+    
+    // Outline colors
+    outline: Color(0xFF8B7969),
+    outlineVariant: Color(0xFFD4C4B0),
+    
+    // Other colors
+    shadow: Color(0xFF000000),
+    scrim: Color(0xFF000000),
+    inverseSurface: Color(0xFF4A3C2A),
+    onInverseSurface: Color(0xFFF4ECD8),
+    inversePrimary: Color(0xFFD4AF37),
+  );
+
+  // ============================================================================
   // ACCENT COLOR PALETTES (For customization)
   // ============================================================================
   
@@ -328,6 +381,8 @@ class ColorPalettes {
         return darkColorScheme;
       case 'neutral':
         return neutralColorScheme;
+      case 'sepia':
+        return sepiaColorScheme;
       default:
         return lightColorScheme;
     }
