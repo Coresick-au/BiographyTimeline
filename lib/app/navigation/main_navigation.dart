@@ -4,6 +4,8 @@ import '../../features/timeline/screens/timeline_screen.dart';
 import '../../features/stories/screens/stories_screen.dart';
 import '../../features/media/screens/media_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/social/screens/connections_screen.dart';
+import '../../features/social/services/privacy_settings_service.dart';
 
 /// Main navigation shell for the app
 class MainNavigation extends ConsumerStatefulWidget {
@@ -36,6 +38,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         children: const [
           TimelineScreen(),
           StoriesScreen(),
+          ConnectionsScreen(),
           MediaScreen(),
           SettingsScreen(),
         ],
@@ -82,6 +85,11 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
             icon: Icon(Icons.auto_stories),
             activeIcon: Icon(Icons.auto_stories),
             label: 'Stories',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            activeIcon: Icon(Icons.people),
+            label: 'Connections',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.photo_library),

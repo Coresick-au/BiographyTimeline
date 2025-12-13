@@ -12,6 +12,7 @@ enum TimelineViewMode {
   chronological,
   clustered,
   story,
+  river,
 }
 
 /// Configuration for timeline rendering

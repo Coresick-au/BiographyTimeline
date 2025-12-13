@@ -2,10 +2,11 @@ import '../services/timeline_renderer_interface.dart';
 import '../renderers/chronological_timeline_renderer.dart';
 import '../renderers/clustered_timeline_renderer.dart';
 import '../renderers/map_timeline_renderer.dart';
+import '../renderers/enhanced_map_timeline_renderer.dart';
 import '../renderers/story_timeline_renderer.dart';
 import '../renderers/life_stream_timeline_renderer.dart';
-import '../renderers/enhanced_map_timeline_renderer.dart';
 import '../renderers/bento_grid_timeline_renderer.dart';
+import '../renderers/river_timeline_renderer.dart';
 
 /// Factory for creating timeline renderers
 class TimelineRendererFactory {
@@ -34,6 +35,11 @@ class TimelineRendererFactory {
         return renderer;
       case TimelineViewMode.bentoGrid:
         final renderer = BentoGridTimelineRenderer();
+        renderer.initialize(config);
+        renderer.updateData(data);
+        return renderer;
+      case TimelineViewMode.river:
+        final renderer = RiverTimelineRenderer();
         renderer.initialize(config);
         renderer.updateData(data);
         return renderer;
@@ -67,6 +73,8 @@ class TimelineRendererFactory {
         return 'Life Stream';
       case TimelineViewMode.bentoGrid:
         return 'Grid View';
+      case TimelineViewMode.river:
+        return 'River View';
       default:
         return 'Unknown';
     }
@@ -87,6 +95,8 @@ class TimelineRendererFactory {
         return 'Chronological timeline with infinite scroll';
       case TimelineViewMode.bentoGrid:
         return 'Life overview with density patterns';
+      case TimelineViewMode.river:
+        return 'Sankey-style visualization of merged timelines';
       default:
         return 'Unknown view mode';
     }
@@ -107,6 +117,8 @@ class TimelineRendererFactory {
         return 'timeline';
       case TimelineViewMode.bentoGrid:
         return 'grid_view';
+      case TimelineViewMode.river:
+        return 'water';
       default:
         return 'help_outline';
     }

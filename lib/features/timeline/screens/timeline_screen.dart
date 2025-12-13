@@ -64,7 +64,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       await integrationService.initialize();
       
       // Get data service
-      final dataService = ref.read(timelineDataProvider);
+      final dataService = ref.read(timelineServiceProvider);
       
       // Create initial configuration
       _config = TimelineRenderConfig(
@@ -137,7 +137,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
         );
         
         try {
-          final dataService = ref.read(timelineDataProvider);
+          final dataService = ref.read(timelineServiceProvider);
           final timelineData = TimelineRenderData(
             events: dataService.events,
             contexts: dataService.contexts,
@@ -183,7 +183,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       _config = _config!.copyWith(viewMode: viewMode);
 
       // Get current data from service
-      final dataService = ref.read(timelineDataProvider);
+      final dataService = ref.read(timelineServiceProvider);
       final timelineData = TimelineRenderData(
         events: dataService.events,
         contexts: dataService.contexts,
@@ -225,7 +225,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       
       // Revert to previous view mode
       _currentViewMode = _config!.viewMode;
-      final dataService = ref.read(timelineDataProvider);
+      final dataService = ref.read(timelineServiceProvider);
       final timelineData = TimelineRenderData(
         events: dataService.events,
         contexts: dataService.contexts,
@@ -304,7 +304,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             
             // Re-create renderer with new configuration using factory
             final oldRenderer = _currentRenderer;
-            final dataService = ref.read(timelineDataProvider);
+            final dataService = ref.read(timelineServiceProvider);
             final timelineData = TimelineRenderData(
               events: dataService.events,
               contexts: dataService.contexts,
@@ -352,7 +352,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             _showErrorDialog('Configuration Error', 'Failed to apply settings: ${e.toString()}');
             
             // Revert to previous configuration
-            final dataService = ref.read(timelineDataProvider);
+            final dataService = ref.read(timelineServiceProvider);
             _config = TimelineRenderConfig(
               viewMode: _config!.viewMode,
               showPrivateEvents: dataService.showPrivateEvents,
@@ -397,7 +397,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     }
 
     // Watch data service for reactive updates
-    final dataService = ref.watch(timelineDataProvider);
+    final dataService = ref.watch(timelineServiceProvider);
     final currentEvents = dataService.events;
     final currentContexts = dataService.contexts;
 
@@ -614,7 +614,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             const SizedBox(height: 8),
             Consumer(
               builder: (context, ref, child) {
-                final dataService = ref.watch(timelineDataProvider);
+                final dataService = ref.watch(timelineServiceProvider);
                 return Text('• ${dataService.events.length} events\n• ${dataService.events.where((e) => e.location != null).length} locations');
               },
             ),
@@ -693,7 +693,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   void _exportTimeline() {
-    final dataService = ref.read(timelineDataProvider);
+    final dataService = ref.read(timelineServiceProvider);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Exporting ${dataService.events.length} events...')),
     );
@@ -706,7 +706,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   void _shareTimeline() {
-    final dataService = ref.read(timelineDataProvider);
+    final dataService = ref.read(timelineServiceProvider);
     final locationCount = dataService.events.where((e) => e.location != null).length;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Sharing timeline with $locationCount locations...')),
@@ -754,7 +754,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           const Spacer(),
           Consumer(
             builder: (context, ref, child) {
-              final dataService = ref.watch(timelineDataProvider);
+              final dataService = ref.watch(timelineServiceProvider);
               return Text(
                 '${dataService.events.length} events',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -788,7 +788,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           const Spacer(),
           Consumer(
             builder: (context, ref, child) {
-              final dataService = ref.watch(timelineDataProvider);
+              final dataService = ref.watch(timelineServiceProvider);
               final locationCount = dataService.events.where((e) => e.location != null).length;
               return Text(
                 '$locationCount locations',

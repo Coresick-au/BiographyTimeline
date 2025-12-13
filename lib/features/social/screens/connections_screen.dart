@@ -1,0 +1,642 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/user_models.dart';
+import '../services/relationship_service.dart';
+
+/// Provider for relationship service
+final relationshipServiceProvider = Provider((ref) => RelationshipService());
+
+/// Provider for current user's connections
+final userConnectionsProvider = StreamProvider<List<Relationship>>((ref) {
+  final service = ref.watch(relationshipServiceProvider);
+  return service.relationshipsStream;
+});
+
+/// Provider for pending connection requests
+final pendingRequestsProvider = StreamProvider<List<ConnectionRequest>>((ref) {
+  final service = ref.watch(relationshipServiceProvider);
+  return service.connectionRequestsStream;
+});
+
+/// Provider for user activity feed
+final activityFeedProvider = StreamProvider<List<UserActivity>>((ref) {
+  final service = ref.watch(relationshipServiceProvider);
+  return service.activitiesStream;
+});
+
+/// Screen for managing user connections
+class ConnectionsScreen extends ConsumerStatefulWidget {
+  const ConnectionsScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<ConnectionsScreen> createState() => _ConnectionsScreenState();
+}
+
+class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final connectionsAsync = ref.watch(userConnectionsProvider);
+    final requestsAsync = ref.watch(pendingRequestsProvider);
+    final activityAsync = ref.watch(activityFeedProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Connections'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Connections', icon: Icon(Icons.people)),
+            Tab(text: 'Requests', icon: Icon(Icons.person_add)),
+            Tab(text: 'Activity', icon: Icon(Icons.timeline)),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: _showSearchDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _showAddConnectionDialog,
+          ),
+        ],
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildConnectionsTab(connectionsAsync),
+          _buildRequestsTab(requestsAsync),
+          _buildActivityTab(activityAsync),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConnectionsTab(AsyncValue<List<Relationship>> connectionsAsync) {
+    return connectionsAsync.when(
+      data: (connections) {
+        if (connections.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.people_outline,
+            title: 'No Connections Yet',
+            subtitle: 'Start connecting with others to share timelines',
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: connections.length,
+          itemBuilder: (context, index) {
+            final relationship = connections[index];
+            return _buildConnectionCard(relationship);
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => _buildErrorState('Failed to load connections'),
+    );
+  }
+
+  Widget _buildRequestsTab(AsyncValue<List<ConnectionRequest>> requestsAsync) {
+    return requestsAsync.when(
+      data: (requests) {
+        if (requests.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.inbox_outlined,
+            title: 'No Pending Requests',
+            subtitle: 'You\'ll see connection requests here',
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            return _buildRequestCard(request);
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => _buildErrorState('Failed to load requests'),
+    );
+  }
+
+  Widget _buildActivityTab(AsyncValue<List<UserActivity>> activityAsync) {
+    return activityAsync.when(
+      data: (activities) {
+        if (activities.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.timeline_outlined,
+            title: 'No Recent Activity',
+            subtitle: 'Activity from your connections will appear here',
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: activities.length,
+          itemBuilder: (context, index) {
+            final activity = activities[index];
+            return _buildActivityCard(activity);
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => _buildErrorState('Failed to load activity'),
+    );
+  }
+
+  Widget _buildConnectionCard(Relationship relationship) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(_getRelationshipIcon(relationship.type)),
+        ),
+        title: Text(_getRelationshipDisplayName(relationship)),
+        subtitle: Text(
+          'Connected ${_formatDate(relationship.startDate)}',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        trailing: PopupMenuButton(
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'privacy',
+              child: Row(
+                children: const [
+                  Icon(Icons.privacy_tip),
+                  SizedBox(width: 8),
+                  Text('Privacy Settings'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'end',
+              child: Row(
+                children: const [
+                  Icon(Icons.link_off),
+                  SizedBox(width: 8),
+                  Text('End Connection'),
+                ],
+              ),
+            ),
+          ],
+          onSelected: (value) => _handleConnectionAction(relationship, value),
+        ),
+        onTap: () => _showConnectionDetails(relationship),
+      ),
+    );
+  }
+
+  Widget _buildRequestCard(ConnectionRequest request) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(_getRelationshipIcon(request.requestedType)),
+        ),
+        title: Text('Connection Request'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'From: ${request.fromUserId}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (request.message != null)
+              Text(
+                request.message!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            Text(
+              'Sent ${_formatDate(request.createdAt)}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.check, color: Colors.green),
+              onPressed: () => _acceptRequest(request),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.red),
+              onPressed: () => _declineRequest(request),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityCard(UserActivity activity) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(_getActivityIcon(activity.type)),
+        ),
+        title: Text(_getActivityTitle(activity)),
+        subtitle: Text(
+          _formatDate(activity.createdAt),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        onTap: () => _handleActivityTap(activity),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 64,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => setState(() {}),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSearchDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Search Users'),
+        content: const TextField(
+          decoration: InputDecoration(
+            hintText: 'Enter name or email...',
+            prefixIcon: Icon(Icons.search),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Search'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddConnectionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Connection'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Email or Username',
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<RelationshipType>(
+              decoration: const InputDecoration(
+                labelText: 'Relationship Type',
+                prefixIcon: Icon(Icons.category),
+              ),
+              items: RelationshipType.values.map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(_getRelationshipDisplayName(type)),
+                );
+              }).toList(),
+              onChanged: (value) {},
+            ),
+            const SizedBox(height: 16),
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Message (optional)',
+                prefixIcon: Icon(Icons.message),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implement send connection request
+            },
+            child: const Text('Send Request'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _acceptRequest(ConnectionRequest request) async {
+    try {
+      final service = ref.read(relationshipServiceProvider);
+      await service.acceptConnectionRequest(request.id, 'current-user-id');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connection request accepted')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  void _declineRequest(ConnectionRequest request) async {
+    try {
+      final service = ref.read(relationshipServiceProvider);
+      await service.declineConnectionRequest(request.id, 'current-user-id');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connection request declined')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  void _handleConnectionAction(Relationship relationship, String action) {
+    switch (action) {
+      case 'privacy':
+        _showPrivacySettings(relationship);
+        break;
+      case 'end':
+        _showEndConnectionDialog(relationship);
+        break;
+    }
+  }
+
+  void _showConnectionDetails(Relationship relationship) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_getRelationshipDisplayName(relationship)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Type: ${_getRelationshipDisplayName(relationship.type)}'),
+            Text('Status: ${_getStatusDisplayName(relationship.status)}'),
+            Text('Started: ${_formatDate(relationship.startDate)}'),
+            if (relationship.endDate != null)
+              Text('Ended: ${_formatDate(relationship.endDate!)}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacySettings(Relationship relationship) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Privacy Settings'),
+        content: const Text('Privacy settings configuration will go here'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEndConnectionDialog(Relationship relationship) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('End Connection'),
+        content: Text(
+          'Are you sure you want to end your connection with ${_getRelationshipDisplayName(relationship)}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implement end relationship
+            },
+            child: const Text('End Connection'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleActivityTap(UserActivity activity) {
+    // TODO: Handle activity tap based on type
+  }
+
+  // Helper methods
+
+  IconData _getRelationshipIcon(RelationshipType type) {
+    switch (type) {
+      case RelationshipType.friend:
+        return Icons.person;
+      case RelationshipType.family:
+        return Icons.family_restroom;
+      case RelationshipType.partner:
+        return Icons.favorite;
+      case RelationshipType.colleague:
+        return Icons.work;
+      case RelationshipType.collaborator:
+        return Icons.group_work;
+    }
+  }
+
+  IconData _getActivityIcon(ActivityType type) {
+    switch (type) {
+      case ActivityType.connectionRequest:
+        return Icons.person_add;
+      case ActivityType.connectionAccepted:
+        return Icons.person_add_disabled;
+      case ActivityType.connectionDeclined:
+        return Icons.person_remove;
+      case ActivityType.timelineShared:
+        return Icons.share;
+      case ActivityType.eventCommented:
+        return Icons.comment;
+      case ActivityType.eventLiked:
+        return Icons.favorite;
+      case ActivityType.contextCreated:
+        return Icons.folder;
+      case ActivityType.milestoneReached:
+        return Icons.emoji_events;
+      case ActivityType.relationshipTerminated:
+        return Icons.warning;
+      case ActivityType.contentArchived:
+        return Icons.archive;
+      case ActivityType.contentRedacted:
+        return Icons.content_cut;
+      case ActivityType.contentBifurcated:
+        return Icons.call_split;
+    }
+  }
+
+  String _getRelationshipDisplayName(dynamic relationshipOrType) {
+    if (relationshipOrType is Relationship) {
+      return '${relationshipOrType.userAId} & ${relationshipOrType.userBId}';
+    } else if (relationshipOrType is RelationshipType) {
+      switch (relationshipOrType) {
+        case RelationshipType.friend:
+          return 'Friend';
+        case RelationshipType.family:
+          return 'Family';
+        case RelationshipType.partner:
+          return 'Partner';
+        case RelationshipType.colleague:
+          return 'Colleague';
+        case RelationshipType.collaborator:
+          return 'Collaborator';
+      }
+    }
+    return 'Unknown';
+  }
+
+  String _getStatusDisplayName(RelationshipStatus status) {
+    switch (status) {
+      case RelationshipStatus.pending:
+        return 'Pending';
+      case RelationshipStatus.active:
+        return 'Active';
+      case RelationshipStatus.terminated:
+        return 'Terminated';
+      case RelationshipStatus.archived:
+        return 'Archived';
+      case RelationshipStatus.disconnected:
+        return 'Disconnected';
+    }
+  }
+
+  String _getActivityTitle(UserActivity activity) {
+    switch (activity.type) {
+      case ActivityType.connectionRequest:
+        return 'New connection request';
+      case ActivityType.connectionAccepted:
+        return 'Connection accepted';
+      case ActivityType.connectionDeclined:
+        return 'Connection declined';
+      case ActivityType.timelineShared:
+        return 'Timeline shared';
+      case ActivityType.eventCommented:
+        return 'Event commented';
+      case ActivityType.eventLiked:
+        return 'Event liked';
+      case ActivityType.contextCreated:
+        return 'Context created';
+      case ActivityType.milestoneReached:
+        return 'Milestone reached';
+      case ActivityType.relationshipTerminated:
+        return 'Relationship terminated';
+      case ActivityType.contentArchived:
+        return 'Content archived';
+      case ActivityType.contentRedacted:
+        return 'Content redacted';
+      case ActivityType.contentBifurcated:
+        return 'Content bifurcated';
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        return '${difference.inMinutes} minutes ago';
+      }
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+}

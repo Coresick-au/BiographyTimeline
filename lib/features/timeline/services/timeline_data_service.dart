@@ -6,6 +6,7 @@ import '../../../shared/models/context.dart';
 import '../../../shared/models/geo_location.dart';
 import '../../../shared/models/user.dart';
 import '../services/timeline_renderer_interface.dart';
+import '../../social/services/privacy_settings_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// Timeline data service for managing events, contexts, and data operations
@@ -13,6 +14,7 @@ class TimelineDataService {
   final List<TimelineEvent> _events = [];
   final List<Context> _contexts = [];
   final Map<String, List<TimelineEvent>> _clusteredEvents = {};
+  final PrivacySettingsService _privacyService = PrivacySettingsService();
   
   // Stream controllers for reactive updates
   final _eventsController = StreamController<List<TimelineEvent>>.broadcast();
@@ -25,10 +27,12 @@ class TimelineDataService {
   DateTime? _startDate;
   DateTime? _endDate;
   String _eventFilter = 'all'; // all, photos, milestones, text
+  String? _currentViewerId; // ID of user viewing the timeline
+  String? _timelineOwnerId; // ID of user who owns the timeline
 
   // Getters
   List<TimelineEvent> get events => _getFilteredEvents();
-  List<Context> get contexts => List.unmodifiable(_contexts);
+  List<Context> get contexts => _getPrivacyFilteredContexts(_contexts);
   Map<String, List<TimelineEvent>> get clusteredEvents => Map.unmodifiable(_clusteredEvents);
   
   // Streams
@@ -43,155 +47,23 @@ class TimelineDataService {
   DateTime? get endDate => _endDate;
   String get eventFilter => _eventFilter;
 
-  /// Initialize the data service with sample data
-  Future<void> initialize() async {
-    if (_events.isEmpty) {
-      _createSampleData();
-      _updateStreams();
-    }
+  TimelineDataService() {
+    _initializeSampleData();
   }
 
-  /// Create sample data for testing
-  void _createSampleData() {
+  /// Initialize sample data for testing
+  void _initializeSampleData() {
     final now = DateTime.now();
-    
-    // Create sample contexts
-    _contexts.addAll([
-      Context(
-        id: 'context-1',
-        ownerId: 'user-1',
-        type: ContextType.person,
-        name: 'Personal Timeline',
-        moduleConfiguration: {},
-        themeId: 'default',
-        createdAt: now.subtract(const Duration(days: 365)),
-        updatedAt: now,
-      ),
-      Context(
-        id: 'context-2',
-        ownerId: 'user-1',
-        type: ContextType.person,
-        name: 'Career Journey',
-        moduleConfiguration: {},
-        themeId: 'career',
-        createdAt: now.subtract(const Duration(days: 200)),
-        updatedAt: now,
-      ),
-    ]);
 
-    // Create sample events
-    _events.addAll([
-      TimelineEvent.create(
-        id: 'event-1',
-        contextId: 'context-1',
-        ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 30)),
-        eventType: 'photo',
-        title: 'Summer Vacation',
-        description: 'Beautiful sunset at the beach with friends and family. Amazing memories created during this wonderful trip.',
-        location: GeoLocation(
-          latitude: 37.7749,
-          longitude: -122.4194,
-          locationName: 'San Francisco, CA',
-        ),
-      ),
-      TimelineEvent.create(
-        id: 'event-2',
-        contextId: 'context-2',
-        ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 20)),
-        eventType: 'milestone',
-        title: 'Started New Job',
-        description: 'First day at the new company. Excited about this new opportunity and the challenges ahead.',
-      ),
-      TimelineEvent.create(
-        id: 'event-3',
-        contextId: 'context-1',
-        ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 15)),
-        eventType: 'photo',
-        title: 'Weekend Adventure',
-        description: 'Hiking in the mountains. The views were breathtaking and the weather was perfect.',
-        location: GeoLocation(
-          latitude: 37.8651,
-          longitude: -119.5383,
-          locationName: 'Yosemite National Park',
-        ),
-      ),
-      TimelineEvent.create(
-        id: 'event-4',
-        contextId: 'context-2',
-        ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 10)),
-        eventType: 'text',
-        title: 'Project Milestone',
-        description: 'Successfully completed the first phase of the major project. Team celebration followed.',
-      ),
-      TimelineEvent.create(
-        id: 'event-5',
-        contextId: 'context-1',
-        ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 5)),
-        eventType: 'photo',
-        title: 'Family Gathering',
-        description: 'Wonderful reunion with extended family. So great to see everyone together again.',
-        location: GeoLocation(
-          latitude: 34.0522,
-          longitude: -118.2437,
-          locationName: 'Los Angeles, CA',
-        ),
-      ),
-      TimelineEvent.create(
-        id: 'event-6',
-        contextId: 'context-2',
-        ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 3)),
-        eventType: 'milestone',
-        title: 'Promotion!',
-        description: 'Well-deserved promotion after months of hard work and dedication to the team.',
-      ),
-      TimelineEvent.create(
-        id: 'event-7',
-        contextId: 'context-1',
-        ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 1)),
-        eventType: 'text',
-        title: 'Weekend Reflection',
-        description: 'Time to pause and reflect on the journey so far. Grateful for all the experiences and people in my life.',
-      ),
-    ]);
-
-    // Create some clusters for demonstration
-    _clusteredEvents['Recent'] = _events.where((e) => 
-      e.timestamp.isAfter(now.subtract(const Duration(days: 7)))
-    ).toList();
-    
-    _clusteredEvents['This Month'] = _events.where((e) => 
-      e.timestamp.isAfter(now.subtract(const Duration(days: 30)))
-    ).toList();
-    
-    _clusteredEvents['Career'] = _events.where((e) => 
-      e.contextId == 'context-2'
-    ).toList();
-    
-    _clusteredEvents['Personal'] = _events.where((e) => 
-      e.contextId == 'context-1'
-    ).toList();
-  }
-
-  /// Load sample data (will be replaced with real data loading)
-  Future<void> _loadSampleData() async {
-    final now = DateTime.now();
-    
     // Sample contexts
     _contexts.addAll([
       Context(
         id: 'context-1',
         ownerId: 'user-1',
         type: ContextType.person,
-        name: 'Personal Timeline',
+        name: 'Personal Journey',
         moduleConfiguration: {},
-        themeId: 'default',
+        themeId: 'personal',
         createdAt: now.subtract(const Duration(days: 365)),
         updatedAt: now,
       ),
@@ -251,9 +123,9 @@ class TimelineDataService {
         title: 'Mountain Hiking',
         description: 'Reached the summit after a long hike',
         location: GeoLocation(
-          latitude: 37.8651,
-          longitude: -119.5383,
-          locationName: 'Yosemite National Park',
+          latitude: 39.7392,
+          longitude: -104.9903,
+          locationName: 'Denver, CO',
         ),
       ),
       TimelineEvent.create(
@@ -261,23 +133,19 @@ class TimelineDataService {
         contextId: 'context-3',
         ownerId: 'user-1',
         timestamp: now.subtract(const Duration(days: 10)),
-        eventType: 'text',
+        eventType: 'milestone',
         title: 'Pet Birthday',
-        description: 'Celebrated my pet\'s 5th birthday',
+        description: 'Celebrating our furry friend\'s special day',
       ),
       TimelineEvent.create(
         id: 'event-5',
-        contextId: 'context-2',
+        contextId: 'context-1',
         ownerId: 'user-1',
         timestamp: now.subtract(const Duration(days: 5)),
-        eventType: 'photo',
-        title: 'Weekend Adventure',
-        description: 'Exploring new trails',
-        location: GeoLocation(
-          latitude: 37.7749,
-          longitude: -122.4194,
-          locationName: 'San Francisco, CA',
-        ),
+        eventType: 'text',
+        title: 'Reflection',
+        description: 'Thinking about the journey so far',
+        privacyLevel: PrivacyLevel.private,
       ),
     ]);
 
@@ -288,6 +156,9 @@ class TimelineDataService {
   /// Get filtered events based on current settings
   List<TimelineEvent> _getFilteredEvents() {
     var filteredEvents = List<TimelineEvent>.from(_events);
+
+    // Apply privacy filtering first
+    filteredEvents = _getPrivacyFilteredEvents(filteredEvents);
 
     // Filter by private events
     if (!_showPrivateEvents) {
@@ -325,85 +196,50 @@ class TimelineDataService {
         filteredEvents = filteredEvents.where((event) => 
           event.eventType == 'text').toList();
         break;
+      case 'all':
+      default:
+        // No filtering
+        break;
     }
 
     return filteredEvents;
   }
 
-  /// Generate event clusters
+  /// Generate event clusters based on time proximity
   void _generateClusters() {
     _clusteredEvents.clear();
     
-    // Cluster by month
-    final eventsByMonth = <String, List<TimelineEvent>>{};
-    for (final event in _getFilteredEvents()) {
-      final monthKey = '${event.timestamp.year}-${event.timestamp.month.toString().padLeft(2, '0')}';
-      eventsByMonth.putIfAbsent(monthKey, () => []).add(event);
+    final filteredEvents = _getFilteredEvents();
+    if (filteredEvents.isEmpty) return;
+
+    // Sort events by timestamp
+    final sortedEvents = List<TimelineEvent>.from(filteredEvents)
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+    // Group events into clusters based on time proximity (within 7 days)
+    List<TimelineEvent> currentCluster = [sortedEvents.first];
+    
+    for (int i = 1; i < sortedEvents.length; i++) {
+      final currentEvent = sortedEvents[i];
+      final previousEvent = sortedEvents[i - 1];
+      
+      final timeDifference = currentEvent.timestamp.difference(previousEvent.timestamp);
+      
+      if (timeDifference.inDays <= 7) {
+        currentCluster.add(currentEvent);
+      } else {
+        // Save current cluster and start a new one
+        if (currentCluster.isNotEmpty) {
+          _clusteredEvents['cluster-${_clusteredEvents.length}'] = List.from(currentCluster);
+        }
+        currentCluster = [currentEvent];
+      }
     }
     
-    _clusteredEvents.addAll(eventsByMonth);
-  }
-
-  /// Update all streams
-  void _updateStreams() {
-    _eventsController.add(events);
-    _contextsController.add(contexts);
-    _clustersController.add(clusteredEvents);
-  }
-
-  /// Add new event
-  Future<void> addEvent(TimelineEvent event) async {
-    _events.add(event);
-    _generateClusters();
-    _updateStreams();
-  }
-
-  /// Add multiple events
-  Future<void> addEvents(List<TimelineEvent> events) async {
-    _events.addAll(events);
-    _generateClusters();
-    _updateStreams();
-  }
-
-  /// Update existing event
-  Future<void> updateEvent(TimelineEvent event) async {
-    final index = _events.indexWhere((e) => e.id == event.id);
-    if (index != -1) {
-      _events[index] = event;
-      _generateClusters();
-      _updateStreams();
+    // Save the last cluster
+    if (currentCluster.isNotEmpty) {
+      _clusteredEvents['cluster-${_clusteredEvents.length}'] = List.from(currentCluster);
     }
-  }
-
-  /// Remove event
-  Future<void> removeEvent(String eventId) async {
-    _events.removeWhere((event) => event.id == eventId);
-    _generateClusters();
-    _updateStreams();
-  }
-
-  /// Add new context
-  Future<void> addContext(Context context) async {
-    _contexts.add(context);
-    _updateStreams();
-  }
-
-  /// Update existing context
-  Future<void> updateContext(Context context) async {
-    final index = _contexts.indexWhere((c) => c.id == context.id);
-    if (index != -1) {
-      _contexts[index] = context;
-      _updateStreams();
-    }
-  }
-
-  /// Remove context
-  Future<void> removeContext(String contextId) async {
-    _contexts.removeWhere((context) => context.id == contextId);
-    // Also remove events from this context
-    _events.removeWhere((event) => event.contextId == contextId);
-    _generateClusters();
-    _updateStreams();
   }
 
   /// Update settings
@@ -420,114 +256,88 @@ class TimelineDataService {
     if (endDate != null) _endDate = endDate;
     if (eventFilter != null) _eventFilter = eventFilter;
     
+    _notifyDataChanged();
+  }
+
+  /// Notify listeners of data changes
+  void _notifyDataChanged() {
     _generateClusters();
-    _updateStreams();
+    _eventsController.add(_getFilteredEvents());
+    _contextsController.add(_getPrivacyFilteredContexts(_contexts));
+    _clustersController.add(Map.unmodifiable(_clusteredEvents));
   }
 
-  /// Get events for specific context
-  List<TimelineEvent> getEventsForContext(String contextId) {
-    return _events.where((event) => event.contextId == contextId).toList();
+  // CRUD operations
+  Future<void> addEvent(TimelineEvent event) async {
+    _events.add(event);
+    _notifyDataChanged();
   }
 
-  /// Get events in date range
-  List<TimelineEvent> getEventsInRange(DateTime start, DateTime end) {
-    return _events.where((event) => 
-      event.timestamp.isAfter(start.subtract(const Duration(days: 1))) &&
-      event.timestamp.isBefore(end.add(const Duration(days: 1)))
-    ).toList();
-  }
-
-  /// Search events
-  List<TimelineEvent> searchEvents(String query) {
-    if (query.isEmpty) return events;
-    
-    final lowerQuery = query.toLowerCase();
-    return events.where((event) => 
-      (event.title?.toLowerCase().contains(lowerQuery) ?? false) ||
-      (event.description?.toLowerCase().contains(lowerQuery) ?? false) ||
-      (event.location?.locationName?.toLowerCase().contains(lowerQuery) ?? false)
-    ).toList();
-  }
-
-  /// Get timeline statistics
-  Map<String, dynamic> getStatistics() {
-    final filteredEvents = events;
-    final eventsByType = <String, int>{};
-    final eventsByContext = <String, int>{};
-    
-    for (final event in filteredEvents) {
-      // Count by type
-      eventsByType[event.eventType] = (eventsByType[event.eventType] ?? 0) + 1;
-      
-      // Count by context
-      eventsByContext[event.contextId] = (eventsByContext[event.contextId] ?? 0) + 1;
+  Future<void> updateEvent(TimelineEvent event) async {
+    final index = _events.indexWhere((e) => e.id == event.id);
+    if (index != -1) {
+      _events[index] = event;
+      _notifyDataChanged();
     }
+  }
+
+  Future<void> removeEvent(String eventId) async {
+    _events.removeWhere((event) => event.id == eventId);
+    _notifyDataChanged();
+  }
+
+  Future<void> addContext(Context context) async {
+    _contexts.add(context);
+    _notifyDataChanged();
+  }
+
+  Future<void> updateContext(Context context) async {
+    final index = _contexts.indexWhere((c) => c.id == context.id);
+    if (index != -1) {
+      _contexts[index] = context;
+      _notifyDataChanged();
+    }
+  }
+
+  Future<void> removeContext(String contextId) async {
+    _contexts.removeWhere((context) => context.id == contextId);
+    _events.removeWhere((event) => event.contextId == contextId);
+    _notifyDataChanged();
+  }
+
+  /// Import data from external source
+  Future<void> importData(Map<String, dynamic> data) async {
+    // Implementation for importing data
+    // This would parse the data and add events/contexts
+    _notifyDataChanged();
+  }
+
+  /// Get statistics about the timeline
+  Map<String, dynamic> getStatistics() {
+    final filteredEvents = _getFilteredEvents();
     
     return {
       'totalEvents': filteredEvents.length,
-      'totalContexts': _contexts.length,
-      'eventsByType': eventsByType,
-      'eventsByContext': eventsByContext,
-      'earliestDate': filteredEvents.isEmpty ? null : filteredEvents.map((e) => e.timestamp).reduce((a, b) => a.isBefore(b) ? a : b),
-      'latestDate': filteredEvents.isEmpty ? null : filteredEvents.map((e) => e.timestamp).reduce((a, b) => a.isAfter(b) ? a : b),
-      'hasLocations': filteredEvents.where((e) => e.location != null).length,
+      'totalContexts': _getPrivacyFilteredContexts(_contexts).length,
+      'photoEvents': filteredEvents.where((e) => e.eventType == 'photo').length,
+      'milestoneEvents': filteredEvents.where((e) => e.eventType == 'milestone').length,
+      'textEvents': filteredEvents.where((e) => e.eventType == 'text').length,
+      'privateEvents': filteredEvents.where((e) => e.privacyLevel == PrivacyLevel.private).length,
+      'publicEvents': filteredEvents.where((e) => e.privacyLevel == PrivacyLevel.public).length,
+      'clusters': _clusteredEvents.length,
+      'dateRange': filteredEvents.isNotEmpty 
+        ? {
+            'start': filteredEvents.first.timestamp.toIso8601String(),
+            'end': filteredEvents.last.timestamp.toIso8601String(),
+          }
+        : null,
     };
   }
 
-  /// Export data
-  Map<String, dynamic> exportData() {
-    return {
-      'events': _events.map((e) => e.toJson()).toList(),
-      'contexts': _contexts.map((c) => c.toJson()).toList(),
-      'settings': {
-        'showPrivateEvents': _showPrivateEvents,
-        'activeContextId': _activeContextId,
-        'startDate': _startDate?.toIso8601String(),
-        'endDate': _endDate?.toIso8601String(),
-        'eventFilter': _eventFilter,
-      },
-      'exportedAt': DateTime.now().toIso8601String(),
-    };
-  }
-
-  /// Import data
-  Future<void> importData(Map<String, dynamic> data) async {
-    try {
-      // Clear existing data
-      _events.clear();
-      _contexts.clear();
-      
-      // Import contexts
-      if (data['contexts'] != null) {
-        for (final contextData in data['contexts']) {
-          final context = Context.fromJson(contextData);
-          _contexts.add(context);
-        }
-      }
-      
-      // Import events
-      if (data['events'] != null) {
-        for (final eventData in data['events']) {
-          final event = TimelineEvent.fromJson(eventData);
-          _events.add(event);
-        }
-      }
-      
-      // Import settings
-      if (data['settings'] != null) {
-        final settings = data['settings'];
-        _showPrivateEvents = settings['showPrivateEvents'] ?? true;
-        _activeContextId = settings['activeContextId'];
-        _startDate = settings['startDate'] != null ? DateTime.parse(settings['startDate']) : null;
-        _endDate = settings['endDate'] != null ? DateTime.parse(settings['endDate']) : null;
-        _eventFilter = settings['eventFilter'] ?? 'all';
-      }
-      
-      _generateClusters();
-      _updateStreams();
-    } catch (e) {
-      throw Exception('Failed to import data: $e');
-    }
+  /// Initialize the service with data
+  Future<void> initialize() async {
+    // Load data from persistent storage if needed
+    _notifyDataChanged();
   }
 
   /// Dispose resources
@@ -536,39 +346,141 @@ class TimelineDataService {
     _contextsController.close();
     _clustersController.close();
   }
+
+  /// Set the current viewer and timeline owner for privacy filtering
+  void setPrivacyContext(String viewerId, String ownerId) {
+    _currentViewerId = viewerId;
+    _timelineOwnerId = ownerId;
+    _notifyDataChanged();
+  }
+
+  /// Check if a viewer can access the timeline
+  bool canAccessTimeline() {
+    if (_currentViewerId == null || _timelineOwnerId == null) return true;
+    if (_currentViewerId == _timelineOwnerId) return true;
+    
+    return _privacyService.canAccessTimeline(_currentViewerId!, _timelineOwnerId!);
+  }
+
+  /// Get events filtered by privacy settings
+  List<TimelineEvent> _getPrivacyFilteredEvents(List<TimelineEvent> events) {
+    if (_currentViewerId == null || _timelineOwnerId == null) return events;
+    if (_currentViewerId == _timelineOwnerId) return events;
+    
+    if (!canAccessTimeline()) return [];
+    
+    final accessibleEventIds = _privacyService.getAccessibleEvents(
+      _currentViewerId!, 
+      _timelineOwnerId!
+    );
+    
+    if (accessibleEventIds.isEmpty) return events;
+    
+    return events.where((event) => accessibleEventIds.contains(event.id)).toList();
+  }
+
+  /// Get contexts filtered by privacy settings
+  List<Context> _getPrivacyFilteredContexts(List<Context> contexts) {
+    if (_currentViewerId == null || _timelineOwnerId == null) return contexts;
+    if (_currentViewerId == _timelineOwnerId) return contexts;
+    
+    if (!canAccessTimeline()) return [];
+    
+    final accessibleContextIds = _privacyService.getAccessibleContexts(
+      _currentViewerId!, 
+      _timelineOwnerId!
+    );
+    
+    if (accessibleContextIds.isEmpty) return contexts;
+    
+    return contexts.where((context) => accessibleContextIds.contains(context.id)).toList();
+  }
+
+  /// Request access to specific events
+  Future<bool> requestEventAccess(String eventId) async {
+    if (_currentViewerId == null || _timelineOwnerId == null) return false;
+    
+    final settings = _privacyService.getSettings(_timelineOwnerId!);
+    if (!settings.allowEventRequests) return false;
+    
+    // In a real implementation, this would send a notification to the timeline owner
+    // For now, return true to indicate the request was sent
+    return true;
+  }
+
+  /// Request access to specific contexts
+  Future<bool> requestContextAccess(String contextId) async {
+    if (_currentViewerId == null || _timelineOwnerId == null) return false;
+    
+    final settings = _privacyService.getSettings(_timelineOwnerId!);
+    if (!settings.allowContextRequests) return false;
+    
+    // In a real implementation, this would send a notification to the timeline owner
+    // For now, return true to indicate the request was sent
+    return true;
+  }
+
+  /// Export timeline data
+  Map<String, dynamic> exportData() {
+    return {
+      'events': _events.map((e) => {
+        'id': e.id,
+        'contextId': e.contextId,
+        'ownerId': e.ownerId,
+        'timestamp': e.timestamp.toIso8601String(),
+        'eventType': e.eventType,
+        'title': e.title,
+        'description': e.description,
+        'privacyLevel': e.privacyLevel.toString(),
+      }).toList(),
+      'contexts': _contexts.map((c) => {
+        'id': c.id,
+        'ownerId': c.ownerId,
+        'type': c.type.toString(),
+        'name': c.name,
+        'createdAt': c.createdAt.toIso8601String(),
+        'updatedAt': c.updatedAt.toIso8601String(),
+      }).toList(),
+      'clusters': _clusteredEvents.map((key, value) => 
+        MapEntry(key, value.map((e) => e.id).toList())),
+      'exportDate': DateTime.now().toIso8601String(),
+      'version': '1.0.0',
+    };
+  }
 }
 
-/// Provider for timeline data service
-final timelineDataProvider = Provider<TimelineDataService>((ref) {
-  final service = TimelineDataService();
-  // Initialize the service
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    service.initialize();
-  });
-  return service;
+/// Provider for TimelineDataService instance
+final timelineServiceProvider = Provider<TimelineDataService>((ref) {
+  return TimelineDataService();
+});
+
+/// Provider for timeline data operations
+final timelineDataProvider = StateNotifierProvider<TimelineDataNotifier, AsyncValue<void>>((ref) {
+  final service = ref.watch(timelineServiceProvider);
+  return TimelineDataNotifier(service);
 });
 
 /// Provider for events stream
 final timelineEventsStreamProvider = StreamProvider<List<TimelineEvent>>((ref) {
-  final service = ref.watch(timelineDataProvider);
+  final service = ref.watch(timelineServiceProvider);
   return service.eventsStream;
 });
 
 /// Provider for contexts stream
 final timelineContextsStreamProvider = StreamProvider<List<Context>>((ref) {
-  final service = ref.watch(timelineDataProvider);
+  final service = ref.watch(timelineServiceProvider);
   return service.contextsStream;
 });
 
 /// Provider for clusters stream
 final timelineClustersStreamProvider = StreamProvider<Map<String, List<TimelineEvent>>>((ref) {
-  final service = ref.watch(timelineDataProvider);
+  final service = ref.watch(timelineServiceProvider);
   return service.clustersStream;
 });
 
 /// Provider for timeline statistics
 final timelineStatsProvider = Provider<Map<String, dynamic>>((ref) {
-  final service = ref.watch(timelineDataProvider);
+  final service = ref.watch(timelineServiceProvider);
   return service.getStatistics();
 });
 
@@ -663,10 +575,26 @@ class TimelineDataNotifier extends StateNotifier<AsyncValue<void>> {
       eventFilter: eventFilter,
     );
   }
+
+  void setPrivacyContext(String viewerId, String ownerId) {
+    _service.setPrivacyContext(viewerId, ownerId);
+  }
+
+  bool canAccessTimeline() {
+    return _service.canAccessTimeline();
+  }
+
+  Future<bool> requestEventAccess(String eventId) async {
+    return _service.requestEventAccess(eventId);
+  }
+
+  Future<bool> requestContextAccess(String contextId) async {
+    return _service.requestContextAccess(contextId);
+  }
 }
 
 /// Provider for timeline data notifier
 final timelineDataNotifierProvider = StateNotifierProvider<TimelineDataNotifier, AsyncValue<void>>((ref) {
-  final service = ref.watch(timelineDataProvider);
+  final service = ref.watch(timelineServiceProvider);
   return TimelineDataNotifier(service);
 });

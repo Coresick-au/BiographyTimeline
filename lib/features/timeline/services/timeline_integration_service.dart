@@ -297,7 +297,7 @@ class TimelineIntegrationEvent {
 
 /// Provider for integration service
 final timelineIntegrationServiceProvider = Provider<TimelineIntegrationService>((ref) {
-  final dataService = ref.watch(timelineDataProvider);
+  final dataService = ref.watch(timelineServiceProvider);
   return TimelineIntegrationService(dataService);
 });
 
