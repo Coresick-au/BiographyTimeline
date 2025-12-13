@@ -381,70 +381,55 @@ void main() {
   });
 }
 
-});
-}
-
-// =========================================================================
-// PROPERTY 21: GHOST CAMERA REFERENCE SELECTION
-// =========================================================================
-
-group('Property 21: Ghost Camera Reference Selection', () {
-  testWidgets('Reference selector displays photos in grid', (tester) async {
-    // Implementation would test photo loading
-  });
-  
-  testWidgets('Reference selector filters photos by search', (tester) async {
-    // Implementation would test search functionality
-  });
-  
-  testWidgets('Reference selector sorts photos correctly', (tester) async {
-    // Implementation would test sorting options
-  });
-});
-
-// =========================================================================
-// PROPERTY 22: GHOST CAMERA OVERLAY FIDELITY
-// =========================================================================
-
-group('Property 22: Ghost Camera Overlay Fidelity', () {
-  test('Overlay maintains aspect ratio', () async {
-    // Implementation would test aspect ratio preservation
-  });
-  
-  test('Overlay positioning is accurate', () async {
-    // Implementation would test positioning accuracy
-  });
-  
-  test('Overlay scaling is smooth', () async {
-    // Implementation would test scaling behavior
-  });
-});
-
-// =========================================================================
-// PROPERTY 23: GHOST CAMERA OPACITY CONTROL
-// =========================================================================
-
-group('Property 23: Ghost Camera Opacity Control', () {
-  test('Opacity slider responds correctly', () async {
-    // Implementation would test slider interaction
-  });
-  
-  test('Opacity changes are real-time', () async {
-    // Implementation would test real-time updates
-  });
-  
-  test('Opacity persists between sessions', () async {
-    // Implementation would test persistence
-  });
-});
-
 // =========================================================================
 // MAIN TEST RUNNER
 // =========================================================================
 
 void main() {
   // Property 20 tests are already in the main group above
-  // Additional property tests are defined as separate groups
+  
+  // Additional property tests
+  group('Property 21: Ghost Camera Reference Selection', () {
+    testWidgets('Reference selector displays photos in grid', (tester) async {
+      // Implementation would test photo loading
+    });
+    
+    testWidgets('Reference selector filters photos by search', (tester) async {
+      // Implementation would test search functionality
+    });
+    
+    testWidgets('Reference selector sorts photos correctly', (tester) async {
+      // Implementation would test sorting options
+    });
+  });
+
+  group('Property 22: Ghost Camera Overlay Fidelity', () {
+    test('Overlay maintains aspect ratio', () async {
+      // Implementation would test aspect ratio preservation
+    });
+    
+    test('Overlay positioning is accurate', () async {
+      // Implementation would test positioning accuracy
+    });
+    
+    test('Overlay scaling is smooth', () async {
+      // Implementation would test scaling behavior
+    });
+  });
+
+  group('Property 23: Ghost Camera Opacity Control', () {
+    test('Opacity slider responds correctly', () async {
+      // Implementation would test slider interaction
+    });
+    
+    test('Opacity changes are real-time', () async {
+      // Implementation would test real-time updates
+    });
+    
+    test('Opacity persists between sessions', () async {
+      // Implementation would test persistence
+    });
+  });
 }
 
 // Helper extension for testing
