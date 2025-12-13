@@ -7,24 +7,29 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:timelinebiographyapp/main.dart';
+import '../lib/app/app.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('Timeline app loads successfully', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const ProviderScope(child: UsersTimelineApp()));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // Wait for initial frame
     await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    
+    // The app should show either loading state or the main app
+    // Both are valid states during initialization
+    expect(find.byType(MaterialApp), findsOneWidget);
+    
+    // Wait a bit more for potential state changes
+    await tester.pump(const Duration(milliseconds: 100));
+    
+    // Verify that the app structure is present
+    expect(find.byType(MaterialApp), findsOneWidget);
+    
+    // The app should load successfully without throwing exceptions
+    // This is a basic smoke test to ensure the app structure is sound
   });
 }

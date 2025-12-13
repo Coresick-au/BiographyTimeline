@@ -7,9 +7,7 @@ import '../services/timeline_integration_service.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import '../../../shared/models/geo_location.dart';
-import '../../../shared/widgets/modern/glassmorphism_card.dart';
-import '../../../shared/widgets/modern/animated_buttons.dart';
-import '../../../shared/widgets/modern/shimmer_loading.dart';
+import '../../../shared/design_system/design_system.dart';
 
 /// Main timeline screen with view switcher and controls
 class TimelineScreen extends ConsumerStatefulWidget {
@@ -139,6 +137,10 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       _events = dataService.events;
       _contexts = dataService.contexts;
       _clusteredEvents = dataService.clusteredEvents;
+      
+      // Debug output
+      debugPrint('Timeline Debug: Loaded ${_events.length} events and ${_contexts.length} contexts');
+      debugPrint('Timeline Debug: Events: ${_events.map((e) => e.title).join(', ')}');
 
       // Create timeline render data
       final timelineData = TimelineRenderData(
@@ -198,26 +200,15 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Modern shimmer loading skeleton
-              ShimmerLoading(
-                child: Container(
-                  width: 200,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
+              // Modern loading indicator
+              CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(height: 16),
-              ShimmerLoading(
-                child: Container(
-                  width: 150,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+              SizedBox(height: DesignTokens.space4),
+              Text(
+                'Loading Timeline...',
+                style: DesignTokens.bodyLarge.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -253,46 +244,44 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           _getViewModeTitle(_currentViewMode),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 2),
                         Text(
                           '${currentEvents.length} events • ${currentContexts.length} contexts',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(height: 6),
                         Row(
                           children: [
                             ModernAnimatedButton(
                               text: 'Add Event',
                               onPressed: _showAddEventDialog,
-                              primaryColor: const Color(0xFF667EEA),
-                              height: 36,
-                              borderRadius: 18,
-                              enableGradient: false,
+                              primaryColor: Colors.white,
+                              height: DesignTokens.space8,
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: DesignTokens.space2),
                             ModernOutlineButton(
                               text: 'Settings',
                               onPressed: _showConfigurationDialog,
                               textColor: Colors.white,
                               borderColor: Colors.white,
-                              height: 36,
-                              borderRadius: 18,
+                              height: DesignTokens.space8,
                             ),
                           ],
                         ),
@@ -335,7 +324,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       floatingActionButton: ModernFloatingActionButton(
         onPressed: _showAddEventDialog,
         child: const Icon(Icons.add),
-        backgroundColor: const Color(0xFF667EEA),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         enableRotation: true,
       ),
     );
@@ -346,6 +335,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       return _buildErrorState('Timeline renderer not initialized');
     }
 
+    debugPrint('Timeline Debug: _buildTimelineContent called with ${_events.length} events');
+    
     if (_events.isEmpty) {
       return _buildEmptyState();
     }
@@ -367,7 +358,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
         // TODO: Switch to context
         debugPrint('Tapped context: ${context.name}');
       },
-      scrollController: _scrollController,
+      // Don't pass scrollController to avoid conflicts with CustomScrollView
+      scrollController: null,
     );
   }
 
@@ -399,7 +391,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           ModernAnimatedButton(
             text: 'Add Event',
             onPressed: _showAddEventDialog,
-            primaryColor: const Color(0xFF667EEA),
+            primaryColor: Theme.of(context).colorScheme.primary,
           ),
         ],
       ),
@@ -435,7 +427,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           ModernAnimatedButton(
             text: 'Retry',
             onPressed: _initializeTimeline,
-            primaryColor: const Color(0xFF667EEA),
+            primaryColor: Theme.of(context).colorScheme.primary,
           ),
         ],
       ),
@@ -443,23 +435,70 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   void _showAddEventDialog() {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add Event'),
-        content: const Text('Event dialog would be implemented here'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Event Title',
+                hintText: 'Enter event title',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                hintText: 'Enter event description',
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              if (titleController.text.isNotEmpty) {
+                _addNewEvent(titleController.text, descriptionController.text);
+              }
+              Navigator.of(context).pop();
+            },
             child: const Text('Add'),
           ),
         ],
       ),
     );
+  }
+  
+  void _addNewEvent(String title, String description) {
+    final dataService = ref.read(timelineServiceProvider);
+    
+    final newEvent = TimelineEvent.create(
+      id: 'event-${DateTime.now().millisecondsSinceEpoch}',
+      contextId: _contexts.isNotEmpty ? _contexts.first.id : 'context-1',
+      ownerId: 'user-1',
+      timestamp: DateTime.now(),
+      eventType: 'text',
+      title: title,
+      description: description,
+    );
+    
+    dataService.addEvent(newEvent);
+    
+    // Refresh the timeline
+    _initializeTimeline();
   }
 
   void _showConfigurationDialog() {

@@ -8,15 +8,13 @@ import '../../../shared/models/geo_location.dart';
 import '../../../shared/models/user.dart';
 
 /// Bento Grid timeline renderer with visual life overview dashboard
-class BentoGridTimelineRenderer extends ITimelineRenderer {
+class BentoGridTimelineRenderer extends BaseTimelineRenderer {
   // Grid configuration
   static const int _gridColumns = 4;
   static const int _gridRows = 3;
   final List<GridItem> _gridItems = [];
   
   // Data
-  TimelineRenderConfig? _config;
-  TimelineRenderData? _data;
   List<TimelineEvent> _sortedEvents = [];
   Map<String, List<TimelineEvent>> _eventsByCategory = {};
   
@@ -29,8 +27,12 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
   DateTime? _earliestDate;
   DateTime? _latestDate;
   
-  BentoGridTimelineRenderer() {
+  BentoGridTimelineRenderer(
+    TimelineRenderConfig config,
+    TimelineRenderData data,
+  ) : super(config, data) {
     _initializeGrid();
+    _calculateStatistics();
   }
 
   void _initializeGrid() {
@@ -103,60 +105,7 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
     ]);
   }
 
-  @override
-  TimelineViewMode get viewMode => TimelineViewMode.bentoGrid;
-  
-  @override
-  String get displayName => 'Bento Grid';
-  
-  @override
-  IconData get icon => Icons.grid_view;
-  
-  @override
-  String get description => 'Visual dashboard overview of your life timeline';
-  
-  @override
-  bool get supportsInfiniteScroll => false;
-  
-  @override
-  bool get supportsZoom => false;
-  
-  @override
-  bool get supportsFiltering => true;
-  
-  @override
-  bool get supportsSearch => true;
-  
-  @override
-  List<TimelineViewMode> get availableViewModes => [
-    TimelineViewMode.bentoGrid,
-    TimelineViewMode.chronological,
-    TimelineViewMode.clustered,
-    TimelineViewMode.lifeStream,
-    TimelineViewMode.mapView,
-    TimelineViewMode.story,
-  ];
-  
-  @override
-  Future<void> initialize(TimelineRenderConfig config) async {
-    _config = config;
-    // Data will be updated via updateData call
-  }
-  
-  @override
-  TimelineRenderConfig get config => _config ?? TimelineRenderConfig(viewMode: viewMode);
-  
-  @override
-  TimelineRenderData get data => _data ?? TimelineRenderData(
-    events: [],
-    contexts: [],
-    earliestDate: DateTime.now(),
-    latestDate: DateTime.now(),
-    clusteredEvents: {},
-  );
-  
-  @override
-  bool get isReady => _config != null && _data != null;
+
   
   @override
   void dispose() {
@@ -166,6 +115,7 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
     _eventTypeStats.clear();
     _locationStats.clear();
     _monthlyStats.clear();
+    super.dispose();
   }
   
   @override
@@ -178,7 +128,7 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
   }) {
     return Builder(
       builder: (context) {
-        if (_data?.events.isEmpty ?? true) {
+        if (data.events.isEmpty) {
           return _buildEmptyState(context);
         }
         
@@ -682,12 +632,12 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
   }
   
   void _calculateStatistics() {
-    if (_data?.events.isEmpty ?? true) {
+    if (data.events.isEmpty) {
       _resetStatistics();
       return;
     }
     
-    _sortedEvents = List<TimelineEvent>.from(_data!.events)
+    _sortedEvents = List<TimelineEvent>.from(data.events)
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
     
     _totalEvents = _sortedEvents.length;
@@ -797,14 +747,14 @@ class BentoGridTimelineRenderer extends ITimelineRenderer {
   }
   
   @override
-  Future<void> updateData(TimelineRenderData data) async {
-    _data = data;
+  Future<void> onDataUpdated() async {
     _calculateStatistics();
+    await super.onDataUpdated();
   }
   
   @override
-  Future<void> updateConfig(TimelineRenderConfig config) async {
-    _config = config;
+  Future<void> onConfigUpdated() async {
+    await super.onConfigUpdated();
   }
   
   @override

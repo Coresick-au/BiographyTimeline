@@ -63,7 +63,7 @@ class TimelineService {
   /// Add timeline events
   Future<void> addEvents(List<TimelineEvent> events) async {
     _events.addAll(events);
-    _events.sort((a, b) => a.occurredAt.compareTo(b.occurredAt));
+    _events.sort((a, b) => a.timestamp.compareTo(b.timestamp));
     await _notifyDataChanged();
   }
 

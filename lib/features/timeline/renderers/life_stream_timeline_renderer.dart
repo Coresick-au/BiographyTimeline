@@ -8,7 +8,7 @@ import '../../../shared/models/geo_location.dart';
 import '../../../shared/models/user.dart';
 
 /// Life Stream timeline renderer with infinite scroll
-class LifeStreamTimelineRenderer extends ITimelineRenderer {
+class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
   final ScrollController _scrollController = ScrollController();
   final List<TimelineEvent> _visibleEvents = [];
   final Map<String, Widget> _eventCache = {};
@@ -18,69 +18,20 @@ class LifeStreamTimelineRenderer extends ITimelineRenderer {
   bool _isLoading = false;
   bool _hasMore = true;
   
-  TimelineRenderConfig? _config;
-  TimelineRenderData? _data;
-  BuildContext? _context;
-  
-  @override
-  TimelineViewMode get viewMode => TimelineViewMode.lifeStream;
-  
-  @override
-  String get displayName => 'Life Stream';
-  
-  @override
-  IconData get icon => Icons.stream;
-  
-  @override
-  String get description => 'Infinite scroll through your life events';
-  
-  @override
-  bool get supportsInfiniteScroll => true;
-  
-  @override
-  bool get supportsZoom => false;
-  
-  @override
-  bool get supportsFiltering => true;
-  
-  @override
-  bool get supportsSearch => true;
-  
-  @override
-  List<TimelineViewMode> get availableViewModes => [
-    TimelineViewMode.lifeStream,
-    TimelineViewMode.chronological,
-    TimelineViewMode.clustered,
-    TimelineViewMode.story,
-  ];
-  
-  @override
-  Future<void> initialize(TimelineRenderConfig config) async {
-    _config = config;
+  LifeStreamTimelineRenderer(
+    TimelineRenderConfig config,
+    TimelineRenderData data,
+  ) : super(config, data) {
     _scrollController.addListener(_onScroll);
     _resetPagination();
   }
-  
-  @override
-  TimelineRenderConfig get config => _config ?? TimelineRenderConfig(viewMode: viewMode);
-  
-  @override
-  TimelineRenderData get data => _data ?? TimelineRenderData(
-    events: [],
-    contexts: [],
-    earliestDate: DateTime.now(),
-    latestDate: DateTime.now(),
-    clusteredEvents: {},
-  );
-  
-  @override
-  bool get isReady => _config != null && _data != null;
   
   @override
   void dispose() {
     _scrollController.dispose();
     _eventCache.clear();
     _visibleEvents.clear();
+    super.dispose();
   }
   
   @override
@@ -93,15 +44,15 @@ class LifeStreamTimelineRenderer extends ITimelineRenderer {
   }) {
     return Builder(
       builder: (context) {
-        if (_data?.events.isEmpty ?? true) {
+        if (data.events.isEmpty) {
           return _buildEmptyState(context);
         }
         
         return Column(
           children: [
-            _buildHeader(context, _data!, _config!),
+            _buildHeader(context, data, config),
             Expanded(
-              child: _buildLifeStream(context, _data!, _config!),
+              child: _buildLifeStream(context, data, config, onEventTap, onEventLongPress, onDateTap, onContextTap),
             ),
             if (_isLoading) _buildLoadingIndicator(),
           ],
@@ -129,32 +80,36 @@ class LifeStreamTimelineRenderer extends ITimelineRenderer {
   }
   
   @override
-  Future<void> updateData(TimelineRenderData data) async {
-    _data = data;
+  Future<void> onDataUpdated() async {
     _resetPagination();
+    await super.onDataUpdated();
   }
   
   @override
-  Future<void> updateConfig(TimelineRenderConfig config) async {
-    _config = config;
+  Future<void> onConfigUpdated() async {
+    await super.onConfigUpdated();
   }
   
   @override
   Future<void> navigateToDate(DateTime date) async {
     // Find the first event on or after the target date
-    if (_data?.events.isEmpty ?? true) return;
+    if (data.events.isEmpty) return;
     
-    final targetEvent = _data!.events.firstWhere(
+    final targetEvent = data.events.firstWhere(
       (event) => event.timestamp.isAfter(date) || event.timestamp.isAtSameMomentAs(date),
-      orElse: () => _data!.events.last,
+      orElse: () => data.events.last,
     );
     
     // Scroll to the event (implementation would depend on scroll controller)
-    _scrollController.animateTo(
-      0, // Would calculate actual position
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    if (_scrollController.hasClients) {
+      await _scrollController.animateTo(
+        0, // Would calculate actual position
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+    
+    await super.navigateToDate(date);
   }
   
   @override
@@ -262,7 +217,15 @@ class LifeStreamTimelineRenderer extends ITimelineRenderer {
     );
   }
   
-  Widget _buildLifeStream(BuildContext context, TimelineRenderData data, TimelineRenderConfig config) {
+  Widget _buildLifeStream(
+    BuildContext context, 
+    TimelineRenderData data, 
+    TimelineRenderConfig config,
+    TimelineEventCallback? onEventTap,
+    TimelineEventCallback? onEventLongPress,
+    TimelineDateCallback? onDateTap,
+    TimelineContextCallback? onContextTap,
+  ) {
     if (_visibleEvents.isEmpty && !_isLoading) {
       _loadMoreEvents(data.events);
     }
@@ -282,13 +245,20 @@ class LifeStreamTimelineRenderer extends ITimelineRenderer {
           }
           
           final event = _visibleEvents[index];
-          return _buildEventCard(context, event, data.contexts, config);
+          return _buildEventCard(context, event, data.contexts, config, onEventTap, onEventLongPress);
         },
       ),
     );
   }
   
-  Widget _buildEventCard(BuildContext context, TimelineEvent event, List<Context> contexts, TimelineRenderConfig config) {
+  Widget _buildEventCard(
+    BuildContext context, 
+    TimelineEvent event, 
+    List<Context> contexts, 
+    TimelineRenderConfig config,
+    TimelineEventCallback? onEventTap,
+    TimelineEventCallback? onEventLongPress,
+  ) {
     final contextEntity = contexts.firstWhere(
       (ctx) => ctx.id == event.contextId,
       orElse: () => contexts.first,
@@ -310,7 +280,14 @@ class LifeStreamTimelineRenderer extends ITimelineRenderer {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => _showEventDetails(context, event, contextEntity),
+        onTap: () {
+          if (onEventTap != null) {
+            onEventTap(event);
+          } else {
+            _showEventDetails(context, event, contextEntity);
+          }
+        },
+        onLongPress: () => onEventLongPress?.call(event),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

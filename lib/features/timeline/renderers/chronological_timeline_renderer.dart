@@ -3,17 +3,11 @@ import 'dart:typed_data';
 import '../services/timeline_renderer_interface.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
-import '../../../shared/models/timeline_theme.dart';
-import '../../../core/templates/template_manager.dart';
-import '../../context/widgets/event_cards/personal_event_card.dart';
-import '../../context/widgets/event_cards/pet_event_card.dart';
-import '../../context/widgets/event_cards/project_event_card.dart';
-import '../../context/widgets/event_cards/business_event_card.dart';
+import '../../../shared/design_system/design_system.dart';
 
-/// Chronological timeline renderer with infinite scroll and context-aware rendering
+/// Chronological timeline renderer with infinite scroll and modern styling
 class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
   final ScrollController _scrollController = ScrollController();
-  final TemplateManager _templateManager = TemplateManager();
   
   // Performance optimization variables
   final Map<String, Widget> _eventCardCache = {};
@@ -24,13 +18,7 @@ class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
   ChronologicalTimelineRenderer(
     super.config, 
     super.data,
-  ) {
-    _initializeTemplateManager();
-  }
-
-  Future<void> _initializeTemplateManager() async {
-    await _templateManager.initialize();
-  }
+  );
 
   @override
   Widget build({
@@ -104,8 +92,31 @@ class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
     TimelineContextCallback? onContextTap,
     ScrollController? scrollController,
   }) {
+    // If no scroll controller provided, return just the slivers for parent CustomScrollView
+    if (scrollController == null) {
+      return Column(
+        children: [
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                _buildTimelineHeader(events),
+                _buildTimelineEvents(
+                  events,
+                  onEventTap: onEventTap,
+                  onEventLongPress: onEventLongPress,
+                  onDateTap: onDateTap,
+                  onContextTap: onContextTap,
+                ),
+                _buildTimelineFooter(),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return CustomScrollView(
-      controller: scrollController ?? _scrollController,
+      controller: scrollController,
       slivers: [
         _buildTimelineHeader(events),
         _buildTimelineEvents(
@@ -122,40 +133,52 @@ class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
 
   Widget _buildTimelineHeader(List<TimelineEvent> events) {
     return SliverToBoxAdapter(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.timeline, color: Colors.blue),
-                const SizedBox(width: 8),
-                Text(
-                  'Timeline',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+      child: Builder(
+        builder: (context) => ModernCard(
+          margin: EdgeInsets.all(DesignTokens.space4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(DesignTokens.space2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+                    ),
+                    child: Icon(
+                      Icons.timeline,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                _buildFilterButton(),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${events.length} events • ${_formatDateRange(events)}',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+                  SizedBox(width: DesignTokens.space3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Timeline',
+                          style: DesignTokens.titleLarge.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${events.length} events • ${_formatDateRange(events)}',
+                          style: DesignTokens.bodySmall.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildFilterButton(),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -191,72 +214,85 @@ class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
     TimelineDateCallback? onDateTap,
     TimelineContextCallback? onContextTap,
   }) {
+    if (events.isEmpty) {
+      return SliverToBoxAdapter(
+        child: _buildEmptyState(),
+      );
+    }
+
+    // Sort events by timestamp
+    final sortedEvents = List<TimelineEvent>.from(events)
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp)); // Most recent first
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index.isEven) {
-            // Date separator
-            final eventIndex = index ~/ 2;
-            if (eventIndex < events.length) {
-              return _buildDateSeparator(events[eventIndex].timestamp);
-            }
-            return null;
-          } else {
-            // Event card
-            final eventIndex = index ~/ 2;
-            if (eventIndex < events.length) {
-              return _buildEventCard(
-                events[eventIndex],
+          final event = sortedEvents[index];
+          return Column(
+            children: [
+              if (index == 0 || !_isSameDay(sortedEvents[index - 1].timestamp, event.timestamp))
+                _buildDateSeparator(event.timestamp),
+              _buildEventCard(
+                event,
                 onEventTap: onEventTap,
                 onEventLongPress: onEventLongPress,
                 onContextTap: onContextTap,
-              );
-            }
-            return null;
-          }
+              ),
+            ],
+          );
         },
-        childCount: events.length * 2,
+        childCount: sortedEvents.length,
       ),
     );
   }
 
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+           date1.month == date2.month &&
+           date1.day == date2.day;
+  }
+
   Widget _buildDateSeparator(DateTime date) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 1,
-              color: Colors.grey[300],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+    return Builder(
+      builder: (context) => Container(
+        margin: EdgeInsets.symmetric(vertical: DesignTokens.space2),
+        padding: EdgeInsets.symmetric(horizontal: DesignTokens.space4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 1,
+                color: Theme.of(context).colorScheme.outlineVariant,
               ),
-              child: Text(
-                _formatDate(date),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue,
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: DesignTokens.space4),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: DesignTokens.space3,
+                  vertical: DesignTokens.space1,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+                ),
+                child: Text(
+                  _formatDate(date),
+                  style: DesignTokens.labelMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: Colors.grey[300],
+            Expanded(
+              child: Container(
+                height: 1,
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -272,55 +308,67 @@ class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
       return _eventCardCache[event.id]!;
     }
 
-    final context = data.contexts.firstWhere(
-      (ctx) => ctx.id == event.contextId,
-      orElse: () => Context(
-        id: 'default',
-        ownerId: event.ownerId,
-        type: ContextType.person,
-        name: 'Default',
-        moduleConfiguration: {},
-        themeId: 'default',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+    final card = Builder(
+      builder: (context) => TimelineEventCard(
+        title: event.title ?? 'Untitled Event',
+        description: event.description,
+        timestamp: event.timestamp,
+        eventIcon: _getEventTypeIcon(event.eventType),
+        eventColor: _getEventTypeColor(event.eventType),
+        location: event.location?.locationName,
+        mediaCount: event.assets.length,
+        onTap: () => onEventTap?.call(event),
+        onLongPress: () => onEventLongPress?.call(event),
+        trailing: PopupMenuButton<String>(
+          icon: Icon(
+            Icons.more_vert,
+            size: 20,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          onSelected: (value) {
+            switch (value) {
+              case 'edit':
+                _handleEditEvent(event);
+                break;
+              case 'delete':
+                _handleDeleteEvent(event);
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [
+                  Icon(Icons.edit, size: 16),
+                  SizedBox(width: 8),
+                  Text('Edit'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  Icon(Icons.delete, size: 16),
+                  SizedBox(width: 8),
+                  Text('Delete'),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    );
-
-    final theme = TimelineTheme(
-      id: 'default',
-      name: 'Default Theme',
-      contextType: context.type,
-      colorPalette: {
-        'primary': Colors.blue.value,
-        'background': Colors.white.value,
-        'text': Colors.black.value,
-        'card': Colors.grey[100]!.value,
-      },
-      iconSet: {'default': 'material'},
-      typography: {
-        'body': {'fontSize': 14.0, 'fontWeight': 'normal'},
-        'header': {'fontSize': 16.0, 'fontWeight': 'bold'},
-      },
-      widgetFactories: {'card': true, 'list': true},
-      enableGhostCamera: false,
-      enableBudgetTracking: false,
-      enableProgressComparison: false,
-    );
-
-    final card = _templateManager.createEventCard(
-      event: event,
-      context: context,
-      theme: theme,
-      onTap: () => onEventTap?.call(event),
-      onEdit: () => _handleEditEvent(event),
-      onDelete: () => _handleDeleteEvent(event),
     );
 
     // Cache the card for performance
     _eventCardCache[event.id] = card;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: EdgeInsets.symmetric(
+        horizontal: DesignTokens.space4,
+        vertical: DesignTokens.space1,
+      ),
       child: card,
     );
   }
@@ -398,6 +446,40 @@ class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
   void _handleDeleteEvent(TimelineEvent event) {
     // Handle event deletion
     debugPrint('Delete event: ${event.id}');
+  }
+
+  Color _getEventTypeColor(String eventType) {
+    switch (eventType.toLowerCase()) {
+      case 'photo':
+        return Colors.blue;
+      case 'video':
+        return Colors.red;
+      case 'milestone':
+        return Colors.green;
+      case 'text':
+        return Colors.purple;
+      case 'location':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+  
+  IconData _getEventTypeIcon(String eventType) {
+    switch (eventType.toLowerCase()) {
+      case 'photo':
+        return Icons.photo;
+      case 'video':
+        return Icons.videocam;
+      case 'milestone':
+        return Icons.star;
+      case 'text':
+        return Icons.text_fields;
+      case 'location':
+        return Icons.location_on;
+      default:
+        return Icons.event;
+    }
   }
 
   @override

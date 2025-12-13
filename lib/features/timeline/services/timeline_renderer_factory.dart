@@ -29,15 +29,9 @@ class TimelineRendererFactory {
       case TimelineViewMode.story:
         return StoryTimelineRenderer(config, data);
       case TimelineViewMode.lifeStream:
-        final renderer = LifeStreamTimelineRenderer();
-        renderer.initialize(config);
-        renderer.updateData(data);
-        return renderer;
+        return LifeStreamTimelineRenderer(config, data);
       case TimelineViewMode.bentoGrid:
-        final renderer = BentoGridTimelineRenderer();
-        renderer.initialize(config);
-        renderer.updateData(data);
-        return renderer;
+        return BentoGridTimelineRenderer(config, data);
       case TimelineViewMode.river:
         final renderer = RiverTimelineRenderer();
         renderer.initialize(config);

@@ -186,9 +186,9 @@ void main() {
         // Test with empty map
         final eventWithEmptyAttributes = createRandomEvent(eventType, {});
         
-        // Property: Empty attributes should result in default attributes
-        expect(eventWithEmptyAttributes.customAttributes, isNotEmpty,
-            reason: 'Empty custom attributes should be populated with defaults');
+        // Property: Explicitly empty attributes should be preserved
+        expect(eventWithEmptyAttributes.customAttributes, isEmpty,
+            reason: 'Explicitly empty custom attributes should be preserved');
         
         // Test with mixed valid and invalid types
         final mixedAttributes = <String, dynamic>{

@@ -16,12 +16,9 @@ class ThemeService {
 
   /// Sets the theme for a specific context
   Future<void> setThemeForContext(ContextType contextType) async {
-    print('🎨 THEME SERVICE: Setting theme for context: $contextType');
     final theme = TimelineTheme.forContextType(contextType);
-    print('🎨 THEME SERVICE: Created theme: ${theme.name} with primary: ${theme.getColor('primary')}');
     _currentTheme = theme;
     _themeController.add(theme);
-    print('🎨 THEME SERVICE: Theme updated and broadcasted');
   }
 
   /// Gets theme for a context type
@@ -62,7 +59,7 @@ class ThemeService {
     final backgroundColor = timelineTheme.getColor('background');
     final surfaceColor = timelineTheme.getColor('surface');
 
-    print('🎨 THEME SERVICE: Creating beautiful theme with primary: $primaryColor');
+    // Creating beautiful theme with primary color
 
     return ThemeData(
       useMaterial3: true,

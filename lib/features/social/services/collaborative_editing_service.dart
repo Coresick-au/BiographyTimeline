@@ -638,7 +638,7 @@ class CollaborativeEditingService {
               a.timestamp.isAfter(b.timestamp) ? a : b);
           await approveContribution(
             contributionId: latest.id,
-            approvedBy: conflict.resolvedBy!,
+            approvedBy: conflict.resolvedBy ?? 'system',
             resolutionNote: 'Auto-resolved: Accept latest',
           );
         }
@@ -653,7 +653,7 @@ class CollaborativeEditingService {
               a.timestamp.isBefore(b.timestamp) ? a : b);
           await approveContribution(
             contributionId: earliest.id,
-            approvedBy: conflict.resolvedBy!,
+            approvedBy: conflict.resolvedBy ?? 'system',
             resolutionNote: 'Auto-resolved: Accept earliest',
           );
         }
@@ -664,14 +664,13 @@ class CollaborativeEditingService {
         break;
       case ConflictResolution.rejectAll:
         // Reject all conflicting contributions
-        final contributions = _contributions.where(
-          (c) => c.conflictsWith.contains(conflict.id),
-        );
-        for (final contribution in contributions) {
-          final index = _contributions.indexWhere((c) => c.id == contribution.id);
-          if (index != -1) {
-            _contributions.removeAt(index);
-          }
+        final contributionIds = _contributions
+            .where((c) => c.conflictsWith.contains(conflict.id))
+            .map((c) => c.id)
+            .toList();
+        
+        for (final contributionId in contributionIds) {
+          _contributions.removeWhere((c) => c.id == contributionId);
         }
         _contributionsController.add(_contributions);
         break;

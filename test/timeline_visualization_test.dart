@@ -118,7 +118,7 @@ void main() {
       test('Should provide correct display names for view modes', () {
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.chronological), equals('Chronological'));
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.clustered), equals('Clustered'));
-        expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.mapView), equals('Map View'));
+        expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.mapView), equals('Enhanced Map'));
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.story), equals('Story View'));
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.lifeStream), equals('Life Stream'));
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.bentoGrid), equals('Grid View'));
