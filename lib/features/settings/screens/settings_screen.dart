@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/widgets/theme_switcher.dart';
+import '../widgets/simple_export_dialog.dart';
 
 /// Settings screen placeholder
 class SettingsScreen extends ConsumerWidget {
@@ -272,9 +273,7 @@ class SettingsScreen extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Export feature coming soon!')),
-                    );
+                    _showExportDialog(context);
                   },
                 ),
                 Divider(
@@ -482,6 +481,13 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showExportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const SimpleExportDialog(),
     );
   }
 

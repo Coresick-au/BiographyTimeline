@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../../shared/export/data_export_service.dart';
 import '../../../shared/design_system/app_theme.dart';
 import '../../../shared/design_system/app_icons.dart';
-import '../../../shared/design_system/interaction_feedback.dart';
 
 /// Export widget for timeline data
 /// Provides options for PDF, ZIP, and JSON exports
@@ -529,7 +528,7 @@ class _ExportWidgetState extends ConsumerState<ExportWidget>
       _currentProgress = null;
     });
 
-    InteractionFeedback.trigger();
+    // InteractionFeedback.trigger(); // Temporarily disabled due to design system issues
 
     try {
       final service = ref.read(dataExportProvider);

@@ -32,7 +32,6 @@ dependencies:
   # Face Detection
   google_mlkit_face_detection: ^0.10.0
   tflite_flutter: ^0.10.4
-  tflite_flutter_helper: ^0.3.1
   
   # Semantic Search
   sqlite3_flutter_libs: ^0.5.15

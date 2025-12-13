@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/timeline/screens/timeline_screen.dart';
 import '../../features/stories/screens/stories_screen.dart';
+import '../../features/social/screens/connections_screen.dart';
 import '../../features/media/screens/media_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
-import '../../features/social/screens/connections_screen.dart';
-import '../../features/social/services/privacy_settings_service.dart';
+import '../../features/search/widgets/simple_search_widget.dart';
+import '../../features/ghost_camera/widgets/simple_ghost_camera_dialog.dart';
 
 /// Main navigation shell for the app
 class MainNavigation extends ConsumerStatefulWidget {
@@ -211,44 +212,44 @@ class NavigationNotifier extends StateNotifier<int> {
   void navigateToSettings() => state = 3;
 }
 
-/// Provider for navigation state
-final navigationProvider = StateNotifierProvider<NavigationNotifier, int>((ref) {
-  return NavigationNotifier();
-});
+/// Provider for navigation state (commented out to avoid errors)
+// final navigationProvider = StateNotifierProvider<NavigationNotifier, int>((ref) {
+//   return NavigationNotifier();
+// });
 
-/// Provider for navigation items
-final navigationItemsProvider = Provider<List<NavigationItem>>((ref) {
-  return [
-    const NavigationItem(
-      id: 'timeline',
-      title: 'Timeline',
-      icon: Icons.timeline,
-      activeIcon: Icons.timeline,
-      widget: TimelineScreen(),
-    ),
-    const NavigationItem(
-      id: 'stories',
-      title: 'Stories',
-      icon: Icons.auto_stories,
-      activeIcon: Icons.auto_stories,
-      widget: StoriesScreen(),
-    ),
-    const NavigationItem(
-      id: 'media',
-      title: 'Media',
-      icon: Icons.photo_library,
-      activeIcon: Icons.photo_library,
-      widget: MediaScreen(),
-    ),
-    const NavigationItem(
-      id: 'settings',
-      title: 'Settings',
-      icon: Icons.settings,
-      activeIcon: Icons.settings,
-      widget: SettingsScreen(),
-    ),
-  ];
-});
+/// Provider for navigation items (commented out to avoid errors)
+// final navigationItemsProvider = Provider<List<NavigationItem>>((ref) {
+//   return [
+//     const NavigationItem(
+//       id: 'timeline',
+//       title: 'Timeline',
+//       icon: Icons.timeline,
+//       activeIcon: Icons.timeline,
+//       widget: TimelineScreen(),
+//     ),
+//     const NavigationItem(
+//       id: 'stories',
+//       title: 'Stories',
+//       icon: Icons.auto_stories,
+//       activeIcon: Icons.auto_stories,
+//       widget: StoriesScreen(),
+//     ),
+//     const NavigationItem(
+//       id: 'media',
+//       title: 'Media',
+//       icon: Icons.photo_library,
+//       activeIcon: Icons.photo_library,
+//       widget: MediaScreen(),
+//     ),
+//     const NavigationItem(
+//       id: 'settings',
+//       title: 'Settings',
+//       icon: Icons.settings,
+//       activeIcon: Icons.settings,
+//       widget: SettingsScreen(),
+//     ),
+//   ];
+// });
 
 /// Enhanced navigation with drawer option
 class EnhancedNavigation extends ConsumerStatefulWidget {
@@ -260,16 +261,52 @@ class EnhancedNavigation extends ConsumerStatefulWidget {
 
 class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+  int _currentIndex = 0;
+    
   @override
   Widget build(BuildContext context) {
-    final currentIndex = ref.watch(navigationProvider);
-    final navigationItems = ref.watch(navigationItemsProvider);
+    final navigationItems = [
+      NavigationItem(
+        id: 'timeline',
+        title: 'Timeline',
+        icon: Icons.timeline_outlined,
+        activeIcon: Icons.timeline,
+        widget: const TimelineScreen(),
+      ),
+      NavigationItem(
+        id: 'stories',
+        title: 'Stories',
+        icon: Icons.auto_stories_outlined,
+        activeIcon: Icons.auto_stories,
+        widget: const StoriesScreen(),
+      ),
+      NavigationItem(
+        id: 'connections',
+        title: 'Connections',
+        icon: Icons.people_outline,
+        activeIcon: Icons.people,
+        widget: const ConnectionsScreen(),
+      ),
+      NavigationItem(
+        id: 'media',
+        title: 'Media',
+        icon: Icons.photo_library_outlined,
+        activeIcon: Icons.photo_library,
+        widget: const MediaScreen(),
+      ),
+      NavigationItem(
+        id: 'settings',
+        title: 'Settings',
+        icon: Icons.settings_outlined,
+        activeIcon: Icons.settings,
+        widget: const SettingsScreen(),
+      ),
+    ];
     
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(navigationItems[currentIndex].title),
+        title: Text(navigationItems[_currentIndex].title),
         leading: IconButton(
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
@@ -285,10 +322,10 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
           ),
         ],
       ),
-      drawer: _buildDrawer(navigationItems, currentIndex),
-      body: navigationItems[currentIndex].widget,
-      bottomNavigationBar: _buildBottomNavigationBar(navigationItems, currentIndex),
-      floatingActionButton: _buildFloatingActionButton(currentIndex),
+      drawer: _buildDrawer(navigationItems, _currentIndex),
+      body: navigationItems[_currentIndex].widget,
+      bottomNavigationBar: _buildBottomNavigationBar(navigationItems, _currentIndex),
+      floatingActionButton: _buildFloatingActionButton(_currentIndex),
     );
   }
 
@@ -355,7 +392,9 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
               ),
               onTap: () {
                 Navigator.of(context).pop();
-                ref.read(navigationProvider.notifier).setIndex(index);
+                setState(() {
+                  _currentIndex = index;
+                });
               },
               selected: currentIndex == index,
             );
@@ -441,7 +480,9 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          ref.read(navigationProvider.notifier).setIndex(index);
+          setState(() {
+            _currentIndex = index;
+          });
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -510,9 +551,46 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
   }
 
   void _showSearch() {
-    // TODO: Implement search functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Search coming soon!')),
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Search Timeline',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SimpleSearchWidget(
+                  onResultSelected: (event) {
+                    Navigator.of(context).pop();
+                    // TODO: Navigate to selected event
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Selected: ${event.title}'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -538,9 +616,9 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
   }
 
   void _uploadMedia() {
-    // TODO: Navigate to upload media screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Upload media coming soon!')),
+    showDialog(
+      context: context,
+      builder: (context) => const SimpleGhostCameraDialog(),
     );
   }
 

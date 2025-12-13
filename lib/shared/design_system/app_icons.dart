@@ -294,7 +294,7 @@ class AppIcons {
         return description;
       case 'link':
       case 'url':
-        return link;
+        return Icons.link;
       default:
         return description;
     }

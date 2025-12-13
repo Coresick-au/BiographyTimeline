@@ -33,6 +33,39 @@ class TimelineService {
   /// All contexts
   List<Context> get contexts => List.unmodifiable(_contexts);
 
+  /// Initialize the service with sample data if needed
+  Future<void> initialize() async {
+    // If we have no events, load some sample data for testing
+    if (_events.isEmpty) {
+      // Basic sample event
+      final sampleEvent = TimelineEvent.create(
+        id: 'sample-1',
+        contextId: 'personal-1',
+        ownerId: 'user-1',
+        timestamp: DateTime.now(),
+        eventType: 'text',
+        title: 'Welcome to your Timeline',
+        description: 'This is a sample event to get you started.',
+      );
+      
+      // Create a default context if needed
+      if (_contexts.isEmpty) {
+        _contexts.add(Context(
+          id: 'personal-1',
+          ownerId: 'user-1',
+          type: ContextType.person,
+          name: 'Personal',
+          theme: TimelineTheme.standard(),
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          moduleConfiguration: {},
+        ));
+      }
+
+      await addEvents([sampleEvent]);
+    }
+  }
+
   /// Register a new renderer
   void registerRenderer(ITimelineRenderer renderer) {
     _renderers.add(renderer);

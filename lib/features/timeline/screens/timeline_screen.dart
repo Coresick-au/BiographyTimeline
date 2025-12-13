@@ -4,6 +4,7 @@ import '../services/timeline_renderer_interface.dart';
 import '../services/timeline_renderer_factory.dart';
 import '../services/timeline_data_service.dart';
 import '../services/timeline_integration_service.dart';
+import '../widgets/quick_entry_dialog.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import '../../../shared/models/geo_location.dart';
@@ -435,72 +436,30 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   void _showAddEventDialog() {
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
+    // Get the current context ID or default to the first available
+    final currentContextId = _contexts.isNotEmpty ? _contexts.first.id : 'default-context';
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Event'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Event Title',
-                hintText: 'Enter event title',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Enter event description',
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (titleController.text.isNotEmpty) {
-                _addNewEvent(titleController.text, descriptionController.text);
-              }
-              Navigator.of(context).pop();
-            },
-            child: const Text('Add'),
-          ),
-        ],
+      builder: (context) => QuickEntryDialog(
+        contextType: ContextType.person, // Or derive from currentContext
+        contextId: currentContextId,
+        ownerId: 'user-1', // Replace with actual user ID service later
+        onEventCreated: (newEvent) {
+          // 1. Get the service
+          final dataService = ref.read(timelineServiceProvider);
+          
+          // 2. Add the event (this already notifies listeners)
+          dataService.addEvent(newEvent);
+          
+          // 3. No need to call _initializeTimeline() again, 
+          // the stream listener or Riverpod watcher should update the UI automatically.
+          // If your UI doesn't update, you can call setState(() {});
+        },
       ),
     );
   }
   
-  void _addNewEvent(String title, String description) {
-    final dataService = ref.read(timelineServiceProvider);
-    
-    final newEvent = TimelineEvent.create(
-      id: 'event-${DateTime.now().millisecondsSinceEpoch}',
-      contextId: _contexts.isNotEmpty ? _contexts.first.id : 'context-1',
-      ownerId: 'user-1',
-      timestamp: DateTime.now(),
-      eventType: 'text',
-      title: title,
-      description: description,
-    );
-    
-    dataService.addEvent(newEvent);
-    
-    // Refresh the timeline
-    _initializeTimeline();
-  }
-
   void _showConfigurationDialog() {
     showDialog(
       context: context,
