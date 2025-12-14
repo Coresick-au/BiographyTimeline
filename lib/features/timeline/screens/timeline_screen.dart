@@ -186,58 +186,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           tooltip: 'Search Events',
         ),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF667EEA),
-                const Color(0xFF764BA2),
-                const Color(0xFF667EEA).withOpacity(0.8),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _getViewModeTitle(_currentViewMode),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${state.filteredEvents.length} events • ${state.contexts.length} contexts',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => _showAddEventDialog(context, ref),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF667EEA),
-                          elevation: 2,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                        child: const Text('Add Event'),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton(
                         onPressed: _showConfigurationDialog,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
