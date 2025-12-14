@@ -201,7 +201,6 @@ class TimelineEventCard extends StatelessWidget {
     switch (asset.type) {
       case AssetType.photo:
         return ShimmerLoading(
-          isLoading: false, // Image.asset loads synchronously
           child: Image.asset(
             asset.localPath,
             fit: BoxFit.cover,
