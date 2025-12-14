@@ -3,14 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/design_system/design_system.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
-import '../models/timeline_state.dart';
 import '../models/view_state.dart';
-import '../services/timeline_data_service.dart';
+import '../services/timeline_provider.dart';
 import '../services/timeline_renderer_interface.dart';
 import '../services/timeline_renderer_factory.dart';
 import '../services/view_state_manager.dart';
 import '../widgets/timeline_view_selector.dart';
 import '../widgets/quick_entry_dialog.dart';
+import '../widgets/timeline_event_card.dart';
+import '../../../shared/widgets/modern/dark_theme.dart';
 import '../widgets/search_dialog.dart';
 import 'event_details_screen.dart';
 
@@ -145,6 +146,38 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       pinned: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: ModernDarkTheme.primaryGradient,
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Your Timeline',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${state.allEvents.length} events',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
       actions: [
         IconButton(
           onPressed: () => _showSearchDialog(state.allEvents, state.contexts),
