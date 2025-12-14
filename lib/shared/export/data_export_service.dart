@@ -18,14 +18,9 @@ import '../security/encryption_service.dart';
 /// Unified data export service for Timeline Biography App
 /// Handles PDF, ZIP, and JSON exports with progress tracking
 class DataExportService {
-  static DataExportService? _instance;
-  static DataExportService get instance => _instance ??= DataExportService._();
-  
-  DataExportService._();
-
+  final DatabaseService _dbService;
+  final EncryptionService _encryptionService;
   final _uuid = const Uuid();
-  final _dbService = DatabaseService.instance;
-  final _encryptionService = EncryptionService.instance;
 
   // Export progress tracking
   final Map<String, ExportProgress> _activeExports = {};
@@ -35,6 +30,9 @@ class DataExportService {
   // Export configuration
   static const int _chunkSize = 100; // Items per chunk for large exports
   static const int _maxZipSize = 1024 * 1024 * 100; // 100MB per ZIP
+
+  /// Constructor with dependency injection
+  DataExportService(this._dbService, this._encryptionService);
 
   // =========================================================================
   // PUBLIC API
@@ -785,7 +783,9 @@ typedef ProgressCallback = void Function(double progress);
 // =========================================================================
 
 final dataExportProvider = Provider<DataExportService>((ref) {
-  return DataExportService.instance;
+  final dbService = ref.watch(databaseServiceProvider);
+  final encryptionService = ref.watch(encryptionServiceProvider);
+  return DataExportService(dbService, encryptionService);
 });
 
 final exportProgressProvider = StreamProvider<Map<String, ExportProgress>>((ref) {

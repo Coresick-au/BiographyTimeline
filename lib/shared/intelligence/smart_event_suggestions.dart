@@ -10,14 +10,9 @@ import '../models/media_asset.dart';
 /// Service for managing smart event suggestions
 /// Provides intelligent suggestions based on user patterns and feedback
 class SmartEventSuggestionsService {
-  static SmartEventSuggestionsService? _instance;
-  static SmartEventSuggestionsService get instance => _instance ??= SmartEventSuggestionsService._();
-  
-  SmartEventSuggestionsService._();
-
+  final EventCorrelationService _eventCorrelation;
+  final DatabaseService _dbService;
   final _uuid = const Uuid();
-  final _eventCorrelation = EventCorrelationService.instance;
-  final _dbService = DatabaseService.instance;
 
   // Suggestion cache
   final Map<String, List<EventSuggestion>> _suggestionCache = {};
@@ -26,6 +21,9 @@ class SmartEventSuggestionsService {
 
   // User preference tracking
   final Map<String, UserPreference> _userPreferences = {};
+
+  /// Constructor with dependency injection
+  SmartEventSuggestionsService(this._eventCorrelation, this._dbService);
 
   // =========================================================================
   // SUGGESTION GENERATION
@@ -561,11 +559,14 @@ class DateTimeRange {
 // =========================================================================
 
 final smartSuggestionsProvider = FutureProvider<List<EventSuggestion>>((ref) async {
-  return await SmartEventSuggestionsService.instance.getSuggestions();
+  final service = ref.watch(suggestionsProvider);
+  return await service.getSuggestions();
 });
 
 final suggestionsProvider = Provider<SmartEventSuggestionsService>((ref) {
-  return SmartEventSuggestionsService.instance;
+  final eventCorrelation = ref.watch(eventCorrelationServiceProvider);
+  final dbService = ref.watch(databaseServiceProvider);
+  return SmartEventSuggestionsService(eventCorrelation, dbService);
 });
 
 // =========================================================================

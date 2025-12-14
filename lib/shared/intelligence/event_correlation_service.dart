@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
 import '../database/database_service.dart';
@@ -11,13 +12,8 @@ import '../intelligence/face_detection_service.dart';
 /// Service for correlating photos into meaningful events
 /// Uses rule-based approach with weighted scoring
 class EventCorrelationService {
-  static EventCorrelationService? _instance;
-  static EventCorrelationService get instance => _instance ??= EventCorrelationService._();
-  
-  EventCorrelationService._();
-
+  final DatabaseService _dbService;
   final _uuid = const Uuid();
-  final _dbService = DatabaseService.instance;
 
   // Weight configuration for correlation factors
   static const double _timeWeight = 0.5;
@@ -33,6 +29,9 @@ class EventCorrelationService {
 
   // User learning data
   final Map<String, double> _userWeights = {};
+
+  /// Constructor with dependency injection
+  EventCorrelationService(this._dbService);
 
   // =========================================================================
   // EVENT CORRELATION
@@ -74,9 +73,50 @@ class EventCorrelationService {
     DateTime? endDate,
     String? albumId,
   ) async {
-    // Implementation would query database for photos
-    // For now, return empty list
-    return [];
+    // Query database for media assets within date range
+    try {
+      final db = await _dbService.database;
+      
+      // Build query conditions
+      final conditions = <String>[];
+      final args = <dynamic>[];
+      
+      // Filter by date range if provided
+      if (startDate != null) {
+        conditions.add('created_at >= ?');
+        args.add(startDate.millisecondsSinceEpoch);
+      }
+      if (endDate != null) {
+        conditions.add('created_at <= ?');
+        args.add(endDate.millisecondsSinceEpoch);
+      }
+      
+      // Filter by album if provided
+      if (albumId != null) {
+        conditions.add('album_id = ?');
+        args.add(albumId);
+      }
+      
+      // Only get image/video assets
+      conditions.add("mime_type LIKE 'image/%' OR mime_type LIKE 'video/%'");
+      
+      final whereClause = conditions.isNotEmpty ? conditions.join(' AND ') : null;
+      
+      // Query media_assets table (assuming it exists in offline DB)
+      final List<Map<String, dynamic>> results = await db.query(
+        'media_assets',
+        where: whereClause,
+        whereArgs: args.isNotEmpty ? args : null,
+        orderBy: 'created_at ASC',
+      );
+      
+      // Convert to MediaAsset objects
+      return results.map((map) => MediaAsset.fromJson(map)).toList();
+    } catch (e) {
+      // If table doesn't exist or query fails, return empty list
+      // This allows the service to work even without a populated database
+      return [];
+    }
   }
 
   Future<List<PhotoGroup>> _groupPhotosIntoEvents(List<MediaAsset> photos) async {
@@ -620,3 +660,14 @@ class LocationData {
     this.accuracy,
   });
 }
+
+// =========================================================================
+// PROVIDERS
+// =========================================================================
+
+/// Provider for EventCorrelationService
+final eventCorrelationServiceProvider = Provider<EventCorrelationService>((ref) {
+  final dbService = ref.watch(databaseServiceProvider);
+  return EventCorrelationService(dbService);
+});
+

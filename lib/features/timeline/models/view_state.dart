@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../services/timeline_renderer_interface.dart';
-import '../services/timeline_filter_service.dart';
 
 part 'view_state.freezed.dart';
 
@@ -11,7 +10,6 @@ class ViewState with _$ViewState {
   const factory ViewState({
     required TimelineViewMode viewMode,
     @Default(0.0) double scrollOffset,
-    FilterCriteria? activeFilter,
     @Default(1.0) double zoomLevel,
     String? focusedEventId,
     @Default({}) Map<String, dynamic> customState,

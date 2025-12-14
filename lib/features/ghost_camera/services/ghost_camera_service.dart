@@ -14,13 +14,8 @@ import '../../../shared/models/timeline_event.dart';
 /// Ghost Camera service for progress comparison photography
 /// Manages camera overlay with reference images and alignment controls
 class GhostCameraService {
-  static GhostCameraService? _instance;
-  static GhostCameraService get instance => _instance ??= GhostCameraService._();
-  
-  GhostCameraService._();
-
+  final DatabaseService _dbService;
   final _uuid = const Uuid();
-  final _dbService = DatabaseService.instance;
   
   // Camera controller
   CameraController? _cameraController;
@@ -41,6 +36,9 @@ class GhostCameraService {
     AlignmentCrosshair(),
   ];
   int _currentGuideIndex = 0;
+
+  /// Constructor with dependency injection
+  GhostCameraService(this._dbService);
 
   // =========================================================================
   // PUBLIC API
@@ -386,7 +384,8 @@ class Line {
 // =========================================================================
 
 final ghostCameraProvider = Provider<GhostCameraService>((ref) {
-  return GhostCameraService.instance;
+  final dbService = ref.watch(databaseServiceProvider);
+  return GhostCameraService(dbService);
 });
 
 final ghostCameraStateProvider = StreamProvider<GhostOverlayState>((ref) {
