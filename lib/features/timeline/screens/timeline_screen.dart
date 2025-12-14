@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/design_system/design_system.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
+import '../models/timeline_state.dart';
 import '../models/view_state.dart';
-import '../services/timeline_provider.dart';
+import '../services/timeline_data_service.dart';
 import '../services/timeline_renderer_interface.dart';
 import '../services/timeline_renderer_factory.dart';
 import '../services/view_state_manager.dart';
@@ -98,7 +99,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
 
   @override
   Widget build(BuildContext context) {
-    final timelineState = ref.watch(timelineDataProvider);
+    final timelineState = ref.watch(timelineServiceProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

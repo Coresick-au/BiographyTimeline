@@ -33,10 +33,10 @@ class TimelineRendererFactory {
         // Default to chronological for unsupported modes
         return VerticalTimelineRenderer();
       case TimelineViewMode.river:
-        return RiverTimelineRenderer(
-          config,
-          data,
-        );
+        final renderer = RiverTimelineRenderer();
+        renderer.initialize(config);
+        renderer.updateData(data);
+        return renderer;
     }
   }
 }
