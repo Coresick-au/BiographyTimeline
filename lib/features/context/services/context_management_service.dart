@@ -141,27 +141,86 @@ class ContextManagementService {
 /// This extends the sqflite `Database` connection with your app-specific helpers.
 extension ContextDatabase on Database {
   Future<void> insertContext(Context context) async {
-    // TODO: implement real insert using sqflite `insert(...)`
-    throw UnimplementedError('Database context insertion not implemented');
+    await insert(
+      'contexts',
+      {
+        'id': context.id,
+        'owner_id': context.ownerId,
+        'type': context.type.name,
+        'name': context.name,
+        'description': context.description,
+        'module_configuration': DatabaseJsonHelper.mapToJson(context.moduleConfiguration),
+        'theme_id': context.themeId,
+        'created_at': context.createdAt.millisecondsSinceEpoch,
+        'updated_at': context.updatedAt.millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Context>> getContextsForUser(String userId) async {
-    // TODO: implement real query using sqflite `query/rawQuery`
-    throw UnimplementedError('Database context query not implemented');
+    final maps = await query(
+      'contexts',
+      where: 'owner_id = ?',
+      whereArgs: [userId],
+      orderBy: 'created_at DESC',
+    );
+
+    return maps.map(_mapToContext).toList();
   }
 
   Future<Context?> getContext(String contextId) async {
-    // TODO: implement real query using sqflite `query/rawQuery`
-    throw UnimplementedError('Database context query not implemented');
+    final maps = await query(
+      'contexts',
+      where: 'id = ?',
+      whereArgs: [contextId],
+    );
+
+    if (maps.isEmpty) return null;
+
+    return _mapToContext(maps.first);
   }
 
   Future<void> updateContext(Context context) async {
-    // TODO: implement real update using sqflite `update(...)`
-    throw UnimplementedError('Database context update not implemented');
+    await update(
+      'contexts',
+      {
+        'owner_id': context.ownerId,
+        'type': context.type.name,
+        'name': context.name,
+        'description': context.description,
+        'module_configuration': DatabaseJsonHelper.mapToJson(context.moduleConfiguration),
+        'theme_id': context.themeId,
+        'updated_at': context.updatedAt.millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [context.id],
+    );
   }
 
   Future<void> deleteContext(String contextId) async {
-    // TODO: implement real delete using sqflite `delete(...)`
-    throw UnimplementedError('Database context deletion not implemented');
+    await delete(
+      'contexts',
+      where: 'id = ?',
+      whereArgs: [contextId],
+    );
+  }
+
+  /// Maps a database row to a Context object
+  Context _mapToContext(Map<String, dynamic> map) {
+    return Context(
+      id: map['id'] as String,
+      ownerId: map['owner_id'] as String,
+      type: ContextType.values.firstWhere(
+        (type) => type.name == map['type'] as String,
+        orElse: () => ContextType.person,
+      ),
+      name: map['name'] as String,
+      description: map['description'] as String?,
+      moduleConfiguration: DatabaseJsonHelper.jsonToMap(map['module_configuration'] as String),
+      themeId: map['theme_id'] as String,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
+    );
   }
 }

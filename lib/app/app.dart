@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'navigation/main_navigation.dart';
 import '../shared/providers/design_system_provider.dart';
 import '../shared/providers/theme_provider.dart';
+import '../shared/design_system/theme_engine.dart';
+import '../shared/design_system/app_theme.dart';
 
 class UsersTimelineApp extends ConsumerWidget {
   const UsersTimelineApp({super.key});
@@ -22,10 +24,16 @@ class UsersTimelineApp extends ConsumerWidget {
   Widget _buildApp(BuildContext context, WidgetRef ref) {
     // Watch the new design system theme
     final themeData = ref.watch(appThemeDataProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    
+    // Create proper dark theme
+    final darkThemeData = AppThemes.dark.toThemeData();
     
     return MaterialApp(
       title: 'Users Timeline',
       theme: themeData,
+      darkTheme: darkThemeData,
+      themeMode: themeMode,
       home: const EnhancedNavigation(),
       debugShowCheckedModeBanner: false,
     );

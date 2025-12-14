@@ -102,3 +102,7 @@ lcov.info
 # Kiro specific
 .kiro/cache/
 .kiro/logs/
+
+# API Keys & Secrets
+# NOTE: Google Maps API key is currently in web/index.html
+# For production, move to environment variables or use a secrets manager

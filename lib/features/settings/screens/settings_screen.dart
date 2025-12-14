@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/widgets/theme_switcher.dart';
+import '../../../shared/design_system/theme_engine.dart';
 import '../widgets/simple_export_dialog.dart';
 
 /// Settings screen placeholder
@@ -353,11 +354,18 @@ class SettingsScreen extends ConsumerWidget {
                     'Theme appearance',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  trailing: Switch(
-                    value: false,
-                    onChanged: (value) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Theme settings coming soon!')),
+                  trailing: Consumer(
+                    builder: (context, ref, child) {
+                      final themeMode = ref.watch(themeModeProvider);
+                      final isDark = themeMode == ThemeMode.dark;
+                      
+                      return Switch(
+                        value: isDark,
+                        onChanged: (value) {
+                          ref.read(themeModeProvider.notifier).switchThemeMode(
+                            value ? ThemeMode.dark : ThemeMode.light,
+                          );
+                        },
                       );
                     },
                   ),

@@ -7,7 +7,7 @@ import 'migrations/migration_runner.dart';
 class AppDatabase {
   static Database? _database;
   static const String _databaseName = 'users_timeline.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   static Future<Database> get database async {
     _database ??= await _initDatabase();

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'template_registry.dart';
 import 'template_definition.dart';
 import 'enhanced_template_renderer.dart';
 import '../../shared/models/context.dart';
 import '../../shared/models/timeline_event.dart';
 import '../../shared/models/timeline_theme.dart';
+import '../database/database.dart';
 
 /// High-level service for managing templates and template rendering
 class TemplateManager {
@@ -335,10 +337,30 @@ class TemplateStatistics {
 /// Service for managing template lifecycle and operations
 class TemplateService {
   final TemplateManager _manager = TemplateManager();
+  Database? _database;
 
   /// Initialize the service
   Future<void> initialize() async {
     await _manager.initialize();
+    _database = await AppDatabase.database;
+    await _loadCustomTemplates();
+  }
+
+  /// Load all custom templates from database and register them
+  Future<void> _loadCustomTemplates() async {
+    if (_database == null) return;
+    
+    final maps = await _database!.query('custom_templates', where: 'is_active = ?', whereArgs: [1]);
+    
+    for (final map in maps) {
+      try {
+        final templateJson = DatabaseJsonHelper.jsonToMap(map['template_json'] as String);
+        final template = TemplateDefinition.fromJson(templateJson);
+        _manager.registerTemplate(template);
+      } catch (e) {
+        print('Error loading custom template ${map['id']}: $e');
+      }
+    }
   }
 
   /// Create a new custom template
@@ -415,8 +437,6 @@ class TemplateService {
     );
 
     _manager.registerTemplate(template);
-    
-    // TODO: Save to persistent storage
     await _saveCustomTemplate(template);
     
     return template;
@@ -425,16 +445,12 @@ class TemplateService {
   /// Update an existing template
   Future<void> updateTemplate(TemplateDefinition template) async {
     _manager.registerTemplate(template); // This will overwrite existing
-    
-    // TODO: Update in persistent storage
     await _updateCustomTemplate(template);
   }
 
   /// Delete a custom template
   Future<void> deleteCustomTemplate(String templateId) async {
     _manager.unregisterTemplate(templateId);
-    
-    // TODO: Remove from persistent storage
     await _deleteCustomTemplate(templateId);
   }
 
@@ -446,14 +462,99 @@ class TemplateService {
   }
 
   Future<void> _saveCustomTemplate(TemplateDefinition template) async {
-    // TODO: Implement persistent storage
+    if (_database == null) return;
+    
+    await _database!.insert(
+      'custom_templates',
+      {
+        'id': template.id,
+        'name': template.name,
+        'description': template.description,
+        'context_type': template.contextType.name,
+        'author': template.metadata.author,
+        'created_at': template.metadata.createdAt.millisecondsSinceEpoch,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'template_json': DatabaseJsonHelper.mapToJson(template.toJson()),
+        'version': template.metadata.version,
+        'tags': DatabaseJsonHelper.stringListToJson(template.metadata.tags),
+        'is_active': 1,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> _updateCustomTemplate(TemplateDefinition template) async {
-    // TODO: Implement persistent storage
+    if (_database == null) return;
+    
+    await _database!.update(
+      'custom_templates',
+      {
+        'name': template.name,
+        'description': template.description,
+        'context_type': template.contextType.name,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+        'template_json': DatabaseJsonHelper.mapToJson(template.toJson()),
+        'version': template.metadata.version,
+        'tags': DatabaseJsonHelper.stringListToJson(template.metadata.tags),
+      },
+      where: 'id = ?',
+      whereArgs: [template.id],
+    );
   }
 
   Future<void> _deleteCustomTemplate(String templateId) async {
-    // TODO: Implement persistent storage
+    if (_database == null) return;
+    
+    // Soft delete by marking as inactive
+    await _database!.update(
+      'custom_templates',
+      {'is_active': 0, 'updated_at': DateTime.now().millisecondsSinceEpoch},
+      where: 'id = ?',
+      whereArgs: [templateId],
+    );
+  }
+
+  /// Export custom templates to JSON for sharing
+  Future<Map<String, dynamic>> exportCustomTemplates() async {
+    final customTemplates = getCustomTemplates();
+    return {
+      'version': '1.0',
+      'exported_at': DateTime.now().toIso8601String(),
+      'templates': customTemplates.map((t) => t.toJson()).toList(),
+    };
+  }
+
+  /// Import custom templates from JSON
+  Future<int> importCustomTemplates(Map<String, dynamic> importData) async {
+    final templates = importData['templates'] as List<dynamic>? ?? [];
+    int imported = 0;
+
+    for (final templateData in templates) {
+      try {
+        final template = TemplateDefinition.fromJson(templateData as Map<String, dynamic>);
+        // Generate new ID to avoid conflicts
+        final newTemplate = TemplateDefinition(
+          id: 'imported_${DateTime.now().millisecondsSinceEpoch}_$imported',
+          name: template.name,
+          description: '${template.description} (Imported)',
+          contextType: template.contextType,
+          supportedEventTypes: template.supportedEventTypes,
+          metadata: template.metadata.copyWith(
+            tags: [...template.metadata.tags, 'imported'],
+          ),
+          fields: template.fields,
+          actions: template.actions,
+          layout: template.layout,
+        );
+        
+        await _saveCustomTemplate(newTemplate);
+        _manager.registerTemplate(newTemplate);
+        imported++;
+      } catch (e) {
+        print('Error importing template: $e');
+      }
+    }
+
+    return imported;
   }
 }

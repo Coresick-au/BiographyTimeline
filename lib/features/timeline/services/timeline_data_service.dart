@@ -47,6 +47,19 @@ class TimelineDataService {
   DateTime? get endDate => _endDate;
   String get eventFilter => _eventFilter;
 
+  // Setters
+  void setActiveContext(String? contextId) {
+    _activeContextId = contextId;
+    _notifyChanges();
+  }
+  
+  // Notify listeners of changes
+  void _notifyChanges() {
+    _eventsController.add(_getFilteredEvents());
+    _contextsController.add(_getPrivacyFilteredContexts(_contexts));
+    _clustersController.add(Map.unmodifiable(_clusteredEvents));
+  }
+
   TimelineDataService() {
     _initializeSampleData();
   }
@@ -89,16 +102,144 @@ class TimelineDataService {
       ),
     ]);
 
-    // Sample events
+    // Sample events spanning 2-3 years
     _events.addAll([
+      // 2022 Events
       TimelineEvent.create(
-        id: 'event-1',
+        id: 'event-2022-1',
         contextId: 'context-1',
         ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 30)),
+        timestamp: DateTime(now.year - 2, 1, 15),
+        eventType: 'milestone',
+        title: 'New Year Resolution',
+        description: 'Started my journey towards a healthier lifestyle',
+      ),
+      TimelineEvent.create(
+        id: 'event-2022-2',
+        contextId: 'context-2',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 2, 3, 20),
         eventType: 'photo',
-        title: 'Summer Vacation',
-        description: 'Beautiful sunset at the beach',
+        title: 'Spring Adventure',
+        description: 'First hike of the season',
+        location: GeoLocation(
+          latitude: 40.7128,
+          longitude: -74.0060,
+          locationName: 'New York, NY',
+        ),
+      ),
+      TimelineEvent.create(
+        id: 'event-2022-3',
+        contextId: 'context-1',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 2, 6, 10),
+        eventType: 'milestone',
+        title: 'Graduation Day',
+        description: 'Completed my degree!',
+      ),
+      TimelineEvent.create(
+        id: 'event-2022-4',
+        contextId: 'context-2',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 2, 8, 5),
+        eventType: 'photo',
+        title: 'Summer Road Trip',
+        description: 'Epic cross-country adventure',
+        location: GeoLocation(
+          latitude: 36.1699,
+          longitude: -115.1398,
+          locationName: 'Las Vegas, NV',
+        ),
+      ),
+      TimelineEvent.create(
+        id: 'event-2022-5',
+        contextId: 'context-3',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 2, 9, 12),
+        eventType: 'milestone',
+        title: 'Adopted Max',
+        description: 'Welcomed our new furry family member',
+      ),
+      
+      // 2023 Events
+      TimelineEvent.create(
+        id: 'event-2023-1',
+        contextId: 'context-1',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 1, 1, 8),
+        eventType: 'milestone',
+        title: 'Started New Job',
+        description: 'First day at the new company',
+      ),
+      TimelineEvent.create(
+        id: 'event-2023-2',
+        contextId: 'context-2',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 1, 4, 15),
+        eventType: 'photo',
+        title: 'Cherry Blossoms',
+        description: 'Beautiful spring day in the park',
+        location: GeoLocation(
+          latitude: 38.9072,
+          longitude: -77.0369,
+          locationName: 'Washington, DC',
+        ),
+      ),
+      TimelineEvent.create(
+        id: 'event-2023-3',
+        contextId: 'context-1',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 1, 7, 4),
+        eventType: 'photo',
+        title: 'Independence Day BBQ',
+        description: 'Great time with friends and family',
+      ),
+      TimelineEvent.create(
+        id: 'event-2023-4',
+        contextId: 'context-3',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 1, 9, 12),
+        eventType: 'milestone',
+        title: 'Max\'s First Birthday',
+        description: 'Celebrating one year with our best friend',
+      ),
+      TimelineEvent.create(
+        id: 'event-2023-5',
+        contextId: 'context-2',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 1, 10, 31),
+        eventType: 'photo',
+        title: 'Halloween Party',
+        description: 'Best costume contest winner!',
+      ),
+      TimelineEvent.create(
+        id: 'event-2023-6',
+        contextId: 'context-1',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year - 1, 12, 25),
+        eventType: 'photo',
+        title: 'Christmas Celebration',
+        description: 'Family gathering for the holidays',
+      ),
+      
+      // 2024 Events (Recent)
+      TimelineEvent.create(
+        id: 'event-2024-1',
+        contextId: 'context-1',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year, 1, 1),
+        eventType: 'milestone',
+        title: 'New Year 2024',
+        description: 'Fresh start, new goals',
+      ),
+      TimelineEvent.create(
+        id: 'event-2024-2',
+        contextId: 'context-2',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year, 2, 14),
+        eventType: 'photo',
+        title: 'Valentine\'s Day',
+        description: 'Romantic dinner downtown',
         location: GeoLocation(
           latitude: 37.7749,
           longitude: -122.4194,
@@ -106,19 +247,33 @@ class TimelineDataService {
         ),
       ),
       TimelineEvent.create(
-        id: 'event-2',
+        id: 'event-2024-3',
         contextId: 'context-1',
         ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 20)),
+        timestamp: DateTime(now.year, 5, 20),
         eventType: 'milestone',
-        title: 'Started New Job',
-        description: 'First day at the new company',
+        title: 'Promotion',
+        description: 'Got promoted to senior position!',
       ),
       TimelineEvent.create(
-        id: 'event-3',
+        id: 'event-2024-4',
         contextId: 'context-2',
         ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 15)),
+        timestamp: DateTime(now.year, 7, 15),
+        eventType: 'photo',
+        title: 'Summer Vacation',
+        description: 'Beautiful sunset at the beach',
+        location: GeoLocation(
+          latitude: 21.3099,
+          longitude: -157.8581,
+          locationName: 'Honolulu, HI',
+        ),
+      ),
+      TimelineEvent.create(
+        id: 'event-2024-5',
+        contextId: 'context-2',
+        ownerId: 'user-1',
+        timestamp: DateTime(now.year, 9, 10),
         eventType: 'photo',
         title: 'Mountain Hiking',
         description: 'Reached the summit after a long hike',
@@ -129,23 +284,32 @@ class TimelineDataService {
         ),
       ),
       TimelineEvent.create(
-        id: 'event-4',
+        id: 'event-2024-6',
         contextId: 'context-3',
         ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 10)),
+        timestamp: DateTime(now.year, 10, 15),
         eventType: 'milestone',
         title: 'Pet Birthday',
         description: 'Celebrating our furry friend\'s special day',
       ),
       TimelineEvent.create(
-        id: 'event-5',
+        id: 'event-2024-7',
         contextId: 'context-1',
         ownerId: 'user-1',
-        timestamp: now.subtract(const Duration(days: 5)),
+        timestamp: now.subtract(const Duration(days: 30)),
         eventType: 'text',
         title: 'Reflection',
         description: 'Thinking about the journey so far',
         privacyLevel: PrivacyLevel.private,
+      ),
+      TimelineEvent.create(
+        id: 'event-2024-8',
+        contextId: 'context-1',
+        ownerId: 'user-1',
+        timestamp: now.subtract(const Duration(days: 7)),
+        eventType: 'photo',
+        title: 'Weekend Getaway',
+        description: 'Quick trip to recharge',
       ),
     ]);
 

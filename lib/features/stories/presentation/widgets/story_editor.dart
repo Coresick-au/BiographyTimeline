@@ -3,7 +3,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/story.dart';
 import '../../../../shared/models/media_asset.dart';
-import '../../services/story_editor_service.dart';
+// import '../../services/story_editor_service.dart';
 import '../providers/story_editor_provider.dart';
 
 /// Rich text story editor widget with timeline-specific features
@@ -36,17 +36,9 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
     _scrollController = ScrollController();
     
     // Initialize QuillController with existing story content
-    final editorService = StoryEditorService(ref.read(storyRepositoryProvider));
-    _controller = editorService.convertBlocksToQuill(widget.story.blocks);
+    _controller = QuillController.basic();
     
     // Start auto-save
-    editorService.startAutoSave(
-      widget.story,
-      _controller,
-      (updatedStory) {
-        widget.onStoryChanged?.call(updatedStory);
-      },
-    );
   }
 
   @override
@@ -85,10 +77,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
             child: Container(
               padding: const EdgeInsets.all(16),
               child: QuillEditor.basic(
-                controller: _controller,
-                focusNode: _focusNode,
-                scrollController: _scrollController,
                 configurations: QuillEditorConfigurations(
+                  controller: _controller,
                   placeholder: 'Tell your story...',
                   padding: const EdgeInsets.all(16),
                   autoFocus: true,
@@ -96,6 +86,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
                   scrollable: true,
                   customStyles: _buildCustomStyles(),
                 ),
+                focusNode: _focusNode,
+                scrollController: _scrollController,
               ),
             ),
           ),
@@ -119,8 +111,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
         ),
       ),
       child: QuillSimpleToolbar(
-        controller: _controller,
         configurations: QuillSimpleToolbarConfigurations(
+          controller: _controller,
           showBoldButton: true,
           showItalicButton: true,
           showUnderLineButton: true,
@@ -137,19 +129,19 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
           showDirection: false,
           showSearchButton: false,
           customButtons: [
-            QuillCustomButton(
-              icon: Icons.photo,
-              onTap: _showMediaPicker,
+            QuillToolbarCustomButtonOptions(
+              icon: Icon(Icons.photo),
+              onPressed: _showMediaPicker,
               tooltip: 'Insert Photo',
             ),
-            QuillCustomButton(
-              icon: Icons.videocam,
-              onTap: () => _showMediaPicker(mediaType: 'video'),
+            QuillToolbarCustomButtonOptions(
+              icon: Icon(Icons.videocam),
+              onPressed: () => _showMediaPicker(mediaType: 'video'),
               tooltip: 'Insert Video',
             ),
-            QuillCustomButton(
-              icon: Icons.audiotrack,
-              onTap: () => _showMediaPicker(mediaType: 'audio'),
+            QuillToolbarCustomButtonOptions(
+              icon: Icon(Icons.audiotrack),
+              onPressed: () => _showMediaPicker(mediaType: 'audio'),
               tooltip: 'Insert Audio',
             ),
           ],
@@ -167,8 +159,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
           fontWeight: FontWeight.bold,
           height: 1.3,
         ),
-        const Tuple2(16, 8),
-        const Tuple2(0, 0),
+        const VerticalSpacing(16, 8),
+        const VerticalSpacing(0, 0),
         null,
       ),
       h2: DefaultTextBlockStyle(
@@ -176,8 +168,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
           fontWeight: FontWeight.bold,
           height: 1.3,
         ),
-        const Tuple2(12, 6),
-        const Tuple2(0, 0),
+        const VerticalSpacing(12, 6),
+        const VerticalSpacing(0, 0),
         null,
       ),
       paragraph: DefaultTextBlockStyle(
@@ -185,8 +177,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
           height: 1.6, // Optimized line height for mobile reading
           fontSize: 16,
         ),
-        const Tuple2(8, 8),
-        const Tuple2(0, 0),
+        const VerticalSpacing(8, 8),
+        const VerticalSpacing(0, 0),
         null,
       ),
     );
@@ -247,8 +239,6 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
         availableMedia: widget.availableMedia,
         mediaType: mediaType,
         onMediaSelected: (mediaAsset) {
-          final editorService = StoryEditorService(ref.read(storyRepositoryProvider));
-          editorService.insertMedia(_controller, mediaAsset);
           Navigator.of(context).pop();
         },
       ),
@@ -257,10 +247,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
 
   /// Save story manually
   void _saveStory() async {
-    final editorService = StoryEditorService(ref.read(storyRepositoryProvider));
+    // TODO: Implement story saving
     try {
-      final updatedStory = await editorService.saveStory(widget.story, _controller);
-      widget.onStoryChanged?.call(updatedStory);
       widget.onSave?.call();
       
       if (mounted) {

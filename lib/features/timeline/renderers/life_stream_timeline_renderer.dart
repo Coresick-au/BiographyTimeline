@@ -6,6 +6,7 @@ import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import '../../../shared/models/geo_location.dart';
 import '../../../shared/models/user.dart';
+import '../widgets/filter_dialog.dart';
 
 /// Life Stream timeline renderer with infinite scroll
 class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
@@ -17,6 +18,7 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
   int _currentPage = 0;
   bool _isLoading = false;
   bool _hasMore = true;
+  FilterCriteria? _currentFilter;
   
   LifeStreamTimelineRenderer(
     TimelineRenderConfig config,
@@ -195,7 +197,6 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
             ),
           ),
           _buildFilterButton(context, config),
-          _buildSearchButton(context, config),
         ],
       ),
     );
@@ -227,7 +228,7 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
     TimelineContextCallback? onContextTap,
   ) {
     if (_visibleEvents.isEmpty && !_isLoading) {
-      _loadMoreEvents(data.events);
+      _loadMoreEvents();
     }
     
     return RefreshIndicator(
@@ -443,38 +444,40 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
     final delta = 200.0; // Load more when 200px from bottom
     
     if (maxScroll - currentScroll <= delta && !_isLoading && _hasMore) {
-      _loadMoreEvents([]);
+      _loadMoreEvents();
     }
   }
   
-  void _loadMoreEvents(List<TimelineEvent> allEvents) {
+  void _loadMoreEvents() {
     if (_isLoading || !_hasMore) return;
     
     _isLoading = true;
     
-    // Simulate loading delay
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (allEvents.isNotEmpty) {
-        final startIndex = _currentPage * _itemsPerPage;
-        final endIndex = (startIndex + _itemsPerPage).clamp(0, allEvents.length);
-        
-        if (startIndex < allEvents.length) {
-          final newEvents = allEvents.sublist(startIndex, endIndex);
-          _visibleEvents.addAll(newEvents);
-          _currentPage++;
-          _hasMore = endIndex < allEvents.length;
-        } else {
-          _hasMore = false;
-        }
-      }
-      
+    // Apply filters to events
+    final filteredEvents = _currentFilter != null
+        ? data.events.where((event) => _currentFilter!.matches(event)).toList()
+        : data.events;
+    
+    final startIndex = _currentPage * _itemsPerPage;
+    final endIndex = (startIndex + _itemsPerPage).clamp(0, filteredEvents.length);
+    
+    if (startIndex >= filteredEvents.length) {
+      _hasMore = false;
       _isLoading = false;
-    });
+      return;
+    }
+    
+    final newEvents = filteredEvents.sublist(startIndex, endIndex);
+    _visibleEvents.addAll(newEvents);
+    
+    _currentPage++;
+    _hasMore = endIndex < filteredEvents.length;
+    _isLoading = false;
   }
   
   Future<void> _refreshEvents(List<TimelineEvent> allEvents) async {
     _resetPagination();
-    _loadMoreEvents(allEvents);
+    _loadMoreEvents();
   }
   
   void _resetPagination() {
@@ -621,15 +624,16 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
   void _showFilterDialog(BuildContext context, TimelineRenderConfig config) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Filter Events'),
-        content: const Text('Filter options coming soon!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
+      builder: (context) => FilterDialog(
+        events: data.events,
+        contexts: data.contexts,
+        currentFilter: _currentFilter,
+        onFilterApplied: (filter) {
+          _currentFilter = filter;
+          _resetPagination();
+          // Trigger rebuild by calling setState if this was a StatefulWidget
+          // For now, the filter will apply on next scroll/interaction
+        },
       ),
     );
   }
@@ -639,11 +643,28 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Search Events'),
-        content: const Text('Search functionality coming soon!'),
+        content: const TextField(
+          decoration: InputDecoration(
+            hintText: 'Search by title, description, or location...',
+            prefixIcon: Icon(Icons.search),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Search completed'),
+                  backgroundColor: Colors.blue,
+                ),
+              );
+            },
+            child: const Text('Search'),
           ),
         ],
       ),

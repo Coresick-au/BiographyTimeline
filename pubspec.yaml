@@ -20,7 +20,10 @@ dependencies:
   
   # Media Processing
   photo_manager: ^3.0.0
+  image_picker: ^1.0.7
   exif: ^3.3.0
+  video_player: ^2.8.2
+  audioplayers: ^5.2.1
   
   # Rich Text Editor
   flutter_quill: ^9.4.4
@@ -28,6 +31,7 @@ dependencies:
   # Maps
   google_maps_flutter: ^2.5.0
   latlong2: ^0.8.1
+  geocoding: ^2.1.1
   
   # Face Detection
   google_mlkit_face_detection: ^0.10.0

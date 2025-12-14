@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/timeline/screens/timeline_screen.dart';
+import '../../features/timeline/screens/event_creation_screen.dart';
 import '../../features/stories/screens/stories_screen.dart';
+import '../../features/stories/screens/story_editor_screen.dart';
 import '../../features/social/screens/connections_screen.dart';
 import '../../features/media/screens/media_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/search/widgets/simple_search_widget.dart';
 import '../../features/ghost_camera/widgets/simple_ghost_camera_dialog.dart';
+import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/notifications/providers/notification_provider.dart';
 
 /// Main navigation shell for the app
 class MainNavigation extends ConsumerStatefulWidget {
@@ -316,9 +320,48 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
             icon: const Icon(Icons.search),
             onPressed: _showSearch,
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: _showNotifications,
+          // Notification bell with badge
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: _showNotifications,
+                tooltip: 'Notifications',
+              ),
+              // Unread badge
+              Consumer(
+                builder: (context, ref, child) {
+                  final unreadCount = ref.watch(unreadNotificationCountProvider);
+                  if (unreadCount == 0) return const SizedBox.shrink();
+                  
+                  return Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        unreadCount > 9 ? '9+' : unreadCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -595,23 +638,35 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
   }
 
   void _showNotifications() {
-    // TODO: Implement notifications
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notifications coming soon!')),
+    // TODO: Implement
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const NotificationsScreen(),
+      ),
     );
   }
 
   void _addTimelineEvent() {
-    // TODO: Navigate to add event screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Add event coming soon!')),
-    );
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const EventCreationScreen(),
+      ),
+    ).then((event) {
+      if (event != null) {
+        // Event was created successfully
+        // The timeline will refresh automatically via providers
+      }
+    });
   }
 
   void _createStory() {
-    // TODO: Navigate to create story screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Create story coming soon!')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const StoryEditorScreen(
+          eventId: null, // Creating a new story without an event
+          contextId: 'context-1', // Use first context
+        ),
+      ),
     );
   }
 
