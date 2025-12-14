@@ -258,12 +258,10 @@ For map view functionality on web, configure Google Maps API:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- Flutter team for the excellent framework
-- Riverpod for state management solution
-- Google Maps Flutter plugin for map functionality
-- The Flutter community for inspiration and support
+### Modern UI/UX
+- **Glassmorphism Design**: Beautiful frosted glass effects with dynamic depth
+- **Dark Mode**: Deep, rich dark theme with gradient backgrounds
+- **Interactive Elements**: Animated cards, pulsing loaders, and smooth transitions
 
 ## 📞 Support
 
