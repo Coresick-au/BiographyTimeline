@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'dart:typed_data';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../services/timeline_renderer_interface.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
@@ -217,56 +218,64 @@ class BentoGridTimelineRenderer extends BaseTimelineRenderer {
   }
   
   Widget _buildBentoGrid(BuildContext context, TimelineEventCallback? onEventTap, TimelineEventCallback? onEventLongPress) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Statistics Cards Row
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: StaggeredGrid.count(
+            crossAxisCount: 4,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
             children: [
-              Expanded(child: _buildStatCard(context, 'Total Events', _totalEvents.toString(), Icons.event)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildStatCard(context, 'Timeline Span', _getTimelineSpan(), Icons.date_range)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildStatCard(context, 'Locations', _totalLocations.toString(), Icons.location_on)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildEventTypeChart(context)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          
-          // Main Content Row
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
+              // Row 1: 4 stat cards (1x1 each)
+              StaggeredGridTile.count(
+                crossAxisCellCount: 1,
+                mainAxisCellCount: 1,
+                child: _buildStatCard(context, 'Total Events', _totalEvents.toString(), Icons.event),
+              ),
+              StaggeredGridTile.count(
+                crossAxisCellCount: 1,
+                mainAxisCellCount: 1,
+                child: _buildStatCard(context, 'Timeline Span', _getTimelineSpan(), Icons.date_range),
+              ),
+              StaggeredGridTile.count(
+                crossAxisCellCount: 1,
+                mainAxisCellCount: 1,
+                child: _buildStatCard(context, 'Locations', _totalLocations.toString(), Icons.location_on),
+              ),
+              StaggeredGridTile.count(
+                crossAxisCellCount: 1,
+                mainAxisCellCount: 1,
+                child: _buildEventTypeChart(context),
+              ),
+              
+              // Row 2: Recent Events (2x2) and Monthly Activity (2x2)
+              StaggeredGridTile.count(
+                crossAxisCellCount: 2,
+                mainAxisCellCount: 2,
                 child: _buildRecentEventsCard(context, onEventTap, onEventLongPress),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
+              StaggeredGridTile.count(
+                crossAxisCellCount: 2,
+                mainAxisCellCount: 2,
                 child: _buildMonthlyActivityChart(context),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          
-          // Bottom Row
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
+              
+              // Row 3: Top Locations (2x1) and Life Highlights (2x1)
+              StaggeredGridTile.count(
+                crossAxisCellCount: 2,
+                mainAxisCellCount: 1,
                 child: _buildTopLocationsCard(context),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
+              StaggeredGridTile.count(
+                crossAxisCellCount: 2,
+                mainAxisCellCount: 1,
                 child: _buildLifeHighlightsCard(context, onEventTap),
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
   

@@ -13,6 +13,7 @@ import '../widgets/timeline_view_selector.dart';
 import '../widgets/quick_entry_dialog.dart';
 import '../widgets/timeline_event_card.dart';
 import '../../../shared/widgets/modern/dark_theme.dart';
+import '../../../shared/widgets/modern/animated_buttons.dart';
 import '../widgets/search_dialog.dart';
 import 'event_details_screen.dart';
 
@@ -103,16 +104,17 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      // floatingActionButton handled by MainNavigation
       body: timelineState.when(
-        loading: () => _buildLoadingState(context),
-        error: (error, stack) => _buildErrorState(context, error.toString()),
-        data: (state) => _buildContent(context, state),
+        data: (state) => _buildTimelineContent(context, state),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Text('Error loading timeline: $error'),
+        ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, TimelineState state) {
+  Widget _buildTimelineContent(BuildContext context, TimelineState state) {
     // If we have an error in the clean state, showing it might be good, 
     // but AsyncValue handles the main error state.
     
