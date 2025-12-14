@@ -403,6 +403,18 @@ class ModernDarkTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  /// Background gradient for Scaffold - gives glassmorphism effects depth
+  static const LinearGradient backgroundGradient = LinearGradient(
+    colors: [
+      Color(0xFF0F0F1E),  // Deep dark at top
+      Color(0xFF1A1A2E),  // Slightly lighter
+      Color(0xFF0F0F1E),  // Deep dark at bottom
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    stops: [0.0, 0.5, 1.0],
+  );
 }
 
 /// Theme transition widget for smooth theme switching

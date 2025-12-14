@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 /// Glassmorphism card with blur effect and transparency
+/// Note: BackdropFilter has limited support on Flutter Web, so we use
+/// a combination of gradient overlays and borders to achieve the glass effect
 class GlassmorphismCard extends StatelessWidget {
   final Widget child;
   final double? width;
@@ -38,34 +40,96 @@ class GlassmorphismCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Enhanced glass effect colors for better visibility
+    final glassBaseColor = isDark 
+        ? const Color(0xFF1E1E2E)  // Dark surface color
+        : Colors.white;
+    
+    final glassBorderColor = isDark
+        ? const Color(0xFF667EEA).withOpacity(0.3)  // Primary color border glow
+        : Colors.white.withOpacity(0.5);
+    
+    final glassOverlayColor = isDark
+        ? Colors.white.withOpacity(0.05)
+        : Colors.white.withOpacity(0.3);
+
     final card = Container(
       width: width,
       height: height,
       margin: margin,
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(opacity),
+        // Use a base color with higher opacity for visibility
+        color: glassBaseColor.withOpacity(isDark ? 0.7 : opacity),
         borderRadius: BorderRadius.circular(borderRadius),
         border: border ?? Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
+          color: glassBorderColor,
+          width: 1.5,
         ),
+        // Gradient overlay for glass effect
+        gradient: isDark ? LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1E1E2E).withOpacity(0.9),
+            const Color(0xFF2A2A3E).withOpacity(0.8),
+          ],
+        ) : null,
         boxShadow: boxShadow ?? [
+          // Outer glow
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: blur,
+            color: isDark 
+                ? const Color(0xFF667EEA).withOpacity(0.15)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 20,
             spreadRadius: 0,
+            offset: const Offset(0, 8),
+          ),
+          // Inner shadow for depth
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            blurRadius: blur,
+            spreadRadius: -2,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            padding: padding ?? const EdgeInsets.all(16),
-            child: child,
-          ),
+        child: Stack(
+          children: [
+            // Backdrop blur (works on native, limited on web)
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+              child: Container(
+                color: Colors.transparent,
+              ),
+            ),
+            // Glass highlight overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      glassOverlayColor,
+                      Colors.transparent,
+                      glassOverlayColor.withOpacity(0.02),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            // Content
+            Container(
+              padding: padding ?? const EdgeInsets.all(16),
+              child: child,
+            ),
+          ],
         ),
       ),
     );

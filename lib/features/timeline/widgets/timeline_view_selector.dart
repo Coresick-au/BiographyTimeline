@@ -16,7 +16,7 @@ class TimelineViewSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: Colors.transparent,
       child: TabBar(
         controller: tabController,
         isScrollable: true,

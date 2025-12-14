@@ -31,20 +31,9 @@ class TimelineEventCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       borderRadius: 20,
       blur: 15,
-      opacity: isDark ? 0.05 : 0.1,
-      backgroundColor: isDark ? Colors.white : Colors.black,
+      // allow defaults to take over for better glass effect
       padding: const EdgeInsets.all(20),
       onTap: onTap,
-      boxShadow: [
-        BoxShadow(
-          color: isDark 
-              ? Colors.black.withOpacity(0.3)
-              : Colors.black.withOpacity(0.1),
-          blurRadius: 20,
-          spreadRadius: 0,
-          offset: const Offset(0, 10),
-        ),
-      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

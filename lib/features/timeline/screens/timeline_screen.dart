@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/design_system/design_system.dart';
@@ -103,12 +104,17 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     final timelineState = ref.watch(timelineDataProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: timelineState.when(
-        data: (state) => _buildTimelineContent(context, state),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text('Error loading timeline: $error'),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: ModernDarkTheme.backgroundGradient,
+        ),
+        child: timelineState.when(
+          data: (state) => _buildTimelineContent(context, state),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(
+            child: Text('Error loading timeline: $error'),
+          ),
         ),
       ),
     );
@@ -306,9 +312,14 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: child,
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
+          child: child,
+        ),
+      ),
     );
   }
 
