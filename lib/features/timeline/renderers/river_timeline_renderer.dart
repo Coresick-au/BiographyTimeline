@@ -111,18 +111,25 @@ class RiverTimelineRenderer implements ITimelineRenderer {
   @override
   Future<void> initialize(TimelineRenderConfig config) async {
     _config = config;
+    if (_data != null) {
+      _initializeRiverData();
+    }
   }
 
   @override
   Future<void> updateData(TimelineRenderData data) async {
     _data = data;
-    await _initializeRiverData();
+    if (_config != null) {
+      _initializeRiverData();
+    }
   }
 
   @override
   Future<void> updateConfig(TimelineRenderConfig config) async {
     _config = config;
-    await _initializeRiverData();
+    if (_data != null) {
+      _initializeRiverData();
+    }
   }
 
   @override
@@ -583,7 +590,7 @@ class RiverTimelineRenderer implements ITimelineRenderer {
     ];
   }
 
-  Future<void> _initializeRiverData() async {
+  void _initializeRiverData() {
     if (_data?.events.isEmpty ?? true) return;
 
     // Create river visualization from actual timeline data

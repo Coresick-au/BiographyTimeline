@@ -99,7 +99,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
 
   @override
   Widget build(BuildContext context) {
-    final timelineState = ref.watch(timelineServiceProvider);
+    final timelineState = ref.watch(timelineDataProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -186,22 +186,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           tooltip: 'Search Events',
         ),
       ],
-                        onPressed: _showConfigurationDialog,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white70),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                        child: const Text('Settings'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
