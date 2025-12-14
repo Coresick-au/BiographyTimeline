@@ -4,9 +4,11 @@ import '../../../shared/design_system/design_system.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import '../models/timeline_state.dart';
+import '../models/view_state.dart';
 import '../services/timeline_data_service.dart';
 import '../services/timeline_renderer_interface.dart';
 import '../services/timeline_renderer_factory.dart';
+import '../services/view_state_manager.dart';
 import '../widgets/timeline_view_selector.dart';
 import '../widgets/quick_entry_dialog.dart';
 import '../widgets/search_dialog.dart';
@@ -26,8 +28,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   late TabController _tabController;
   ITimelineRenderer? _currentRenderer;
   TimelineRenderConfig? _config;
-  // Unique key to force renderer rebuild when mode/data changes if necessary
-  Key _rendererKey = UniqueKey();
+  
+  // Renderer cache to preserve state across view switches
+  final Map<TimelineViewMode, ITimelineRenderer> _rendererCache = {};
 
   @override
   void initState() {
@@ -38,15 +41,43 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _currentRenderer?.dispose();
+    // Dispose all cached renderers
+    for (final renderer in _rendererCache.values) {
+      renderer.dispose();
+    }
+    _rendererCache.clear();
     super.dispose();
   }
 
-  void _switchViewMode(TimelineViewMode newMode) {
+  void _switchViewMode(TimelineViewMode newMode) async {
+    // Save current view state before switching
+    if (_currentRenderer != null) {
+      final visibleRange = _currentRenderer!.getVisibleDateRange();
+      final currentState = ViewState(
+        viewMode: _currentViewMode,
+        scrollOffset: visibleRange?.start.millisecondsSinceEpoch.toDouble() ?? 0.0,
+        zoomLevel: 1.0, // TODO: Get from renderer if supported
+      );
+      ref.read(viewStateManagerProvider.notifier).saveViewState(
+        _currentViewMode,
+        currentState,
+      );
+    }
+
     setState(() {
       _currentViewMode = newMode;
       _tabController.index = TimelineViewMode.values.indexOf(newMode);
-      _rendererKey = UniqueKey(); // Force rebuild of renderer
+      // Don't force rebuild - let renderer cache work
+    });
+
+    // Restore view state after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_currentRenderer != null) {
+        ref.read(viewStateManagerProvider.notifier).restoreViewState(
+          newMode,
+          _currentRenderer!,
+        );
+      }
     });
   }
 
@@ -193,8 +224,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   Widget _buildTimelineRenderer(BuildContext context, TimelineState state) {
-    // Re-create renderer logic
-    // We create the config and data object
+    // Create config and data objects
     final config = TimelineRenderConfig(
       viewMode: _currentViewMode,
       showPrivateEvents: state.showPrivateEvents,
@@ -207,7 +237,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     );
 
     final data = TimelineRenderData(
-      events: state.filteredEvents, // Use filtered events for rendering
+      events: state.filteredEvents,
       contexts: state.contexts,
       clusteredEvents: state.clusteredEvents,
       earliestDate: state.filteredEvents.isEmpty ? DateTime.now() : 
@@ -216,34 +246,17 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           state.filteredEvents.map((e) => e.timestamp).reduce((a, b) => a.isAfter(b) ? a : b),
     );
 
-    // Ideally we don't recreate the renderer on every build unless necessary.
-    // However, IFactory APIs often imply creation.
-    // For performance, we might want to cache this, but for this refactor I'll keep it simple:
-    // create and return the widget built by the renderer.
-
-    // Warning: createRenderer returns ITimelineRenderer, which is likely NOT a Widget, 
-    // but controls a Widget or has a build method.
-    // Looking at previous code: renderer.build(...) returns a Widget.
-    
-    // We should cache the renderer to preserve its internal state (scroll position etc)
-    // ONLY if the view mode hasn't changed.
-    // Current simple implementation creates it every time which loses state.
-    // Enhanced:
-    if (_currentRenderer == null || _config?.viewMode != config.viewMode) {
-      _currentRenderer = TimelineRendererFactory.createRenderer(_currentViewMode, config, data);
-      _currentRenderer!.initialize(config); 
-      _config = config;
+    // Check if we have a cached renderer for this view mode
+    if (!_rendererCache.containsKey(_currentViewMode)) {
+      // Create new renderer and cache it
+      final renderer = TimelineRendererFactory.createRenderer(
+        _currentViewMode,
+        config,
+        data,
+      );
+      _rendererCache[_currentViewMode] = renderer;
+      _currentRenderer = renderer;
     } else {
-       // Update data on existing renderer if supported, otherwise recreate
-       // Assuming onDataUpdated exists
-       // _currentRenderer!.updateData(data); // Hypothetical
-       // For safety in this refactor without deep diving into every renderer's update logic:
-       // We recreate it if key changes or simplify.
-       // Actually, the previous implementation created it inside `_initializeTimeline`.
-       // Let's recreate it if state changes significantly, or just rely on the renderer handling updates?
-       // Let's create a new one to be safe and ensure data freshness, 
-       // but using Key to let Flutter manage the Widget lifecycle if the renderer returns a Widget.
-        _currentRenderer = TimelineRendererFactory.createRenderer(_currentViewMode, config, data);
     }
     
     // Note: Calling build on the renderer.

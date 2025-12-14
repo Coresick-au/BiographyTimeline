@@ -296,10 +296,13 @@ class TimelineIntegrationEvent {
 }
 
 /// Provider for integration service
-final timelineIntegrationServiceProvider = Provider<TimelineIntegrationService>((ref) {
-  final dataService = ref.watch(timelineServiceProvider);
-  return TimelineIntegrationService(dataService);
-});
+/// NOTE: Currently disabled - needs refactoring to work with AsyncNotifier architecture
+/// The integration service was designed for the old StreamController-based TimelineService
+/// and needs to be updated to work with the new timelineDataProvider (AsyncNotifier)
+// final timelineIntegrationServiceProvider = Provider<TimelineIntegrationService>((ref) {
+//   final dataService = ref.watch(timelineServiceProvider);
+//   return TimelineIntegrationService(dataService);
+// });
 
 /// Provider for integration events stream
 final timelineIntegrationEventsProvider = StreamProvider<TimelineIntegrationEvent>((ref) {
