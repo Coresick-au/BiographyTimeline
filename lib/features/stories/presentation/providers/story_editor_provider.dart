@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import '../../data/repositories/story_repository.dart';
-// import '../../services/story_editor_service.dart';
+import '../../services/story_editor_service.dart';
 import '../../../../shared/models/story.dart';
 import '../../../../shared/models/media_asset.dart';
 import '../../../../shared/models/timeline_event.dart';
@@ -110,12 +110,14 @@ class _LazyStoryRepository implements StoryRepository {
   }
 }
 
-/// Provider for story editor state
+/// Provider for story editor state using the new service
 final storyEditorProvider = StateNotifierProvider.family<StoryEditorNotifier, StoryEditorState, String>(
   (ref, storyId) {
+    final service = ref.watch(storyEditorServiceProviderFamily(storyId));
     return StoryEditorNotifier(
       ref,
       storyId,
+      service,
     );
   },
 );
@@ -124,36 +126,45 @@ final storyEditorProvider = StateNotifierProvider.family<StoryEditorNotifier, St
 class StoryEditorNotifier extends StateNotifier<StoryEditorState> {
   final String _storyId;
   final Ref _ref;
+  final StoryEditorService _service;
 
-  StoryEditorNotifier(this._ref, this._storyId)
+  StoryEditorNotifier(this._ref, this._storyId, this._service)
       : super(StoryEditorState(
           story: Story.empty(id: _storyId, eventId: '', authorId: ''),
           quillController: QuillController.basic(),
           availableMedia: [],
         )) {
-    _loadStory();
+    // Listen to service streams
+    _service.storyStream.listen(_onStoryUpdated);
+    _service.savingStream.listen(_onSavingStateChanged);
+    _service.errorStream.listen(_onErrorOccurred);
   }
 
-  /// Load story from repository
-  Future<void> _loadStory() async {
-    try {
-      final repository = _ref.read(storyRepositoryProvider);
-      if (repository is _LazyStoryRepository) {
-        await repository.initialize();
-      }
-      final story = await repository.getStory(_storyId);
-      if (story != null) {
-        // TODO: Implement story blocks to Quill conversion
-        final controller = QuillController.basic();
-        state = state.copyWith(
-          story: story,
-          quillController: controller,
-        );
-      }
-    } catch (e) {
+  /// Handle story updates from service
+  void _onStoryUpdated(Story? story) {
+    if (story != null && mounted) {
+      final controller = _service.createQuillController();
       state = state.copyWith(
-        errorMessage: 'Failed to load story: $e',
+        story: story,
+        quillController: controller,
       );
+    }
+  }
+
+  /// Handle saving state changes
+  void _onSavingStateChanged(bool isSaving) {
+    if (mounted) {
+      state = state.copyWith(
+        isSaving: isSaving,
+        isAutoSaving: isSaving && !state.isSaving,
+      );
+    }
+  }
+
+  /// Handle error messages
+  void _onErrorOccurred(String? error) {
+    if (mounted) {
+      state = state.copyWith(errorMessage: error);
     }
   }
 
@@ -165,45 +176,39 @@ class StoryEditorNotifier extends StateNotifier<StoryEditorState> {
     );
   }
 
-  /// Start auto-saving
+  /// Update content from Quill controller
+  void updateContent(QuillController controller) {
+    _service.updateContent(controller);
+  }
+
+  /// Add a new block
+  void addBlock(StoryBlock block) {
+    _service.addBlock(block);
+  }
+
+  /// Update a specific block
+  void updateBlock(int index, StoryBlock block) {
+    _service.updateBlock(index, block);
+  }
+
+  /// Remove a block
+  void removeBlock(int index) {
+    _service.removeBlock(index);
+  }
+
+  /// Reorder blocks
+  void reorderBlocks(int oldIndex, int newIndex) {
+    _service.reorderBlocks(oldIndex, newIndex);
+  }
+
+  /// Start auto-saving (handled by service)
   void startAutoSave() {
-    // TODO: Implement auto-save functionality
-    state = state.copyWith(
-      isAutoSaving: true,
-    );
-    
-    // Simulate save completion after a delay
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        state = state.copyWith(
-          isAutoSaving: false,
-          lastSaved: DateTime.now(),
-          hasUnsavedChanges: false,
-        );
-      }
-    });
+    // Auto-save is automatically handled by the service
   }
 
   /// Save story manually
   Future<void> saveStory() async {
-    try {
-      state = state.copyWith(isAutoSaving: true);
-      
-      // TODO: Implement story saving
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      state = state.copyWith(
-        isAutoSaving: false,
-        lastSaved: DateTime.now(),
-        hasUnsavedChanges: false,
-        errorMessage: null,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isAutoSaving: false,
-        errorMessage: 'Failed to save story: $e',
-      );
-    }
+    await _service.save();
   }
 
   /// Set available media
@@ -215,7 +220,7 @@ class StoryEditorNotifier extends StateNotifier<StoryEditorState> {
 
   @override
   void dispose() {
-    // TODO: Dispose resources when StoryEditorService is implemented
+    _service.dispose();
     super.dispose();
   }
 }

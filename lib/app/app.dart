@@ -5,6 +5,7 @@ import '../shared/providers/design_system_provider.dart';
 import '../shared/providers/theme_provider.dart';
 import '../shared/design_system/theme_engine.dart';
 import '../shared/design_system/app_theme.dart';
+import '../shared/widgets/loading_widgets.dart';
 
 class UsersTimelineApp extends ConsumerWidget {
   const UsersTimelineApp({super.key});
@@ -34,7 +35,9 @@ class UsersTimelineApp extends ConsumerWidget {
       theme: themeData,
       darkTheme: darkThemeData,
       themeMode: themeMode,
-      home: const EnhancedNavigation(),
+      home: LoadingOverlay(
+        child: const EnhancedNavigation(),
+      ),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -330,13 +333,15 @@ class ErrorService {
   }
 
   Future<void> _saveErrorLogs() async {
-    final logsJson = _errorLog.map((e) => e.toJson()).toList();
-    await _prefs?.setStringList(_errorLogKey, logsJson);
+    if (_prefs == null) return;
+    
+    final logsJson = _errorLog.map((log) => log.toJson()).toList();
+    await _prefs?.setStringList(_errorLogKey, logsJson.map((e) => jsonEncode(e)).toList());
   }
 
   Future<void> _saveCrashReports() async {
     final reportsJson = _crashReports.map((r) => r.toJson()).toList();
-    await _prefs?.setStringList(_crashReportKey, reportsJson);
+    await _prefs?.setStringList(_crashReportKey, reportsJson.map((e) => jsonEncode(e)).toList());
   }
 
   String _generateId() {

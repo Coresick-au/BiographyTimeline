@@ -11,7 +11,7 @@ import 'timeline_clustering_service.dart';
 /// 
 /// Migrated to Riverpod 2.4+ AsyncNotifier pattern.
 class TimelineDataService extends AsyncNotifier<TimelineState> {
-  late final TimelineRepository _repository;
+  late final LazyTimelineRepository _repository;
   late final TimelineFilterService _filterService;
   late final TimelineClusteringService _clusteringService;
 
@@ -20,6 +20,9 @@ class TimelineDataService extends AsyncNotifier<TimelineState> {
     _repository = ref.watch(timelineRepositoryProvider);
     _filterService = ref.watch(timelineFilterServiceProvider);
     _clusteringService = ref.watch(timelineClusteringServiceProvider);
+
+    // Initialize the repository
+    await _repository.initialize();
 
     // Initial load
     return _loadData();

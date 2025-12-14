@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/timeline_service.dart';
+import '../services/timeline_view_switch_service.dart';
 import '../services/timeline_renderer_interface.dart';
 import '../services/timeline_renderer_factory.dart';
+import '../models/view_state.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 
@@ -10,12 +12,10 @@ final timelineServiceProvider = Provider<TimelineService>((ref) {
   return TimelineService();
 });
 
-/// Provider for current timeline configuration
-final timelineConfigProvider = StateProvider<TimelineRenderConfig>((ref) {
-  return const TimelineRenderConfig(
-    viewMode: TimelineViewMode.chronological,
-    showPrivateEvents: true,
-  );
+/// Provider for current timeline configuration (now uses view switch service)
+final timelineConfigProvider = Provider<TimelineRenderConfig>((ref) {
+  final service = ref.watch(timelineServiceProvider);
+  return service.currentConfig;
 });
 
 /// Provider for timeline render data
@@ -32,22 +32,10 @@ final timelineRenderDataProvider = FutureProvider<TimelineRenderData>((ref) asyn
   );
 });
 
-/// Provider for active renderer
+/// Provider for active renderer (now uses view switch service)
 final activeRendererProvider = Provider<ITimelineRenderer?>((ref) {
-  final service = ref.watch(timelineServiceProvider);
-  final config = ref.watch(timelineConfigProvider);
-  final renderData = ref.watch(timelineRenderDataProvider);
-  
-  // Only create renderer when data is available
-  if (renderData is AsyncData<TimelineRenderData>) {
-    return TimelineRendererFactory.createRenderer(
-      config.viewMode,
-      config,
-      renderData.value,
-    );
-  }
-  
-  return null;
+  final viewSwitchService = ref.watch(timelineViewSwitchServiceProvider);
+  return viewSwitchService.currentRenderer;
 });
 
 /// Provider for timeline statistics
@@ -56,9 +44,10 @@ final timelineStatsProvider = Provider<Map<String, dynamic>>((ref) {
   return service.getStatistics();
 });
 
-/// Provider for available view modes
-final availableViewModesProvider = Provider<List<TimelineViewMode>>((ref) {
-  return TimelineRendererFactory.getAvailableViewModes();
+/// Provider for available view modes (now uses view switch service)
+final availableViewModesProvider = Provider<Map<TimelineViewMode, String>>((ref) {
+  final viewSwitchService = ref.watch(timelineViewSwitchServiceProvider);
+  return viewSwitchService.getAvailableViews();
 });
 
 /// Provider to handle timeline actions
@@ -126,11 +115,10 @@ class TimelineActions {
     }
   }
 
-  /// Switch view mode
+  /// Switch view mode (now uses view switch service)
   Future<void> switchViewMode(TimelineViewMode viewMode) async {
-    final currentConfig = ref.read(timelineConfigProvider);
-    final newConfig = currentConfig.copyWith(viewMode: viewMode);
-    await updateConfig(newConfig);
+    final viewSwitchService = ref.read(timelineViewSwitchServiceProvider);
+    await viewSwitchService.switchToView(viewMode);
   }
 
   /// Search events
@@ -169,82 +157,8 @@ final timelineActionsProvider = Provider<TimelineActions>((ref) {
   return TimelineActions(ref);
 });
 
-/// Notifier for managing timeline state
-class TimelineNotifier extends StateNotifier<TimelineState> {
-  final TimelineActions _actions;
-
-  TimelineNotifier(this._actions) : super(const TimelineState());
-
-  Future<void> initializeWithDemoData() async {
-    state = state.copyWith(isLoading: true);
-    
-    try {
-      // TODO: Load demo data
-      state = state.copyWith(
-        isLoading: false,
-        isInitialized: true,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
-
-  Future<void> switchViewMode(TimelineViewMode viewMode) async {
-    state = state.copyWith(isLoading: true);
-    
-    try {
-      await _actions.switchViewMode(viewMode);
-      state = state.copyWith(
-        isLoading: false,
-        currentViewMode: viewMode,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
-
-  void clearError() {
-    state = state.copyWith(error: null);
-  }
-}
-
-/// State for timeline
-class TimelineState {
-  final bool isLoading;
-  final bool isInitialized;
-  final String? error;
-  final TimelineViewMode? currentViewMode;
-
-  const TimelineState({
-    this.isLoading = false,
-    this.isInitialized = false,
-    this.error,
-    this.currentViewMode,
-  });
-
-  TimelineState copyWith({
-    bool? isLoading,
-    bool? isInitialized,
-    String? error,
-    TimelineViewMode? currentViewMode,
-  }) {
-    return TimelineState(
-      isLoading: isLoading ?? this.isLoading,
-      isInitialized: isInitialized ?? this.isInitialized,
-      error: error ?? this.error,
-      currentViewMode: currentViewMode ?? this.currentViewMode,
-    );
-  }
-}
-
-/// Provider for timeline notifier
-final timelineNotifierProvider = StateNotifierProvider<TimelineNotifier, TimelineState>((ref) {
-  final actions = ref.watch(timelineActionsProvider);
-  return TimelineNotifier(actions);
+/// Provider for current view state
+final currentViewStateProvider = Provider<ViewState>((ref) {
+  final viewSwitchService = ref.watch(timelineViewSwitchServiceProvider);
+  return viewSwitchService.viewState;
 });

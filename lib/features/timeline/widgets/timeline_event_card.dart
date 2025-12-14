@@ -3,6 +3,8 @@ import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/media_asset.dart';
 import '../../../shared/widgets/modern/glassmorphism_card.dart';
 import '../../../shared/widgets/modern/shimmer_loading.dart';
+import '../../../shared/design_system/design_tokens.dart';
+import '../../../shared/design_system/responsive_layout.dart';
 
 /// Widget that displays a timeline event with photo count indicators
 class TimelineEventCard extends StatelessWidget {
@@ -14,42 +16,64 @@ class TimelineEventCard extends StatelessWidget {
   final VoidCallback? onExpandToggle;
 
   const TimelineEventCard({
-    Key? key,
+    super.key,
     required this.event,
     this.onTap,
     this.onLongPress,
     this.showPhotoCount = true,
     this.isExpanded = false,
     this.onExpandToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Note: isDark is kept for potential future use in responsive theming
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return GlassmorphismCard(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      borderRadius: 20,
+      margin: ResponsiveLayout.getResponsiveMargin(context),
+      borderRadius: ResponsiveLayout.getValue(
+        context: context,
+        mobile: DesignTokens.radiusLarge + 4, // 20px
+        tablet: DesignTokens.radiusLarge + 6, // 22px
+        desktop: DesignTokens.radiusLarge + 8, // 24px
+      ),
       blur: 15,
       // allow defaults to take over for better glass effect
-      padding: const EdgeInsets.all(20),
+      padding: ResponsiveLayout.getResponsivePadding(context),
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
-          const SizedBox(height: 12),
+          SizedBox(height: context.getResponsiveValue(
+            mobile: DesignTokens.space3,
+            tablet: DesignTokens.space4,
+            desktop: DesignTokens.space5,
+          )),
           _buildMediaPreview(context),
           if (event.description != null) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: context.getResponsiveValue(
+              mobile: DesignTokens.space2,
+              tablet: DesignTokens.space3,
+              desktop: DesignTokens.space4,
+            )),
             _buildDescription(context),
           ],
           if (showPhotoCount && event.assets.length > 1) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: context.getResponsiveValue(
+              mobile: DesignTokens.space2,
+              tablet: DesignTokens.space3,
+              desktop: DesignTokens.space4,
+            )),
             _buildPhotoCountIndicator(context),
           ],
           if (isExpanded) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: context.getResponsiveValue(
+              mobile: DesignTokens.space3,
+              tablet: DesignTokens.space4,
+              desktop: DesignTokens.space5,
+            )),
             _buildExpandedContent(context),
           ],
         ],
@@ -61,7 +85,11 @@ class TimelineEventCard extends StatelessWidget {
     return Row(
       children: [
         _buildEventTypeIcon(context),
-        const SizedBox(width: 8),
+        SizedBox(width: context.getResponsiveValue(
+          mobile: DesignTokens.space2,
+          tablet: DesignTokens.space3,
+          desktop: DesignTokens.space4,
+        )),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,17 +161,29 @@ class TimelineEventCard extends StatelessWidget {
     }
     
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(context.getResponsiveValue(
+        mobile: DesignTokens.space2,
+        tablet: DesignTokens.space3,
+        desktop: DesignTokens.space4,
+      )),
       decoration: BoxDecoration(
-        color: iconColor?.withOpacity(event.eventType == 'text' ? 0.2 : 0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: iconColor.withOpacity(event.eventType == 'text' ? 0.2 : 0.1),
+        borderRadius: BorderRadius.circular(context.getResponsiveValue(
+          mobile: DesignTokens.radiusSmall,
+          tablet: DesignTokens.radiusMedium,
+          desktop: DesignTokens.radiusLarge,
+        )),
         border: event.eventType == 'text' 
-            ? Border.all(color: iconColor?.withOpacity(0.3) ?? Colors.transparent)
-            : null,
+            ? Border.all(color: iconColor.withOpacity(0.3))
+            : Border.all(color: iconColor.withOpacity(0.1)),
       ),
       child: Icon(
         iconData,
-        size: 20,
+        size: context.getResponsiveValue(
+          mobile: DesignTokens.space4 + 4, // 20px
+          tablet: DesignTokens.space5 + 4, // 24px
+          desktop: DesignTokens.space6 + 4, // 28px
+        ),
         color: iconColor,
       ),
     );
@@ -161,7 +201,11 @@ class TimelineEventCard extends StatelessWidget {
     );
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(context.getResponsiveValue(
+        mobile: DesignTokens.radiusSmall,
+        tablet: DesignTokens.radiusMedium,
+        desktop: DesignTokens.radiusLarge,
+      )),
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: Stack(
@@ -170,14 +214,30 @@ class TimelineEventCard extends StatelessWidget {
             _buildAssetPreview(keyAsset),
             if (event.assets.length > 1)
               Positioned(
-                top: 8,
-                right: 8,
+                top: context.getResponsiveValue(
+                  mobile: DesignTokens.space2,
+                  tablet: DesignTokens.space3,
+                  desktop: DesignTokens.space4,
+                ),
+                right: context.getResponsiveValue(
+                  mobile: DesignTokens.space2,
+                  tablet: DesignTokens.space3,
+                  desktop: DesignTokens.space4,
+                ),
                 child: _buildAssetCountBadge(context),
               ),
             if (event.eventType == 'photo_burst')
               Positioned(
-                bottom: 8,
-                left: 8,
+                bottom: context.getResponsiveValue(
+                  mobile: DesignTokens.space2,
+                  tablet: DesignTokens.space3,
+                  desktop: DesignTokens.space4,
+                ),
+                left: context.getResponsiveValue(
+                  mobile: DesignTokens.space2,
+                  tablet: DesignTokens.space3,
+                  desktop: DesignTokens.space4,
+                ),
                 child: _buildBurstIndicator(context),
               ),
           ],
@@ -196,7 +256,10 @@ class TimelineEventCard extends StatelessWidget {
             errorBuilder: (context, error, stackTrace) {
               return Container(
                 color: Colors.grey[300],
-                child: const Icon(Icons.broken_image, size: 48),
+                child: const Icon(
+                  Icons.broken_image,
+                  size: 48, // Keep explicit size for error icon
+                ),
               );
             },
           ),
@@ -209,7 +272,7 @@ class TimelineEventCard extends StatelessWidget {
               Center(
                 child: Icon(
                   Icons.play_circle_outline,
-                  size: 48,
+                  size: 48, // Keep explicit size for video icon
                   color: Colors.white,
                 ),
               ),
@@ -222,7 +285,7 @@ class TimelineEventCard extends StatelessWidget {
           child: const Center(
             child: Icon(
               Icons.audiotrack,
-              size: 48,
+              size: 48, // Keep explicit size for audio icon
               color: Colors.blue,
             ),
           ),
@@ -233,7 +296,7 @@ class TimelineEventCard extends StatelessWidget {
           child: const Center(
             child: Icon(
               Icons.description,
-              size: 48,
+              size: 48, // Keep explicit size for document icon
               color: Colors.grey,
             ),
           ),
@@ -243,16 +306,35 @@ class TimelineEventCard extends StatelessWidget {
 
   Widget _buildAssetCountBadge(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.getResponsiveValue(
+          mobile: DesignTokens.space2,
+          tablet: DesignTokens.space3,
+          desktop: DesignTokens.space4,
+        ),
+        vertical: context.getResponsiveValue(
+          mobile: DesignTokens.space1,
+          tablet: DesignTokens.space2,
+          desktop: DesignTokens.space2,
+        ),
+      ),
       decoration: BoxDecoration(
         color: Colors.black87,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(context.getResponsiveValue(
+          mobile: DesignTokens.radiusSmall,
+          tablet: DesignTokens.radiusMedium,
+          desktop: DesignTokens.radiusLarge,
+        )),
       ),
       child: Text(
         '${event.assets.length}',
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 12,
+          fontSize: context.getResponsiveValue(
+            mobile: DesignTokens.labelLarge.fontSize ?? 14, // 14px
+            tablet: (DesignTokens.labelLarge.fontSize ?? 14) + 2, // 16px
+            desktop: (DesignTokens.labelLarge.fontSize ?? 14) + 4, // 18px
+          ),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -261,25 +343,52 @@ class TimelineEventCard extends StatelessWidget {
 
   Widget _buildBurstIndicator(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.getResponsiveValue(
+          mobile: DesignTokens.space2,
+          tablet: DesignTokens.space3,
+          desktop: DesignTokens.space4,
+        ),
+        vertical: context.getResponsiveValue(
+          mobile: DesignTokens.space1,
+          tablet: DesignTokens.space2,
+          desktop: DesignTokens.space2,
+        ),
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(context.getResponsiveValue(
+          mobile: DesignTokens.radiusSmall,
+          tablet: DesignTokens.radiusMedium,
+          desktop: DesignTokens.radiusLarge,
+        )),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.burst_mode,
-            size: 12,
+            size: context.getResponsiveValue(
+              mobile: DesignTokens.labelSmall.fontSize ?? 11, // 11px
+              tablet: (DesignTokens.labelSmall.fontSize ?? 11) + 2, // 13px
+              desktop: (DesignTokens.labelSmall.fontSize ?? 11) + 4, // 15px
+            ),
             color: Theme.of(context).colorScheme.onPrimary,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: context.getResponsiveValue(
+            mobile: DesignTokens.space1,
+            tablet: DesignTokens.space2,
+            desktop: DesignTokens.space2,
+          )),
           Text(
             'BURST',
             style: TextStyle(
               color: Theme.of(context).colorScheme.onPrimary,
-              fontSize: 10,
+              fontSize: context.getResponsiveValue(
+                mobile: DesignTokens.labelSmall.fontSize ?? 11, // 11px
+                tablet: (DesignTokens.labelSmall.fontSize ?? 11) + 2, // 13px
+                desktop: (DesignTokens.labelSmall.fontSize ?? 11) + 4, // 15px
+              ),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -302,10 +411,18 @@ class TimelineEventCard extends StatelessWidget {
       children: [
         Icon(
           Icons.photo_library,
-          size: 16,
+          size: context.getResponsiveValue(
+            mobile: DesignTokens.space4, // 16px
+            tablet: DesignTokens.space5, // 20px
+            desktop: DesignTokens.space6, // 24px
+          ),
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        const SizedBox(width: 4),
+        SizedBox(width: context.getResponsiveValue(
+          mobile: DesignTokens.space1,
+          tablet: DesignTokens.space2,
+          desktop: DesignTokens.space2,
+        )),
         Text(
           '${event.assets.length} photos',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -313,13 +430,25 @@ class TimelineEventCard extends StatelessWidget {
           ),
         ),
         if (event.eventType == 'photo_burst') ...[
-          const SizedBox(width: 8),
+          SizedBox(width: context.getResponsiveValue(
+            mobile: DesignTokens.space2,
+            tablet: DesignTokens.space3,
+            desktop: DesignTokens.space4,
+          )),
           Icon(
             Icons.burst_mode,
-            size: 16,
+            size: context.getResponsiveValue(
+              mobile: DesignTokens.space4, // 16px
+              tablet: DesignTokens.space5, // 20px
+              desktop: DesignTokens.space6, // 24px
+            ),
             color: Theme.of(context).colorScheme.primary,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: context.getResponsiveValue(
+            mobile: DesignTokens.space1,
+            tablet: DesignTokens.space2,
+            desktop: DesignTokens.space2,
+          )),
           Text(
             'Burst',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -343,18 +472,30 @@ class TimelineEventCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: context.getResponsiveValue(
+            mobile: DesignTokens.space2,
+            tablet: DesignTokens.space3,
+            desktop: DesignTokens.space4,
+          )),
           _buildAssetGrid(context),
         ],
         if (event.customAttributes.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: context.getResponsiveValue(
+            mobile: DesignTokens.space3,
+            tablet: DesignTokens.space4,
+            desktop: DesignTokens.space5,
+          )),
           Text(
             'Details',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: context.getResponsiveValue(
+            mobile: DesignTokens.space2,
+            tablet: DesignTokens.space3,
+            desktop: DesignTokens.space4,
+          )),
           _buildCustomAttributes(context),
         ],
       ],
@@ -365,34 +506,70 @@ class TimelineEventCard extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: context.getResponsiveValue(
+          mobile: 2,
+          tablet: 3,
+          desktop: 4,
+        ),
+        crossAxisSpacing: context.getResponsiveValue(
+          mobile: DesignTokens.space1,
+          tablet: DesignTokens.space2,
+          desktop: DesignTokens.space3,
+        ),
+        mainAxisSpacing: context.getResponsiveValue(
+          mobile: DesignTokens.space1,
+          tablet: DesignTokens.space2,
+          desktop: DesignTokens.space3,
+        ),
         childAspectRatio: 1,
       ),
       itemCount: event.assets.length,
       itemBuilder: (context, index) {
         final asset = event.assets[index];
         return ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(context.getResponsiveValue(
+            mobile: DesignTokens.radiusXSmall,
+            tablet: DesignTokens.radiusSmall,
+            desktop: DesignTokens.radiusMedium,
+          )),
           child: Stack(
             fit: StackFit.expand,
             children: [
               _buildAssetPreview(asset),
               if (asset.isKeyAsset)
                 Positioned(
-                  top: 2,
-                  right: 2,
+                  top: context.getResponsiveValue(
+                    mobile: DesignTokens.space2,
+                    tablet: DesignTokens.space3,
+                    desktop: DesignTokens.space4,
+                  ),
+                  right: context.getResponsiveValue(
+                    mobile: DesignTokens.space2,
+                    tablet: DesignTokens.space3,
+                    desktop: DesignTokens.space4,
+                  ),
                   child: Container(
-                    padding: const EdgeInsets.all(2),
+                    padding: EdgeInsets.all(context.getResponsiveValue(
+                      mobile: DesignTokens.space1,
+                      tablet: DesignTokens.space2,
+                      desktop: DesignTokens.space2,
+                    )),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(context.getResponsiveValue(
+                        mobile: DesignTokens.radiusSmall,
+                        tablet: DesignTokens.radiusMedium,
+                        desktop: DesignTokens.radiusLarge,
+                      )),
                     ),
                     child: Icon(
                       Icons.star,
-                      size: 12,
+                      size: context.getResponsiveValue(
+                        mobile: DesignTokens.labelSmall.fontSize ?? 11, // 11px
+                        tablet: (DesignTokens.labelSmall.fontSize ?? 11) + 2, // 13px
+                        desktop: (DesignTokens.labelSmall.fontSize ?? 11) + 4, // 15px
+                      ),
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
@@ -406,8 +583,16 @@ class TimelineEventCard extends StatelessWidget {
 
   Widget _buildCustomAttributes(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 4,
+      spacing: context.getResponsiveValue(
+        mobile: DesignTokens.space2,
+        tablet: DesignTokens.space3,
+        desktop: DesignTokens.space4,
+      ),
+      runSpacing: context.getResponsiveValue(
+        mobile: DesignTokens.space1,
+        tablet: DesignTokens.space2,
+        desktop: DesignTokens.space2,
+      ),
       children: event.customAttributes.entries
           .where((entry) => entry.value != null && entry.value.toString().isNotEmpty)
           .map((entry) => _buildAttributeChip(context, entry.key, entry.value))
@@ -418,7 +603,11 @@ class TimelineEventCard extends StatelessWidget {
   /// Enhanced preview for text-only timeline events
   Widget _buildTextOnlyPreview(BuildContext context) {
     return Container(
-      height: 120,
+      height: context.getResponsiveValue(
+        mobile: 120,
+        tablet: 140,
+        desktop: 160,
+      ), // Responsive height for text preview
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -428,7 +617,11 @@ class TimelineEventCard extends StatelessWidget {
             Theme.of(context).colorScheme.secondaryContainer,
           ],
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(context.getResponsiveValue(
+          mobile: DesignTokens.radiusSmall * 1.5,
+          tablet: DesignTokens.radiusMedium * 1.5,
+          desktop: DesignTokens.radiusLarge * 1.5,
+        )),
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
           width: 1,
@@ -438,16 +631,28 @@ class TimelineEventCard extends StatelessWidget {
         children: [
           // Content
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(context.getResponsiveValue(
+              mobile: DesignTokens.space4,
+              tablet: DesignTokens.space5,
+              desktop: DesignTokens.space6,
+            )),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Event icon
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(context.getResponsiveValue(
+                    mobile: DesignTokens.space3,
+                    tablet: DesignTokens.space4,
+                    desktop: DesignTokens.space5,
+                  )),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(context.getResponsiveValue(
+                      mobile: DesignTokens.radiusSmall,
+                      tablet: DesignTokens.radiusMedium,
+                      desktop: DesignTokens.radiusLarge,
+                    )),
                     boxShadow: [
                       BoxShadow(
                         color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
@@ -458,19 +663,38 @@ class TimelineEventCard extends StatelessWidget {
                   ),
                   child: Icon(
                     _getEventIcon(),
-                    size: 24,
+                    size: 24, // Fixed size for event icon
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
                 
-                const SizedBox(height: 8),
+                SizedBox(height: context.getResponsiveValue(
+                  mobile: DesignTokens.space2,
+                  tablet: DesignTokens.space3,
+                  desktop: DesignTokens.space4,
+                )),
                 
                 // Event Type label
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: context.getResponsiveValue(
+                      mobile: DesignTokens.space3,
+                      tablet: DesignTokens.space4,
+                      desktop: DesignTokens.space5,
+                    ),
+                    vertical: context.getResponsiveValue(
+                      mobile: DesignTokens.space1,
+                      tablet: DesignTokens.space2,
+                      desktop: DesignTokens.space2,
+                    ),
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(context.getResponsiveValue(
+                      mobile: DesignTokens.radiusSmall * 2,
+                      tablet: DesignTokens.radiusMedium * 2,
+                      desktop: DesignTokens.radiusLarge * 2,
+                    )),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                     ),
@@ -490,11 +714,19 @@ class TimelineEventCard extends StatelessWidget {
           // Corner indicator only for pure text events
           if (event.eventType == 'text')
             Positioned(
-              top: 8,
-              right: 8,
+              top: DesignTokens.space1,
+              right: DesignTokens.space1,
               child: Container(
-                width: 8,
-                height: 8,
+                width: context.getResponsiveValue(
+                  mobile: DesignTokens.space2,
+                  tablet: DesignTokens.space3,
+                  desktop: DesignTokens.space3,
+                ),
+                height: context.getResponsiveValue(
+                  mobile: DesignTokens.space2,
+                  tablet: DesignTokens.space3,
+                  desktop: DesignTokens.space3,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.tertiary,
                   shape: BoxShape.circle,
@@ -512,7 +744,7 @@ class TimelineEventCard extends StatelessWidget {
         '$key: $value',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       side: BorderSide.none,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
@@ -607,7 +839,7 @@ class _TextEventPatternPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Draw subtle line pattern to distinguish text events
-    const spacing = 20.0;
+    const spacing = 20.0; // Fixed spacing for pattern
     
     // Diagonal lines
     for (double i = -size.height; i < size.width + size.height; i += spacing) {

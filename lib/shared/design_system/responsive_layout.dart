@@ -262,8 +262,6 @@ class ResponsiveLayout {
     required List<NavigationDestination> destinations,
     required BuildContext context,
     Color? backgroundColor,
-    Color? selectedColor,
-    Color? unselectedColor,
   }) {
     if (isMobile(context)) {
       return NavigationBar(
@@ -274,13 +272,20 @@ class ResponsiveLayout {
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       );
     } else {
+      // Convert NavigationDestination to NavigationRailDestination
+      final railDestinations = destinations.map((dest) => 
+        NavigationRailDestination(
+          icon: dest.icon,
+          selectedIcon: dest.selectedIcon,
+          label: Text(dest.label),
+        )
+      ).toList();
+      
       return NavigationRail(
         selectedIndex: selectedIndex,
         onDestinationSelected: onDestinationSelected,
-        destinations: destinations,
+        destinations: railDestinations,
         backgroundColor: backgroundColor,
-        selectedColor: selectedColor,
-        unselectedColor: unselectedColor,
         extended: isDesktop(context) || isLargeDesktop(context),
       );
     }
