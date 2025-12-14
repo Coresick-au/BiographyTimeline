@@ -4,6 +4,7 @@ import '../renderers/life_stream_timeline_renderer.dart';
 import '../renderers/grid_timeline_renderer.dart';
 import '../renderers/enhanced_vertical_timeline_renderer.dart';
 import '../renderers/story_timeline_renderer.dart';
+import '../renderers/river_timeline_renderer.dart';
 
 /// Factory for creating timeline renderers based on view mode.
 class TimelineRendererFactory {
@@ -29,10 +30,13 @@ class TimelineRendererFactory {
         );
       case TimelineViewMode.mapView:
       case TimelineViewMode.clustered:
+        // Default to chronological for unsupported modes
+        return VerticalTimelineRenderer();
       case TimelineViewMode.river:
-        // Default to chronological for unsupported modes or implement specific helpers
-        // For now, mapping fallback as per previous implementation logic
-        return VerticalTimelineRenderer(); 
+        return RiverTimelineRenderer(
+          config,
+          data,
+        );
     }
   }
 }
