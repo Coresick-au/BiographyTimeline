@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/story.dart';
@@ -12,6 +13,7 @@ class StoryEditor extends ConsumerStatefulWidget {
   final List<MediaAsset> availableMedia;
   final VoidCallback? onSave;
   final Function(Story)? onStoryChanged;
+  final String? initialContent;
 
   const StoryEditor({
     super.key,
@@ -19,6 +21,7 @@ class StoryEditor extends ConsumerStatefulWidget {
     required this.availableMedia,
     this.onSave,
     this.onStoryChanged,
+    this.initialContent,
   });
 
   @override
@@ -37,6 +40,11 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
     
     // Initialize QuillController with existing story content
     _controller = QuillController.basic();
+    
+    // Load initial content if provided
+    if (widget.initialContent != null && widget.initialContent!.isNotEmpty) {
+      _controller.document.insert(0, widget.initialContent!);
+    }
     
     // Start auto-save
   }
@@ -247,19 +255,66 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
 
   /// Save story manually
   void _saveStory() async {
-    // TODO: Implement story saving
     try {
+      // Check if we're on web
+      if (kIsWeb) {
+        // Show message that database isn't available on web
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Story saving is not yet supported on web. Please use desktop app for persistent storage.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+        return;
+      }
+      
+      // Get the current content from the Quill editor as plain text
+      final document = _controller.document;
+      final plainText = document.toPlainText();
+      
+      // Convert to StoryBlock (for now, just create a single text block)
+      final textBlock = StoryBlock.text(
+        id: 'block_${DateTime.now().millisecondsSinceEpoch}',
+        text: plainText,
+      );
+      
+      // Create updated story with new content
+      final updatedStory = Story(
+        id: widget.story.id,
+        eventId: widget.story.eventId,
+        authorId: widget.story.authorId,
+        blocks: [textBlock], // Use blocks instead of content
+        createdAt: widget.story.createdAt,
+        updatedAt: DateTime.now(),
+        version: widget.story.version + 1,
+        collaboratorIds: widget.story.collaboratorIds,
+      );
+      
+      // Save to repository
+      final repository = ref.read(storyRepositoryProvider);
+      await repository.saveStory(updatedStory);
+      
+      // Call the onSave callback
       widget.onSave?.call();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Story saved successfully')),
+          const SnackBar(
+            content: Text('Story saved successfully'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save story: $e')),
+          SnackBar(
+            content: Text('Failed to save story: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

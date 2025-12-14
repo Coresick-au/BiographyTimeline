@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/timeline/screens/timeline_screen.dart';
 import '../../features/timeline/screens/event_creation_screen.dart';
+import '../../features/timeline/screens/event_details_screen.dart';
 import '../../features/stories/screens/stories_screen.dart';
 import '../../features/stories/screens/story_editor_screen.dart';
 import '../../features/social/screens/connections_screen.dart';
@@ -11,6 +12,7 @@ import '../../features/search/widgets/simple_search_widget.dart';
 import '../../features/ghost_camera/widgets/simple_ghost_camera_dialog.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/notifications/providers/notification_provider.dart';
+import '../../features/timeline/services/timeline_data_service.dart' as timeline_service;
 
 /// Main navigation shell for the app
 class MainNavigation extends ConsumerStatefulWidget {
@@ -620,11 +622,22 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
               Expanded(
                 child: SimpleSearchWidget(
                   onResultSelected: (event) {
-                    Navigator.of(context).pop();
-                    // TODO: Navigate to selected event
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Selected: ${event.title}'),
+                    Navigator.of(context).pop(); // Close search dialog
+                    
+                    // Get the context for this event
+                    final dataService = ref.read(timeline_service.timelineServiceProvider);
+                    final eventContext = dataService.contexts.firstWhere(
+                      (ctx) => ctx.id == event.contextId,
+                      orElse: () => dataService.contexts.first,
+                    );
+                    
+                    // Navigate to event details screen
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => EventDetailsScreen(
+                          event: event,
+                          context: eventContext,
+                        ),
                       ),
                     );
                   },

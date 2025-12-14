@@ -54,6 +54,7 @@ class StoryEditorScreen extends ConsumerWidget {
           onSave: () {
             Navigator.of(context).pop();
           },
+          initialContent: existingStory != null ? _extractTextFromStory(existingStory) : null,
         );
       },
     );
@@ -62,10 +63,20 @@ class StoryEditorScreen extends ConsumerWidget {
   // Create a mock story for the story editor
   Story _createMockStory() {
     return Story.empty(
-      id: 'mock_story_id',
+      id: 'story_${eventId ?? 'standalone'}_${DateTime.now().millisecondsSinceEpoch}',
       eventId: eventId ?? 'standalone',
       authorId: 'current_user',
     );
+  }
+  
+  // Extract text content from story blocks
+  String? _extractTextFromStory(Story story) {
+    if (story.blocks.isEmpty) return null;
+    
+    return story.blocks
+        .where((block) => block.type == BlockType.text)
+        .map((block) => block.content['text'] as String? ?? '')
+        .join('\n\n');
   }
 }
 

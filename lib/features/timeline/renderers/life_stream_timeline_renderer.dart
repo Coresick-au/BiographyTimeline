@@ -19,6 +19,7 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
   bool _isLoading = false;
   bool _hasMore = true;
   FilterCriteria? _currentFilter;
+  final ValueNotifier<FilterCriteria?> _filterNotifier = ValueNotifier(null);
   
   LifeStreamTimelineRenderer(
     TimelineRenderConfig config,
@@ -33,6 +34,7 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
     _scrollController.dispose();
     _eventCache.clear();
     _visibleEvents.clear();
+    _filterNotifier.dispose();
     super.dispose();
   }
   
@@ -188,14 +190,36 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
                   ),
                 ),
                 Text(
-                  '${data.events.length} total events • Showing ${_visibleEvents.length}',
+                  '${_getFilteredEventCount()} of ${data.events.length} events',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
+                if (_currentFilter?.hasFilters == true)
+                  Text(
+                    '${_currentFilter!.filterCount} filter(s) active',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
               ],
             ),
           ),
+          if (_currentFilter?.hasFilters == true)
+            TextButton.icon(
+              onPressed: () {
+                _currentFilter = null;
+                _filterNotifier.value = null;
+                _resetPagination();
+                _loadMoreEvents();
+              },
+              icon: const Icon(Icons.clear, size: 16),
+              label: const Text('Clear'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+            ),
           _buildFilterButton(context, config),
         ],
       ),
@@ -203,10 +227,40 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
   }
   
   Widget _buildFilterButton(BuildContext context, TimelineRenderConfig config) {
-    return IconButton(
-      icon: const Icon(Icons.filter_list),
-      onPressed: () => _showFilterDialog(context, config),
-      tooltip: 'Filter Events',
+    return Stack(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.filter_list),
+          onPressed: () => _showFilterDialog(context, config),
+          tooltip: 'Filter Events',
+        ),
+        if (_currentFilter?.hasFilters == true)
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: Center(
+                child: Text(
+                  '${_currentFilter!.filterCount}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
   
@@ -630,9 +684,24 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
         currentFilter: _currentFilter,
         onFilterApplied: (filter) {
           _currentFilter = filter;
+          _filterNotifier.value = filter;
           _resetPagination();
-          // Trigger rebuild by calling setState if this was a StatefulWidget
-          // For now, the filter will apply on next scroll/interaction
+          _loadMoreEvents();
+          
+          // Show feedback
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                filter.hasFilters 
+                  ? '${filter.filterCount} filter(s) applied'
+                  : 'Filters cleared'
+              ),
+              duration: const Duration(seconds: 2),
+              backgroundColor: filter.hasFilters 
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.secondary,
+            ),
+          );
         },
       ),
     );
@@ -728,5 +797,13 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
   String _formatFullDate(DateTime date) {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+  
+  // Helper method to get filtered event count
+  int _getFilteredEventCount() {
+    if (_currentFilter == null || !_currentFilter!.hasFilters) {
+      return data.events.length;
+    }
+    return data.events.where((e) => _currentFilter!.matches(e)).length;
   }
 }
