@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/media_asset.dart';
 import '../../../shared/widgets/modern/glassmorphism_card.dart';
+import '../../../shared/widgets/modern/shimmer_loading.dart';
 
 /// Widget that displays a timeline event with photo count indicators
 class TimelineEventCard extends StatelessWidget {
@@ -199,15 +200,18 @@ class TimelineEventCard extends StatelessWidget {
   Widget _buildAssetPreview(MediaAsset asset) {
     switch (asset.type) {
       case AssetType.photo:
-        return Image.asset(
-          asset.localPath,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[300],
-              child: const Icon(Icons.broken_image, size: 48),
-            );
-          },
+        return ShimmerLoading(
+          isLoading: false, // Image.asset loads synchronously
+          child: Image.asset(
+            asset.localPath,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.broken_image, size: 48),
+              );
+            },
+          ),
         );
       case AssetType.video:
         return Container(
