@@ -49,7 +49,7 @@ class ModernDarkTheme {
       ),
 
       // Card theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF1E1E2E),
         elevation: 8,
         shadowColor: Colors.black.withOpacity(0.3),
@@ -260,7 +260,7 @@ class ModernDarkTheme {
       ),
 
       // Dialog theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: const Color(0xFF1E1E2E),
         elevation: 20,
         shadowColor: Colors.black.withOpacity(0.5),

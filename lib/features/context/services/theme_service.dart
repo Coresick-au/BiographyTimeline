@@ -178,13 +178,13 @@ class ThemeService {
 
       // Beautiful cards with shadows and modern styling
       cardTheme: CardTheme(
-        color: surfaceColor,
         elevation: 2,
         shadowColor: Colors.black.withOpacity(0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
         margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        surfaceTintColor: surfaceColor,
       ),
 
       // Enhanced elevated buttons with gradients
@@ -310,7 +310,6 @@ class ThemeService {
       dialogTheme: DialogTheme(
         backgroundColor: surfaceColor,
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),

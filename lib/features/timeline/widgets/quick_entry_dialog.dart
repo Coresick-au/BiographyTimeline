@@ -273,12 +273,10 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
           const SizedBox(height: 8),
           
           // Quill toolbar
-          QuillToolbar.simple(
-            configurations: QuillSimpleToolbarConfigurations(
-              controller: _quillController,
-              sharedConfigurations: const QuillSharedConfigurations(
-                locale: Locale('en'),
-              ),
+          QuillSimpleToolbar(
+            controller: _quillController,
+            configurations: const QuillSimpleToolbarConfigurations(
+              locale: Locale('en'),
             ),
           ),
           
@@ -292,12 +290,10 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: QuillEditor.basic(
-                configurations: QuillEditorConfigurations(
-                  controller: _quillController,
+                controller: _quillController,
+                configurations: const QuillEditorConfigurations(
                   placeholder: 'Write your story here...',
-                  sharedConfigurations: const QuillSharedConfigurations(
-                    locale: Locale('en'),
-                  ),
+                  locale: Locale('en'),
                 ),
               ),
             ),

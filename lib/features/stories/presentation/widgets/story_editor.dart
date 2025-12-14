@@ -85,8 +85,8 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
             child: Container(
               padding: const EdgeInsets.all(16),
               child: QuillEditor.basic(
+                controller: _controller,
                 configurations: QuillEditorConfigurations(
-                  controller: _controller,
                   placeholder: 'Tell your story...',
                   padding: const EdgeInsets.all(16),
                   autoFocus: true,
@@ -170,6 +170,7 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
         const VerticalSpacing(16, 8),
         const VerticalSpacing(0, 0),
         null,
+        const TextStyle(color: Colors.black),
       ),
       h2: DefaultTextBlockStyle(
         theme.textTheme.headlineSmall!.copyWith(
@@ -179,6 +180,7 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
         const VerticalSpacing(12, 6),
         const VerticalSpacing(0, 0),
         null,
+        const TextStyle(color: Colors.black),
       ),
       paragraph: DefaultTextBlockStyle(
         theme.textTheme.bodyLarge!.copyWith(
@@ -188,6 +190,7 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
         const VerticalSpacing(8, 8),
         const VerticalSpacing(0, 0),
         null,
+        const TextStyle(color: Colors.black),
       ),
     );
   }
