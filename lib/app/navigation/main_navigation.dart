@@ -577,16 +577,19 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
     switch (currentIndex) {
       case 0: // Timeline
         return FloatingActionButton(
+          heroTag: 'main_nav_timeline_fab',
           onPressed: _addTimelineEvent,
           child: const Icon(Icons.add),
         );
       case 1: // Stories
         return FloatingActionButton(
+          heroTag: 'main_nav_stories_fab',
           onPressed: _createStory,
           child: const Icon(Icons.add),
         );
       case 2: // Media
         return FloatingActionButton(
+          heroTag: 'main_nav_media_fab',
           onPressed: _uploadMedia,
           child: const Icon(Icons.upload),
         );
@@ -625,10 +628,11 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
                     Navigator.of(context).pop(); // Close search dialog
                     
                     // Get the context for this event
-                    final dataService = ref.read(timeline_service.timelineServiceProvider);
-                    final eventContext = dataService.contexts.firstWhere(
+                    final asyncState = ref.read(timeline_service.timelineDataProvider);
+                    final contexts = asyncState.value?.contexts ?? [];
+                    final eventContext = contexts.firstWhere(
                       (ctx) => ctx.id == event.contextId,
-                      orElse: () => dataService.contexts.first,
+                      orElse: () => contexts.isNotEmpty ? contexts.first : throw Exception('No context found'),
                     );
                     
                     // Navigate to event details screen

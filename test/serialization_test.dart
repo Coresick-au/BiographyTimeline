@@ -2,16 +2,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
 
-import '../lib/shared/models/context.dart';
-import '../lib/shared/models/timeline_event.dart';
-import '../lib/shared/models/timeline_theme.dart';
-import '../lib/shared/models/user.dart';
-import '../lib/shared/models/fuzzy_date.dart';
-import '../lib/shared/models/geo_location.dart';
-import '../lib/shared/models/media_asset.dart';
-import '../lib/shared/models/story.dart';
-import '../lib/shared/models/relationship.dart';
-import '../lib/shared/models/exif_data.dart';
+import 'package:users_timeline/shared/models/context.dart';
+import 'package:users_timeline/shared/models/timeline_event.dart';
+import 'package:users_timeline/shared/models/timeline_theme.dart';
+import 'package:users_timeline/shared/models/user.dart';
+import 'package:users_timeline/shared/models/fuzzy_date.dart';
+import 'package:users_timeline/shared/models/geo_location.dart';
+import 'package:users_timeline/shared/models/media_asset.dart';
+import 'package:users_timeline/shared/models/story.dart';
+import 'package:users_timeline/shared/models/relationship.dart';
+import 'package:users_timeline/shared/models/exif_data.dart';
 
 void main() {
   group('Data Model Serialization Tests', () {

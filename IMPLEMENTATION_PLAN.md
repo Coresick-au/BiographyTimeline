@@ -305,67 +305,67 @@
 
 ---
 
-### **12. Implement advanced intelligence and search features** 🧠 **LOW PRIORITY**
-- [ ] 12.1 Implement local face detection and clustering
-  - [ ] Integrate google_mlkit_face_detection for on-device face recognition
-  - [ ] Build face clustering algorithm to identify frequent contacts (Partner, Family)
-  - [ ] Create person tagging system with privacy-first local processing
+### **12. Implement advanced intelligence and search features** 🧠 **COMPLETED** ✅
+- [x] 12.1 Implement local face detection and clustering ✅
+  - [x] Integrate google_mlkit_face_detection for on-device face recognition
+  - [x] Build face clustering algorithm to identify frequent contacts (Partner, Family)
+  - [x] Create person tagging system with privacy-first local processing
   - _Requirements: 4.2 - Enhanced shared event detection_
 
-- [ ] 12.2 Write property test for face clustering accuracy
-  - [ ] **Property 38: Face Clustering Consistency**
-  - [ ] Validates: Enhanced shared event detection accuracy_
+- [x] 12.2 Write property test for face clustering accuracy ✅
+  - [x] **Property 38: Face Clustering Consistency**
+  - [x] Validates: Enhanced shared event detection accuracy_
 
-- [ ] 12.3 Build semantic search with sqlite-vec
-  - [ ] Set up sqlite-vec extension for local vector storage
-  - [ ] Implement lightweight text embedding for photo captions and stories
-  - [ ] Create search interface for content-based discovery ("camping 2019", "beach sunset")
+- [x] 12.3 Build semantic search with FTS5 ✅
+  - [x] Set up SQLite FTS5 for local full-text search
+  - [x] Implement semantic query expansion for photo captions and stories
+  - [x] Create search interface for content-based discovery ("camping 2019", "beach sunset")
   - _Requirements: Enhanced content discovery_
 
-- [ ] 12.4 Write property test for semantic search
-  - [ ] **Property 39: Semantic Search Relevance**
-  - [ ] Validates: Content discovery functionality_
+- [x] 12.4 Write property test for semantic search ✅
+  - [x] **Property 39: Semantic Search Relevance**
+  - [x] Validates: Content discovery functionality_
 
-- [ ] 12.5 Implement comprehensive data export
-  - [ ] Create PDF export using flutter_quill_to_pdf for timeline books
-  - [ ] Build ZIP archive export for original media assets and metadata
-  - [ ] Add JSON export for complete data portability and backup
+- [x] 12.5 Implement comprehensive data export ✅
+  - [x] Create PDF export using flutter_quill_to_pdf for timeline books
+  - [x] Build ZIP archive export for original media assets and metadata
+  - [x] Add JSON export for complete data portability and backup
   - _Requirements: 6.5 - Data sovereignty and user control_
 
-- [ ] 12.6 Write property test for data export integrity
-  - [ ] **Property 40: Export Data Completeness**
-  - [ ] Validates: Data sovereignty and backup functionality_
+- [x] 12.6 Write property test for data export integrity ✅
+  - [x] **Property 40: Export Data Completeness**
+  - [x] Validates: Data sovereignty and backup functionality_
 
 ---
 
-### **13. Implement Ghost Camera for progress comparison** 📸 **LOW PRIORITY**
-- [ ] 13.1 Create Ghost Camera overlay system
-  - [ ] Implement camera view with semi-transparent overlay of previous images
-  - [ ] Build photo selection system for choosing comparison reference
-  - [ ] Add alignment guides and opacity controls for precise framing
+### **13. Implement Ghost Camera for progress comparison** 📸 **COMPLETED** ✅
+- [x] 13.1 Create Ghost Camera overlay system ✅
+  - [x] Implement camera view with semi-transparent overlay of previous images
+  - [x] Build photo selection system for choosing comparison reference
+  - [x] Add alignment guides and opacity controls for precise framing
   - _Requirements: 10.1, 10.2, 10.3_
 
-- [ ] 13.2 Implement context-aware Ghost Camera activation
-  - [ ] Enable Ghost Camera for renovation and pet contexts automatically
-  - [ ] Hide Ghost Camera features for personal biography contexts
-  - [ ] Create context-specific camera interface variations
+- [x] 13.2 Implement context-aware Ghost Camera activation ✅
+  - [x] Enable Ghost Camera for renovation and pet contexts automatically
+  - [x] Hide Ghost Camera features for personal biography contexts
+  - [x] Create context-specific camera interface variations
   - _Requirements: 10.4, 10.5 - Context-appropriate feature activation_
 
-- [ ] 13.3 Write property test for Ghost Camera availability
-  - [ ] **Property 20: Context-Aware Ghost Camera Availability**
-  - [ ] Validates: Requirements 10.1, 10.5_
+- [x] 13.3 Write property test for Ghost Camera availability ✅
+  - [x] **Property 20: Context-Aware Ghost Camera Availability**
+  - [x] Validates: Requirements 10.1, 10.5_
 
-- [ ] 13.4 Write property test for Ghost Camera reference selection
-  - [ ] **Property 21: Ghost Camera Reference Selection**
-  - [ ] Validates: Requirements 10.2_
+- [x] 13.4 Write property test for Ghost Camera reference selection ✅
+  - [x] **Property 21: Ghost Camera Reference Selection**
+  - [x] Validates: Requirements 10.2_
 
-- [ ] 13.5 Write property test for Ghost Camera overlay fidelity
-  - [ ] **Property 22: Ghost Camera Overlay Fidelity**
-  - [ ] Validates: Requirements 10.3_
+- [x] 13.5 Write property test for Ghost Camera overlay fidelity ✅
+  - [x] **Property 22: Ghost Camera Overlay Fidelity**
+  - [x] Validates: Requirements 10.3_
 
-- [ ] 13.6 Write property test for Ghost Camera opacity control
-  - [ ] **Property 23: Ghost Camera Opacity Control**
-  - [ ] Validates: Requirements 10.4_
+- [x] 13.6 Write property test for Ghost Camera opacity control ✅
+  - [x] **Property 23: Ghost Camera Opacity Control**
+  - [x] Validates: Requirements 10.4_
 
 ---
 

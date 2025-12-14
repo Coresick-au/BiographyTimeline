@@ -475,7 +475,7 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
       );
 
       // Save to database via service
-      await ref.read(timelineDataNotifierProvider.notifier).addEvent(event);
+      await ref.read(timelineDataProvider.notifier).addEvent(event);
 
       if (mounted) {
         setState(() {

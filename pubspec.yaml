@@ -13,6 +13,7 @@ dependencies:
   
   # State Management
   flutter_riverpod: ^2.4.9
+  freezed_annotation: ^2.4.1
   
   # Local Database
   sqflite: ^2.3.0
@@ -67,6 +68,7 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   build_runner: ^2.4.7
   json_serializable: ^6.7.1
+  freezed: ^2.4.5
   faker: ^2.1.0
 
 flutter:

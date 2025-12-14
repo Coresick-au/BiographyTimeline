@@ -38,72 +38,8 @@ class AccessibilitySystem {
   // ===========================================================================
   
   /// Complete accessibility configuration
-  class AccessibilityConfig {
-    final double textScaleFactor;
-    final bool highContrast;
-    final bool reducedMotion;
-    final bool screenReader;
-    final bool largePrint;
-    final bool increasedSpacing;
-    final bool colorBlindFriendly;
-    
-    const AccessibilityConfig({
-      this.textScaleFactor = 1.0,
-      this.highContrast = false,
-      this.reducedMotion = false,
-      this.screenReader = false,
-      this.largePrint = false,
-      this.increasedSpacing = false,
-      this.colorBlindFriendly = false,
-    });
-    
-    /// Create a copy with updated values
-    AccessibilityConfig copyWith({
-      double? textScaleFactor,
-      bool? highContrast,
-      bool? reducedMotion,
-      bool? screenReader,
-      bool? largePrint,
-      bool? increasedSpacing,
-      bool? colorBlindFriendly,
-    }) {
-      return AccessibilityConfig(
-        textScaleFactor: textScaleFactor ?? this.textScaleFactor,
-        highContrast: highContrast ?? this.highContrast,
-        reducedMotion: reducedMotion ?? this.reducedMotion,
-        screenReader: screenReader ?? this.screenReader,
-        largePrint: largePrint ?? this.largePrint,
-        increasedSpacing: increasedSpacing ?? this.increasedSpacing,
-        colorBlindFriendly: colorBlindFriendly ?? this.colorBlindFriendly,
-      );
-    }
-    
-    /// Convert to map for persistence
-    Map<String, dynamic> toMap() {
-      return {
-        'textScaleFactor': textScaleFactor,
-        'highContrast': highContrast,
-        'reducedMotion': reducedMotion,
-        'screenReader': screenReader,
-        'largePrint': largePrint,
-        'increasedSpacing': increasedSpacing,
-        'colorBlindFriendly': colorBlindFriendly,
-      };
-    }
-    
-    /// Create from map
-    factory AccessibilityConfig.fromMap(Map<String, dynamic> map) {
-      return AccessibilityConfig(
-        textScaleFactor: map['textScaleFactor']?.toDouble() ?? 1.0,
-        highContrast: map['highContrast'] ?? false,
-        reducedMotion: map['reducedMotion'] ?? false,
-        screenReader: map['screenReader'] ?? false,
-        largePrint: map['largePrint'] ?? false,
-        increasedSpacing: map['increasedSpacing'] ?? false,
-        colorBlindFriendly: map['colorBlindFriendly'] ?? false,
-      );
-    }
-  }
+  // Class AccessibilityConfig moved to top-level
+
 
   // ===========================================================================
   // SCREEN SIZE ADAPTATIONS
@@ -350,6 +286,88 @@ class AccessibilitySystem {
   // ===========================================================================
   
   /// Widget that provides accessibility settings to its descendants
+  // Class AccessibilityProvider moved to top-level
+
+  
+  /// Inherited widget for accessibility configuration
+  // Class _AccessibilityInheritedWidget moved to top-level
+
+  
+  /// Get current accessibility configuration
+  static AccessibilityConfig? getCurrentConfig(BuildContext context) {
+    return _AccessibilityInheritedWidget.of(context)?.config;
+  }
+}
+
+  /// Complete accessibility configuration
+  class AccessibilityConfig {
+    final double textScaleFactor;
+    final bool highContrast;
+    final bool reducedMotion;
+    final bool screenReader;
+    final bool largePrint;
+    final bool increasedSpacing;
+    final bool colorBlindFriendly;
+    
+    const AccessibilityConfig({
+      this.textScaleFactor = 1.0,
+      this.highContrast = false,
+      this.reducedMotion = false,
+      this.screenReader = false,
+      this.largePrint = false,
+      this.increasedSpacing = false,
+      this.colorBlindFriendly = false,
+    });
+    
+    /// Create a copy with updated values
+    AccessibilityConfig copyWith({
+      double? textScaleFactor,
+      bool? highContrast,
+      bool? reducedMotion,
+      bool? screenReader,
+      bool? largePrint,
+      bool? increasedSpacing,
+      bool? colorBlindFriendly,
+    }) {
+      return AccessibilityConfig(
+        textScaleFactor: textScaleFactor ?? this.textScaleFactor,
+        highContrast: highContrast ?? this.highContrast,
+        reducedMotion: reducedMotion ?? this.reducedMotion,
+        screenReader: screenReader ?? this.screenReader,
+        largePrint: largePrint ?? this.largePrint,
+        increasedSpacing: increasedSpacing ?? this.increasedSpacing,
+        colorBlindFriendly: colorBlindFriendly ?? this.colorBlindFriendly,
+      );
+    }
+    
+    /// Convert to map for persistence
+    Map<String, dynamic> toMap() {
+      return {
+        'textScaleFactor': textScaleFactor,
+        'highContrast': highContrast,
+        'reducedMotion': reducedMotion,
+        'screenReader': screenReader,
+        'largePrint': largePrint,
+        'increasedSpacing': increasedSpacing,
+        'colorBlindFriendly': colorBlindFriendly,
+      };
+    }
+    
+    /// Create from map
+    factory AccessibilityConfig.fromMap(Map<String, dynamic> map) {
+      return AccessibilityConfig(
+        textScaleFactor: map['textScaleFactor']?.toDouble() ?? 1.0,
+        highContrast: map['highContrast'] ?? false,
+        reducedMotion: map['reducedMotion'] ?? false,
+        screenReader: map['screenReader'] ?? false,
+        largePrint: map['largePrint'] ?? false,
+        increasedSpacing: map['increasedSpacing'] ?? false,
+        colorBlindFriendly: map['colorBlindFriendly'] ?? false,
+      );
+    }
+  }
+
+  /// Widget that provides accessibility settings to its descendants
   class AccessibilityProvider extends ConsumerWidget {
     final Widget child;
     final AccessibilityConfig? config;
@@ -379,19 +397,19 @@ class AccessibilitySystem {
     
     AccessibilityConfig _getCurrentConfig(WidgetRef ref) {
       return AccessibilityConfig(
-        textScaleFactor: ref.watch(textScaleFactorProvider),
-        highContrast: ref.watch(highContrastProvider),
-        reducedMotion: ref.watch(reducedMotionProvider),
-        screenReader: ref.watch(screenReaderProvider),
-        largePrint: ref.watch(largePrintProvider),
-        increasedSpacing: ref.watch(increasedSpacingProvider),
-        colorBlindFriendly: ref.watch(colorBlindFriendlyProvider),
+        textScaleFactor: ref.watch(AccessibilitySystem.textScaleFactorProvider),
+        highContrast: ref.watch(AccessibilitySystem.highContrastProvider),
+        reducedMotion: ref.watch(AccessibilitySystem.reducedMotionProvider),
+        screenReader: ref.watch(AccessibilitySystem.screenReaderProvider),
+        largePrint: ref.watch(AccessibilitySystem.largePrintProvider),
+        increasedSpacing: ref.watch(AccessibilitySystem.increasedSpacingProvider),
+        colorBlindFriendly: ref.watch(AccessibilitySystem.colorBlindFriendlyProvider),
       );
     }
   }
   
   /// Inherited widget for accessibility configuration
-  static class _AccessibilityInheritedWidget extends InheritedWidget {
+  class _AccessibilityInheritedWidget extends InheritedWidget {
     final AccessibilityConfig config;
     
     const _AccessibilityInheritedWidget({
@@ -409,12 +427,6 @@ class AccessibilitySystem {
       return config != oldWidget.config;
     }
   }
-  
-  /// Get current accessibility configuration
-  static AccessibilityConfig? getCurrentConfig(BuildContext context) {
-    return _AccessibilityInheritedWidget.of(context)?.config;
-  }
-}
 
 /// Extension on BuildContext for accessibility helpers
 extension AccessibilityContextExtension on BuildContext {

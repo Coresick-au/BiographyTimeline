@@ -444,7 +444,7 @@ class EventCorrelationService {
   // =========================================================================
 
   /// Record user acceptance of suggestion
-  Future<void recordAcceptance(String suggestionId) async {
+  Future<void> recordAcceptance(String suggestionId) async {
     // Update weights based on acceptance
     _updateWeights(suggestionId, true);
     
@@ -453,7 +453,7 @@ class EventCorrelationService {
   }
 
   /// Record user rejection of suggestion
-  Future<void recordRejection(String suggestionId) async {
+  Future<void> recordRejection(String suggestionId) async {
     // Update weights based on rejection
     _updateWeights(suggestionId, false);
     
@@ -462,7 +462,7 @@ class EventCorrelationService {
   }
 
   /// Record user edit of suggestion
-  Future<void recordEdit(String suggestionId, EventSuggestion edited) async {
+  Future<void> recordEdit(String suggestionId, EventSuggestion edited) async {
     // Analyze changes and adjust weights
     _analyzeEdit(suggestionId, edited);
     

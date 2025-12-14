@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import '../lib/features/timeline/services/timeline_renderer_interface.dart';
-import '../lib/features/timeline/services/timeline_renderer_factory.dart';
-import '../lib/features/timeline/renderers/chronological_timeline_renderer.dart';
-import '../lib/features/timeline/renderers/clustered_timeline_renderer.dart';
-import '../lib/features/timeline/renderers/map_timeline_renderer.dart';
-import '../lib/features/timeline/renderers/story_timeline_renderer.dart';
-import '../lib/shared/models/timeline_event.dart';
-import '../lib/shared/models/context.dart';
-import '../lib/shared/models/timeline_theme.dart';
-import '../lib/shared/models/geo_location.dart';
-import '../lib/shared/models/user.dart';
+import 'package:users_timeline/features/timeline/services/timeline_renderer_interface.dart';
+import 'package:users_timeline/features/timeline/services/timeline_renderer_factory.dart';
+import 'package:users_timeline/features/timeline/renderers/chronological_timeline_renderer.dart';
+import 'package:users_timeline/features/timeline/renderers/clustered_timeline_renderer.dart';
+import 'package:users_timeline/features/timeline/renderers/map_timeline_renderer.dart';
+import 'package:users_timeline/features/timeline/renderers/story_timeline_renderer.dart';
+import 'package:users_timeline/shared/models/timeline_event.dart';
+import 'package:users_timeline/shared/models/context.dart';
+import 'package:users_timeline/shared/models/timeline_theme.dart';
+import 'package:users_timeline/shared/models/geo_location.dart';
+import 'package:users_timeline/shared/models/user.dart';
 
 void main() {
   group('Timeline Visualization Engine Tests', () {

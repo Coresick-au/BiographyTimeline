@@ -3,11 +3,11 @@ import 'package:faker/faker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 
-import '../../lib/shared/models/timeline_event.dart';
-import '../../lib/shared/models/context.dart';
-import '../../lib/shared/models/user.dart';
-import '../../lib/features/timeline/services/timeline_renderer_interface.dart';
-import '../../lib/features/timeline/services/timeline_service.dart';
+import 'package:users_timeline/shared/models/timeline_event.dart';
+import 'package:users_timeline/shared/models/context.dart';
+import 'package:users_timeline/shared/models/user.dart';
+import 'package:users_timeline/features/timeline/services/timeline_renderer_interface.dart';
+import 'package:users_timeline/features/timeline/services/timeline_service.dart';
 
 /**
  * Feature: users-timeline, Property 20: Visualization Mode Completeness

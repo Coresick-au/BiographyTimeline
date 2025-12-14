@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import '../lib/core/templates/template_manager.dart';
-import '../lib/core/templates/template_definition.dart';
-import '../lib/shared/models/context.dart';
-import '../lib/shared/models/timeline_event.dart';
-import '../lib/shared/models/timeline_theme.dart';
-import '../lib/shared/models/user.dart';
+import 'package:users_timeline/core/templates/template_manager.dart';
+import 'package:users_timeline/core/templates/template_definition.dart';
+import 'package:users_timeline/shared/models/context.dart';
+import 'package:users_timeline/shared/models/timeline_event.dart';
+import 'package:users_timeline/shared/models/timeline_theme.dart';
+import 'package:users_timeline/shared/models/user.dart';
 
 void main() {
   group('Template System Tests', () {

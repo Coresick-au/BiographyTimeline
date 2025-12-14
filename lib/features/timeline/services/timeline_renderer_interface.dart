@@ -278,3 +278,18 @@ abstract class BaseTimelineRenderer implements ITimelineRenderer {
   }
 }
 
+
+/// Layout options for Story View
+enum StoryLayout {
+  fullscreen,
+  split,
+  carousel,
+}
+
+/// Types of clustering for events
+enum ClusterType {
+  location,
+  time,
+  semantic,
+  person,
+}

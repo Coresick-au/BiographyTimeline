@@ -71,6 +71,28 @@ class TemplateMetadata {
   factory TemplateMetadata.fromJson(Map<String, dynamic> json) =>
       _$TemplateMetadataFromJson(json);
   Map<String, dynamic> toJson() => _$TemplateMetadataToJson(this);
+
+  TemplateMetadata copyWith({
+    String? version,
+    String? author,
+    DateTime? createdAt,
+    DateTime? lastModified,
+    List<String>? tags,
+    int? displayPriority,
+    bool? isExperimental,
+    Map<String, dynamic>? configuration,
+  }) {
+    return TemplateMetadata(
+      version: version ?? this.version,
+      author: author ?? this.author,
+      createdAt: createdAt ?? this.createdAt,
+      lastModified: lastModified ?? this.lastModified,
+      tags: tags ?? this.tags,
+      displayPriority: displayPriority ?? this.displayPriority,
+      isExperimental: isExperimental ?? this.isExperimental,
+      configuration: configuration ?? this.configuration,
+    );
+  }
 }
 
 /// Defines a field in a template

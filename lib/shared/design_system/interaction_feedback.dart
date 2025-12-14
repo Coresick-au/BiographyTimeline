@@ -4,6 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'accessibility_system.dart'; // Temporarily disabled due to compilation errors
 import 'theme_engine.dart';
 
+/// Haptic feedback intensity levels
+enum HapticIntensity {
+  none,
+  light,
+  medium,
+  heavy,
+}
+
+
 /// Interaction feedback system that provides haptic feedback, animations, 
 /// and loading states while respecting accessibility preferences
 class InteractionFeedback {
@@ -14,13 +23,8 @@ class InteractionFeedback {
   // HAPTIC FEEDBACK
   // ===========================================================================
   
-  /// Haptic feedback intensity levels
-  enum HapticIntensity {
-    none,
-    light,
-    medium,
-    heavy,
-  }
+  // Enum HapticIntensity moved to top-level
+
 
   /// Trigger haptic feedback with specified intensity
   static Future<void> haptic(
@@ -405,7 +409,7 @@ class InteractionFeedback {
 /// Extension on BuildContext for interaction feedback utilities
 extension InteractionFeedbackContextExtension on BuildContext {
   /// Trigger haptic feedback
-  Future<void> haptic(InteractionFeedback.HapticIntensity intensity) {
+  Future<void> haptic(HapticIntensity intensity) {
     return InteractionFeedback.haptic(intensity, context: this);
   }
   

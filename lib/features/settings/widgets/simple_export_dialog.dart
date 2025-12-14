@@ -101,8 +101,8 @@ class _SimpleExportDialogState extends ConsumerState<SimpleExportDialog> {
     setState(() => _isExporting = true);
     
     try {
-      final dataService = ref.read(timelineServiceProvider);
-      final events = dataService.events;
+      final asyncState = ref.read(timelineDataProvider);
+      final events = asyncState.value?.allEvents ?? [];
       
       // Simple export simulation
       await Future.delayed(const Duration(seconds: 2));

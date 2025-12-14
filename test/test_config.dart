@@ -4,9 +4,9 @@ library test_config;
 import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
-import '../lib/shared/models/context.dart';
-import '../lib/shared/models/fuzzy_date.dart';
-import '../lib/shared/models/media_asset.dart';
+import 'package:users_timeline/shared/models/context.dart';
+import 'package:users_timeline/shared/models/fuzzy_date.dart';
+import 'package:users_timeline/shared/models/media_asset.dart';
 
 /// Global test configuration
 class TestConfig {

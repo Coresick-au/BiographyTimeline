@@ -433,22 +433,13 @@ class TimelineEventCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Background pattern for text events
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _TextEventPatternPainter(
-                color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.1),
-              ),
-            ),
-          ),
-          
           // Content
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Text event icon with distinctive styling
+                // Event icon
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -463,7 +454,7 @@ class TimelineEventCard extends StatelessWidget {
                     ],
                   ),
                   child: Icon(
-                    Icons.edit_note,
+                    _getEventIcon(),
                     size: 24,
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
@@ -471,7 +462,7 @@ class TimelineEventCard extends StatelessWidget {
                 
                 const SizedBox(height: 8),
                 
-                // Text event label
+                // Event Type label
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
@@ -482,7 +473,7 @@ class TimelineEventCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Text Entry',
+                    _getEventLabel(),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w600,
@@ -493,19 +484,20 @@ class TimelineEventCard extends StatelessWidget {
             ),
           ),
           
-          // Corner indicator for quick identification
-          Positioned(
-            top: 8,
-            right: 8,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.tertiary,
-                shape: BoxShape.circle,
+          // Corner indicator only for pure text events
+          if (event.eventType == 'text')
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.tertiary,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -521,6 +513,56 @@ class TimelineEventCard extends StatelessWidget {
       side: BorderSide.none,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
+  }
+
+  IconData _getEventIcon() {
+    // Prioritize event type over asset presence
+    switch (event.eventType) {
+      case 'text':
+        return Icons.edit_note;
+      case 'milestone':
+        return Icons.flag;
+      case 'location':
+        return Icons.place;
+      case 'photo_burst':
+        return Icons.burst_mode;
+      case 'photo_collection':
+        return Icons.collections;
+      case 'renovation_progress':
+        return Icons.construction;
+      case 'pet_milestone':
+        return Icons.pets;
+      case 'business_milestone':
+        return Icons.business;
+      case 'photo':
+      default:
+        // Only check assets for generic photo type
+        if (event.assets.isEmpty) {
+          return Icons.image_not_supported;
+        }
+        return Icons.photo;
+    }
+  }
+
+  String _getEventLabel() {
+    switch (event.eventType) {
+      case 'text':
+        return 'Text Entry';
+      case 'milestone':
+        return 'Milestone';
+      case 'location':
+        return 'Location';
+      case 'photo_burst':
+        return event.assets.isEmpty ? 'Empty Burst' : 'Photo Burst';
+      case 'photo_collection':
+        return event.assets.isEmpty ? 'Empty Collection' : 'Collection';
+      case 'photo':
+      default:
+        if (event.assets.isEmpty) {
+          return 'No Photos';
+        }
+        return 'Photo';
+    }
   }
 
   String _formatTimestamp(DateTime timestamp) {

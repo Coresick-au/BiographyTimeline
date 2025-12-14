@@ -54,8 +54,8 @@ class _SimpleSearchWidgetState extends ConsumerState<SimpleSearchWidget> {
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       
-      final dataService = ref.read(timelineServiceProvider);
-      final allEvents = dataService.events;
+      final asyncState = ref.read(timelineDataProvider);
+      final allEvents = asyncState.value?.allEvents ?? [];
       
       final filtered = allEvents.where((event) {
         return event.title?.toLowerCase().contains(query) == true ||

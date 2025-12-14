@@ -319,7 +319,7 @@ class GhostOverlayState {
 abstract class AlignmentGuide {
   const AlignmentGuide();
   String get name;
-  List<Line> getLines;
+  List<Line> get getLines;
 }
 
 class AlignmentRuleOfThirds extends AlignmentGuide {
@@ -329,7 +329,7 @@ class AlignmentRuleOfThirds extends AlignmentGuide {
   String get name => 'Rule of Thirds';
   
   @override
-  List<Line> getLines => [
+  List<Line> get getLines => [
     Line(Offset(0.33, 0), Offset(0.33, 1)),   // Vertical left
     Line(Offset(0.67, 0), Offset(0.67, 1)),   // Vertical right
     Line(Offset(0, 0.33), Offset(1, 0.33)),   // Horizontal top
@@ -344,7 +344,7 @@ class AlignmentGrid extends AlignmentGuide {
   String get name => 'Grid';
   
   @override
-  List<Line> getLines {
+  List<Line> get getLines {
     final lines = <Line>[];
     
     // Vertical lines
@@ -368,7 +368,7 @@ class AlignmentCrosshair extends AlignmentGuide {
   String get name => 'Crosshair';
   
   @override
-  List<Line> getLines => [
+  List<Line> get getLines => [
     Line(Offset(0.5, 0), Offset(0.5, 1)),   // Vertical center
     Line(Offset(0, 0.5), Offset(1, 0.5)),   // Horizontal center
   ];
