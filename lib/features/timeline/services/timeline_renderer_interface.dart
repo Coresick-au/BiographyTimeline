@@ -124,6 +124,7 @@ abstract class ITimelineRenderer {
   
   /// Build the widget for this timeline view
   Widget build({
+    BuildContext? context,
     TimelineEventCallback? onEventTap,
     TimelineEventCallback? onEventLongPress,
     TimelineDateCallback? onDateTap,

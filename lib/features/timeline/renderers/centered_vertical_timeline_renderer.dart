@@ -6,29 +6,16 @@ import '../../../shared/models/context.dart';
 import '../models/timeline_render_data.dart';
 import '../widgets/timeline_event_card.dart';
 
-/// Beautiful centered vertical timeline with alternating cards
+/// Beautiful centered vertical timeline with alternating cards and animations
 class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
-  CenteredVerticalTimelineRenderer() : super(
-    const TimelineRenderConfig(
-      viewMode: TimelineViewMode.chronological,
-      startDate: null,
-      endDate: null,
-      selectedEventIds: <String>{},
-      showPrivateEvents: false,
-      zoomLevel: 1.0,
-      customSettings: {},
-    ),
-    TimelineRenderData(
-      events: [],
-      contexts: [],
-      earliestDate: DateTime.now(),
-      latestDate: DateTime.now(),
-      clusteredEvents: {},
-    ),
-  );
+  CenteredVerticalTimelineRenderer(
+    TimelineRenderConfig config,
+    TimelineRenderData data,
+  ) : super(config, data);
 
   @override
   Widget build({
+    BuildContext? context,
     void Function(TimelineEvent)? onEventTap,
     void Function(TimelineEvent)? onEventLongPress,
     void Function(DateTime)? onDateTap,
@@ -56,15 +43,19 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
         final showMonthHeader = index == 0 || 
           _isDifferentMonth(sortedEvents[index - 1].timestamp, event.timestamp);
 
+        // Stagger animation delay
+        final delay = Duration(milliseconds: 50 * index);
+
         return Column(
           children: [
             if (showMonthHeader) _buildMonthHeader(context, event.timestamp),
-            _buildTimelineItem(
+            _buildAnimatedTimelineItem(
               context,
               event,
               isLeft,
               isLast,
               onEventTap,
+              delay,
             ),
           ],
         );
@@ -79,48 +70,110 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
   Widget _buildMonthHeader(BuildContext context, DateTime date) {
     final monthYear = DateFormat('MMMM yyyy').format(date);
     
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0, top: 16.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                  ],
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 600),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOut,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - value)),
+            child: child,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 32.0, top: 24.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              monthYear,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                    Colors.transparent,
-                  ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  monthYear,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
                 ),
               ),
             ),
+            Expanded(
+              child: Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedTimelineItem(
+    BuildContext context,
+    TimelineEvent event,
+    bool isLeft,
+    bool isLast,
+    void Function(TimelineEvent)? onEventTap,
+    Duration delay,
+  ) {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 800),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(
+              isLeft ? -50 * (1 - value) : 50 * (1 - value),
+              0,
+            ),
+            child: child,
           ),
-        ],
+        );
+      },
+      child: _buildTimelineItem(
+        context,
+        event,
+        isLeft,
+        isLast,
+        onEventTap,
       ),
     );
   }
@@ -133,8 +186,7 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
     void Function(TimelineEvent)? onEventTap,
   ) {
     const spineWidth = 4.0;
-    const dotSize = 20.0;
-    const cardWidth = 0.42; // 42% of screen width
+    const dotSize = 24.0;
 
     return IntrinsicHeight(
       child: Row(
@@ -145,7 +197,7 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
             flex: 42,
             child: isLeft
                 ? Padding(
-                    padding: const EdgeInsets.only(right: 16.0),
+                    padding: const EdgeInsets.only(right: 20.0),
                     child: _buildEventCard(context, event, onEventTap, Alignment.centerRight),
                   )
                 : const SizedBox(),
@@ -153,47 +205,59 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
 
           // Center spine
           SizedBox(
-            width: 40,
+            width: 50,
             child: Column(
               children: [
                 // Connecting line from previous event
-                if (!isLast)
-                  Container(
-                    width: spineWidth,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                          Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-
-                // Event dot
                 Container(
-                  width: dotSize,
-                  height: dotSize,
+                  width: spineWidth,
+                  height: 24,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
-                      width: 3,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  child: _getEventIcon(context, event),
+                ),
+
+                // Event dot with pulse animation
+                TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 1500),
+                  tween: Tween(begin: 0.8, end: 1.0),
+                  curve: Curves.easeInOut,
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: child,
+                    );
+                  },
+                  child: Container(
+                    width: dotSize,
+                    height: dotSize,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.surface,
+                        width: 3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                          blurRadius: 12,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: _getEventIcon(context, event),
+                    ),
+                  ),
                 ),
 
                 // Connecting line to next event
@@ -208,8 +272,8 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                                Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                                Theme.of(context).colorScheme.primary.withOpacity(0.1),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(2),
@@ -225,7 +289,7 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
             flex: 42,
             child: !isLeft
                 ? Padding(
-                    padding: const EdgeInsets.only(left: 16.0),
+                    padding: const EdgeInsets.only(left: 20.0),
                     child: _buildEventCard(context, event, onEventTap, Alignment.centerLeft),
                   )
                 : const SizedBox(),
@@ -244,7 +308,7 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
     return Align(
       alignment: alignment,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 32.0),
+        padding: const EdgeInsets.only(bottom: 40.0),
         child: TimelineEventCard(
           event: event,
           onTap: () => onEventTap?.call(event),
@@ -275,7 +339,7 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
 
     return Icon(
       iconData,
-      size: 10,
+      size: 12,
       color: Theme.of(context).colorScheme.onPrimary,
     );
   }
@@ -284,29 +348,51 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
     return Builder(
       builder: (context) {
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.timeline,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                "No events yet",
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 800),
+            tween: Tween(begin: 0.0, end: 1.0),
+            curve: Curves.easeOut,
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.scale(
+                  scale: 0.8 + (0.2 * value),
+                  child: child,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Add your first memory to start the timeline!",
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              );
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.timeline,
+                    size: 80,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 32),
+                Text(
+                  "No events yet",
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "Add your first memory to start the timeline!",
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

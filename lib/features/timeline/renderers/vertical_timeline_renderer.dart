@@ -76,6 +76,7 @@ class VerticalTimelineRenderer extends BaseTimelineRenderer {
 
   @override
   Widget build({
+    BuildContext? context,
     void Function(TimelineEvent)? onEventTap,
     void Function(TimelineEvent)? onEventLongPress,
     void Function(DateTime)? onDateTap,

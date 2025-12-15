@@ -22,6 +22,7 @@ class ChronologicalTimelineRenderer extends BaseTimelineRenderer {
 
   @override
   Widget build({
+    BuildContext? context,
     TimelineEventCallback? onEventTap,
     TimelineEventCallback? onEventLongPress,
     TimelineDateCallback? onDateTap,

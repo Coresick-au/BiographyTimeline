@@ -16,7 +16,7 @@ class TimelineRendererFactory {
   ) {
     switch (mode) {
       case TimelineViewMode.chronological:
-        return CenteredVerticalTimelineRenderer();
+        return CenteredVerticalTimelineRenderer(config, data);
       case TimelineViewMode.lifeStream:
         return LifeStreamTimelineRenderer(
           config,

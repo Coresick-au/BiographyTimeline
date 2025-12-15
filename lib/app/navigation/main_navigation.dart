@@ -13,6 +13,7 @@ import '../../features/ghost_camera/widgets/simple_ghost_camera_dialog.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/notifications/providers/notification_provider.dart';
 import '../../features/timeline/services/timeline_data_service.dart' as timeline_service;
+import '../../features/timeline/providers/timeline_view_provider.dart';
 
 /// Main navigation shell for the app
 class MainNavigation extends ConsumerStatefulWidget {
@@ -133,6 +134,11 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
+          // If Timeline tab is tapped while already active, reset to chronological view
+          if (index == 0 && _currentIndex == 0) {
+            ref.read(timelineViewProvider.notifier).resetToDefault();
+          }
+          
           setState(() {
             _currentIndex = index;
           });

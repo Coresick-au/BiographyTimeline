@@ -51,24 +51,7 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Timeline Event'),
-        actions: [
-          if (_isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-            )
-          else
-            TextButton(
-              onPressed: _saveEvent,
-              child: const Text('Save'),
-            ),
-        ],
+        actions: [],
       ),
       body: Form(
         key: _formKey,
@@ -128,6 +111,7 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
             
             // Location (optional)
             _buildLocationSection(),
+            // Bottom padding for scrollability
             const SizedBox(height: 32),
             
             // Save button

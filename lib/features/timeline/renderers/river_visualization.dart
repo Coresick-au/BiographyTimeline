@@ -105,6 +105,7 @@ class RiverPainter extends CustomPainter {
   final List<RiverEvent> events;
   final Rect? selectedArea;
   final double animationProgress;
+  final double particleProgress;
 
   const RiverPainter({
     required this.nodes,
@@ -112,6 +113,7 @@ class RiverPainter extends CustomPainter {
     required this.events,
     this.selectedArea,
     this.animationProgress = 1.0,
+    this.particleProgress = 0.0,
   });
 
   @override
@@ -123,10 +125,16 @@ class RiverPainter extends CustomPainter {
     // Draw background gradient
     _drawBackground(canvas, size, paint);
 
+    // Draw timeline grid lines for temporal orientation
+    _drawTimeGrid(canvas, size);
+
     // Draw connections (rivers) first so they appear behind nodes
     for (final connection in connections) {
       _drawConnection(canvas, connection, paint);
     }
+
+    // Draw animated flow particles along connections
+    _drawFlowParticles(canvas);
 
     // Draw nodes (timeline segments)
     for (final node in nodes) {
@@ -137,6 +145,9 @@ class RiverPainter extends CustomPainter {
     for (final event in events) {
       _drawEvent(canvas, event, paint);
     }
+
+    // Draw user labels to identify rivers
+    _drawUserLabels(canvas, size);
 
     // Draw selection area if present
     if (selectedArea != null) {
@@ -150,9 +161,9 @@ class RiverPainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Colors.blue.shade50,
-          Colors.purple.shade50,
-          Colors.pink.shade50,
+          const Color(0xFF0F172A), // Deep navy
+          const Color(0xFF1E1B4B), // Dark purple
+          const Color(0xFF312E81), // Medium purple
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
@@ -162,13 +173,102 @@ class RiverPainter extends CustomPainter {
     );
   }
 
+  void _drawTimeGrid(Canvas canvas, Size size) {
+    // Draw subtle vertical grid lines at each node position
+    final Set<double> gridPositions = {};
+    
+    // Collect unique X positions from nodes
+    for (final node in nodes) {
+      gridPositions.add(node.x);
+    }
+    
+    // Draw grid lines
+    final gridPaint = Paint()
+      ..color = Colors.white.withOpacity(0.05)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+    
+    final dashPaint = Paint()
+      ..color = Colors.white.withOpacity(0.08)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+    
+    for (final x in gridPositions) {
+      // Draw dashed vertical line
+      const dashHeight = 10.0;
+      const dashSpace = 10.0;
+      double startY = 0;
+      
+      while (startY < size.height) {
+        canvas.drawLine(
+          Offset(x + 100, startY), // Center of node
+          Offset(x + 100, startY + dashHeight),
+          dashPaint,
+        );
+        startY += dashHeight + dashSpace;
+      }
+    }
+  }
+
+  void _drawFlowParticles(Canvas canvas) {
+    // Draw 3 particles per connection at different positions
+    for (final connection in connections) {
+      if (connection.controlPoints.length < 2) continue;
+      
+      // Create path for this connection
+      final path = Path();
+      path.moveTo(connection.controlPoints[0].dx, connection.controlPoints[0].dy);
+      
+      for (int i = 1; i < connection.controlPoints.length - 1; i++) {
+        final current = connection.controlPoints[i];
+        final next = connection.controlPoints[i + 1];
+        final cp1x = current.dx + (next.dx - current.dx) * 0.25;
+        final cp1y = current.dy;
+        final cp2x = current.dx + (next.dx - current.dx) * 0.75;
+        final cp2y = next.dy;
+        path.cubicTo(cp1x, cp1y, cp2x, cp2y, next.dx, next.dy);
+      }
+      
+      // Draw 3 particles at different offsets
+      for (int particleIndex = 0; particleIndex < 3; particleIndex++) {
+        final offset = (particleIndex / 3.0);
+        final progress = (particleProgress + offset) % 1.0;
+        
+        for (final pathMetric in path.computeMetrics()) {
+          final distance = pathMetric.length * progress;
+          final tangent = pathMetric.getTangentForOffset(distance);
+          
+          if (tangent != null && tangent.position != null) {
+            // Draw glowing particle
+            final particlePaint = Paint()
+              ..shader = RadialGradient(
+                colors: [
+                  connection.color.withOpacity(0.8),
+                  connection.color.withOpacity(0.4),
+                  connection.color.withOpacity(0.0),
+                ],
+              ).createShader(Rect.fromCircle(center: tangent.position, radius: 6));
+            
+            canvas.drawCircle(tangent.position, 6, particlePaint);
+            
+            // Draw bright center
+            final centerPaint = Paint()
+              ..color = Colors.white.withOpacity(0.9);
+            canvas.drawCircle(tangent.position, 2, centerPaint);
+          }
+          break; // Only process first contour
+        }
+      }
+    }
+  }
+
   void _drawConnection(Canvas canvas, RiverConnection connection, Paint paint) {
     if (connection.controlPoints.length < 2) return;
 
     final path = Path();
     
     // Create smooth Bézier curve through control points
-    path.moveTo(connection.controlPoints.first.dx, connection.controlPoints.first.dy);
+    path.moveTo(connection.controlPoints[0].dx, connection.controlPoints[0].dy);
     
     for (int i = 1; i < connection.controlPoints.length - 1; i++) {
       final current = connection.controlPoints[i];
@@ -187,18 +287,28 @@ class RiverPainter extends CustomPainter {
     }
 
     // Draw the river flow with gradient
+    final bounds = path.getBounds();
+    final gradient = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [
+        connection.color.withOpacity(0.9 * animationProgress),
+        connection.color.withOpacity(0.5 * animationProgress),
+      ],
+    );
+    
     final riverPaint = Paint()
+      ..shader = gradient.createShader(bounds)
       ..style = PaintingStyle.stroke
       ..strokeWidth = connection.width * animationProgress
       ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..color = connection.color.withOpacity(connection.opacity * animationProgress);
+      ..strokeJoin = StrokeJoin.round;
 
     // Add shadow for depth
     canvas.drawShadow(
       path,
-      Colors.black.withOpacity(0.2),
-      3.0,
+      Colors.black.withOpacity(0.3),
+      4.0,
       true,
     );
 
@@ -209,48 +319,76 @@ class RiverPainter extends CustomPainter {
   }
 
   void _drawFlowIndicators(Canvas canvas, RiverConnection connection, Path path) {
-    final pathMetrics = path.computeMetrics();
-    if (pathMetrics.isEmpty) return;
+    if (connection.width * animationProgress < 5.0) return; // Skip small indicators
 
-    final pathMetric = pathMetrics.first;
-    final pathLength = pathMetric.length;
-    
-    // Draw arrows along the flow
-    const arrowCount = 5;
-    for (int i = 0; i < arrowCount; i++) {
-      final distance = (pathLength / arrowCount) * (i + 0.5);
-      final tangent = pathMetric.getTangentForOffset(distance);
+    for (final pathMetric in path.computeMetrics()) {
+      final pathLength = pathMetric.length;
+      if (pathLength == 0) continue;
       
-      if (tangent != null) {
-        final position = tangent.position;
-        final angle = tangent.angle;
+      // Draw arrows along the flow
+      const arrowCount = 5;
+      for (int i = 0; i < arrowCount; i++) {
+        final distance = (pathLength / arrowCount) * (i + 0.5);
+        final tangent = pathMetric.getTangentForOffset(distance);
         
-        canvas.save();
-        canvas.translate(position.dx, position.dy);
-        canvas.rotate(angle);
-        
-        // Draw arrow
-        final arrowPaint = Paint()
-          ..color = connection.color.withOpacity(0.6 * animationProgress)
-          ..style = PaintingStyle.fill;
-        
-        final arrowPath = Path();
-        arrowPath.moveTo(0, -4);
-        arrowPath.lineTo(8, 0);
-        arrowPath.lineTo(0, 4);
-        arrowPath.close();
-        
-        canvas.drawPath(arrowPath, arrowPaint);
-        canvas.restore();
+        if (tangent != null) {
+          final position = tangent.position;
+          final angle = tangent.angle;
+          
+          canvas.save();
+          canvas.translate(position.dx, position.dy);
+          canvas.rotate(angle);
+          
+          // Draw arrow
+          final arrowPaint = Paint()
+            ..color = connection.color.withOpacity(0.6 * animationProgress)
+            ..style = PaintingStyle.fill;
+          
+          final arrowPath = Path();
+          arrowPath.moveTo(0, -4);
+          arrowPath.lineTo(8, 0);
+          arrowPath.lineTo(0, 4);
+          arrowPath.close();
+          
+          canvas.drawPath(arrowPath, arrowPaint);
+          canvas.restore();
+        }
       }
+      break; // Only process the first contour
     }
   }
 
   void _drawNode(Canvas canvas, RiverNode node, Paint paint) {
-    // Draw node shadow
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(node.x, node.y, node.width, 36),
+      const Radius.circular(18),
+    );
+    
+    final center = Offset(node.x + node.width / 2, node.y + 18);
+    final isShared = node.userName.contains('(Shared)');
+
+    // Radial glow effect for shared events
+    if (isShared) {
+      final glowGradient = RadialGradient(
+        colors: [
+          node.color.withOpacity(0.5),
+          node.color.withOpacity(0.3),
+          node.color.withOpacity(0.1),
+          node.color.withOpacity(0.0),
+        ],
+        stops: const [0.0, 0.3, 0.6, 1.0],
+      );
+      final glowPaint = Paint()
+        ..shader = glowGradient.createShader(
+          Rect.fromCircle(center: center, radius: 70),
+        );
+      canvas.drawCircle(center, 70, glowPaint);
+    }
+    
+    // Draw node shadow with blur (glassmorphism effect)
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.1)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+      ..color = Colors.black.withOpacity(isShared ? 0.2 : 0.1)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, isShared ? 12 : 8);
     
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -260,14 +398,14 @@ class RiverPainter extends CustomPainter {
       shadowPaint,
     );
 
-    // Draw node background with gradient
+    // Draw node background with glassmorphism (semi-transparent gradient)
     final nodePaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          node.color.withOpacity(0.9),
-          node.color.withOpacity(0.7),
+          node.color.withOpacity(0.25),
+          node.color.withOpacity(0.15),
         ],
       ).createShader(
         Rect.fromLTWH(node.x, node.y, node.width, 36),
@@ -281,11 +419,11 @@ class RiverPainter extends CustomPainter {
       nodePaint,
     );
 
-    // Draw node border
+    // Draw node border (brighter for shared events)
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = node.color.withOpacity(0.8);
+      ..strokeWidth = isShared ? 2.5 : 2
+      ..color = node.color.withOpacity(isShared ? 0.6 : 0.4);
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -357,67 +495,157 @@ class RiverPainter extends CustomPainter {
   }
 
   void _drawEvent(Canvas canvas, RiverEvent event, Paint paint) {
-    // Find the position for this event based on its timestamp
     final position = _calculateEventPosition(event);
     if (position == null) return;
 
+    // Determine event color and icon based on type
     Color eventColor;
+    IconData iconData;
+    
     switch (event.type) {
       case EventType.individual:
-        eventColor = Colors.blue;
+        eventColor = const Color(0xFF60A5FA); // Bright blue
+        iconData = Icons.person;
         break;
       case EventType.shared:
-        eventColor = Colors.green;
+        eventColor = const Color(0xFF34D399); // Bright green
+        iconData = Icons.people;
         break;
       case EventType.merged:
-        eventColor = Colors.purple;
+        eventColor = const Color(0xFFC084FC); // Bright purple
+        iconData = Icons.merge;
         break;
       case EventType.diverged:
-        eventColor = Colors.orange;
+        eventColor = const Color(0xFFFB923C); // Bright orange
+        iconData = Icons.call_split;
         break;
     }
 
-    // Draw event marker
-    final eventPaint = Paint()
-      ..color = eventColor.withOpacity(animationProgress)
-      ..style = PaintingStyle.fill;
+    // Draw subtle glow around event
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          eventColor.withOpacity(0.4 * animationProgress),
+          eventColor.withOpacity(0.0),
+        ],
+      ).createShader(Rect.fromCircle(center: position, radius: 15));
+    canvas.drawCircle(position, 15, glowPaint);
 
-    canvas.drawCircle(position, 6, eventPaint);
+    // Draw event marker background
+    final eventPaint = Paint()
+      ..color = eventColor.withOpacity(0.9 * animationProgress)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(position, 8, eventPaint);
 
     // Draw event border
     final borderPaint = Paint()
-      ..color = Colors.white.withOpacity(animationProgress)
+      ..color = Colors.white.withOpacity(0.8 * animationProgress)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
+    canvas.drawCircle(position, 8, borderPaint);
 
-    canvas.drawCircle(position, 6, borderPaint);
-
-    // Draw event title if there's space
-    final textPainter = TextPainter(
+    // Draw icon using TextPainter (Material Icons are fonts)
+    final iconPainter = TextPainter(
       text: TextSpan(
-        text: event.title,
+        text: String.fromCharCode(iconData.codePoint),
         style: TextStyle(
-          color: Colors.black87,
+          fontFamily: iconData.fontFamily,
           fontSize: 10,
-          fontWeight: FontWeight.w500,
-          backgroundColor: Colors.white.withOpacity(0.9),
+          color: Colors.white,
+          shadows: [
+            Shadow(
+              color: Colors.black.withOpacity(0.5),
+              offset: const Offset(0, 0.5),
+              blurRadius: 1,
+            ),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
     );
-
-    textPainter.layout();
-    textPainter.paint(
+    iconPainter.layout();
+    iconPainter.paint(
       canvas,
-      Offset(position.dx + 10, position.dy - textPainter.height / 2),
+      Offset(
+        position.dx - iconPainter.width / 2,
+        position.dy - iconPainter.height / 2,
+      ),
     );
+  }
+
+  void _drawUserLabels(Canvas canvas, Size size) {
+    // Track which users we've drawn labels for
+    final Set<String> drawnUsers = {};
+    
+    for (final node in nodes) {
+      // Only draw label for the first node of each user
+      if (!drawnUsers.contains(node.userId)) {
+        drawnUsers.add(node.userId);
+        
+        // Draw user label badge
+        final labelX = 10.0;
+        final labelY = node.y + 18;
+        
+        // Background circle
+        final badgePaint = Paint()
+          ..color = node.color.withOpacity(0.9)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(Offset(labelX, labelY), 20, badgePaint);
+        
+        // Border
+        final borderPaint = Paint()
+          ..color = Colors.white.withOpacity(0.5)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+        canvas.drawCircle(Offset(labelX, labelY), 20, borderPaint);
+        
+        // User initials (extract from userId)
+        final initials = node.userId.replaceAll('user-', 'U').toUpperCase();
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: initials,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(
+            labelX - textPainter.width / 2,
+            labelY - textPainter.height / 2,
+          ),
+        );
+      }
+    }
   }
 
   Offset? _calculateEventPosition(RiverEvent event) {
     // Find the node that contains this event
     for (final node in nodes) {
-      if (node.events.any((e) => e.id == event.id)) {
-        return Offset(node.x + node.width / 2, node.y + 18);
+      final index = node.events.indexWhere((e) => e.id == event.id);
+      if (index != -1) {
+        // Distribute events horizontally across the node
+        // If single event, center it
+        if (node.events.length == 1) {
+          return Offset(node.x + node.width / 2, node.y + 18);
+        }
+
+        // Multiple events: spread them out
+        // Use 80% of width to leave some padding on sides
+        final availableWidth = node.width * 0.8;
+        final startX = node.x + (node.width - availableWidth) / 2;
+        
+        // Calculate X position based on index
+        // safe spacing calculation
+        final step = availableWidth / (node.events.length - 1);
+        final x = startX + (index * step);
+        
+        return Offset(x, node.y + 18);
       }
     }
     return null;
@@ -439,12 +667,13 @@ class RiverPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant RiverPainter oldDelegate) {
+  bool shouldRepaint(RiverPainter oldDelegate) {
     return oldDelegate.nodes != nodes ||
            oldDelegate.connections != connections ||
            oldDelegate.events != events ||
            oldDelegate.selectedArea != selectedArea ||
-           oldDelegate.animationProgress != animationProgress;
+           oldDelegate.animationProgress != animationProgress ||
+           oldDelegate.particleProgress != particleProgress;
   }
 }
 
@@ -476,7 +705,11 @@ class _RiverVisualizationState extends State<RiverVisualization>
   late AnimationController _animationController;
   Rect? _selectedArea;
   Offset? _dragStart;
+  Offset? _dragEnd;
   bool _isSelecting = false;
+  late AnimationController _particleAnimationController;
+  RiverEvent? _selectedEvent;
+  Offset? _selectedEventPosition;
 
   @override
   void initState() {
@@ -486,51 +719,168 @@ class _RiverVisualizationState extends State<RiverVisualization>
       vsync: this,
     );
     _animationController.forward();
+    
+    // Initialize particle animation controller
+    _particleAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _particleAnimationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: RiverPainter(
-            nodes: widget.nodes,
-            connections: widget.connections,
-            events: widget.events,
-            selectedArea: _selectedArea,
-            animationProgress: _animationController.value,
-          ),
-          child: GestureDetector(
-            onTapDown: _handleTapDown,
-            onPanStart: _handlePanStart,
-            onPanUpdate: _handlePanUpdate,
-            onPanEnd: _handlePanEnd,
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
+    return Stack(
+      children: [
+        // Main river visualization
+        AnimatedBuilder(
+          animation: Listenable.merge([_animationController, _particleAnimationController]),
+          builder: (context, child) {
+            return CustomPaint(
+              painter: RiverPainter(
+                nodes: widget.nodes,
+                connections: widget.connections,
+                events: widget.events,
+                selectedArea: _selectedArea,
+                animationProgress: _animationController.value,
+                particleProgress: _particleAnimationController.value,
+              ),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,  // Ensure gestures are detected
+                onTapDown: _handleTapDown,
+                onPanStart: _handlePanStart,
+                onPanUpdate: _handlePanUpdate,
+                onPanEnd: _handlePanEnd,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.transparent,  // Make container hittable
+                ),
+              ),
+            );
+          },
+        ),
+        
+        // Event card overlay
+        if (_selectedEvent != null && _selectedEventPosition != null)
+          _buildEventCardOverlay(context),
+      ],
+    );
+  }
+
+  Widget _buildEventCardOverlay(BuildContext context) {
+    if (_selectedEvent == null || _selectedEventPosition == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Position the card near the event, but ensure it stays on screen
+    final cardWidth = 350.0;
+    final cardHeight = 200.0;
+    double left = _selectedEventPosition!.dx + 20;
+    double top = _selectedEventPosition!.dy - cardHeight / 2;
+
+    // Keep card on screen
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    if (left + cardWidth > screenWidth) {
+      left = _selectedEventPosition!.dx - cardWidth - 20;
+    }
+    if (top < 0) top = 10;
+    if (top + cardHeight > screenHeight) {
+      top = screenHeight - cardHeight - 10;
+    }
+
+    return Positioned(
+      left: left,
+      top: top,
+      child: Material(
+        elevation: 8,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: cardWidth,
+          constraints: BoxConstraints(maxHeight: cardHeight),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              width: 2,
             ),
           ),
-        );
-      },
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _selectedEvent!.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Event Type: ${_selectedEvent!.type.name}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Participants: ${_selectedEvent!.participantIds.length}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      _selectedEvent = null;
+                      _selectedEventPosition = null;
+                    });
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   void _handleTapDown(TapDownDetails details) {
-    final position = details.globalPosition;
+    final position = details.localPosition;
+    debugPrint('Tap at: $position');
     
-    // Check if an event was tapped
+    // Check if an event was tapped (increased hit radius to 20px for easier clicking)
     for (final event in widget.events) {
       final eventPos = _calculateEventPosition(event);
       if (eventPos != null) {
         final distance = (position - eventPos).distance;
-        if (distance <= 10) {
+        debugPrint('Event ${event.title} at $eventPos, distance: $distance');
+        if (distance <= 20) {  // Increased from 10 to 20 for easier clicking
+          debugPrint('Event tapped: ${event.title}');
+          setState(() {
+            _selectedEvent = event;
+            _selectedEventPosition = eventPos;
+          });
           widget.onEventTap?.call(event);
           return;
         }
@@ -544,6 +894,14 @@ class _RiverVisualizationState extends State<RiverVisualization>
         widget.onNodeTap?.call(node);
         return;
       }
+    }
+    
+    // Tap on empty area - clear selection
+    if (_selectedEvent != null) {
+      setState(() {
+        _selectedEvent = null;
+        _selectedEventPosition = null;
+      });
     }
   }
 
@@ -578,8 +936,18 @@ class _RiverVisualizationState extends State<RiverVisualization>
 
   Offset? _calculateEventPosition(RiverEvent event) {
     for (final node in widget.nodes) {
-      if (node.events.any((e) => e.id == event.id)) {
-        return Offset(node.x + node.width / 2, node.y + 18);
+      final index = node.events.indexWhere((e) => e.id == event.id);
+      if (index != -1) {
+        if (node.events.length == 1) {
+          return Offset(node.x + node.width / 2, node.y + 18);
+        }
+        
+        final availableWidth = node.width * 0.8;
+        final startX = node.x + (node.width - availableWidth) / 2;
+        final step = availableWidth / (node.events.length - 1);
+        final x = startX + (index * step);
+        
+        return Offset(x, node.y + 18);
       }
     }
     return null;

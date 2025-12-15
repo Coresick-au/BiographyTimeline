@@ -5,10 +5,8 @@ import '../services/timeline_renderer_factory.dart';
 import '../renderers/river_visualization.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
-import '../../social/models/user_models.dart' as social;
-import '../../social/services/relationship_service.dart';
 
-/// Widget for River timeline renderer
+/// River timeline renderer for merged timeline visualization
 class RiverTimelineRendererWidget extends StatefulWidget {
   final TimelineRenderConfig config;
   final TimelineRenderData data;
@@ -58,6 +56,7 @@ class _RiverTimelineRendererWidgetState extends State<RiverTimelineRendererWidge
   @override
   Widget build(BuildContext context) {
     return _renderer.build(
+      context: context,
       onEventTap: widget.onEventTap,
       onEventLongPress: widget.onEventLongPress,
       onDateTap: widget.onDateTap,
@@ -73,63 +72,55 @@ class _RiverTimelineRendererWidgetState extends State<RiverTimelineRendererWidge
   }
 }
 
-/// River timeline renderer for merged timeline visualization
+/// River timeline renderer
 class RiverTimelineRenderer implements ITimelineRenderer {
   TimelineRenderConfig? _config;
   TimelineRenderData? _data;
   List<RiverNode> _nodes = [];
   List<RiverConnection> _connections = [];
   List<RiverEvent> _events = [];
+  
+  // Layout constants
+  double _totalWidth = 1000.0;
+  final double _nodeSpacing = 250.0;
+  final double _nodeY = 200.0;
+  final double _nodeHeight = 40.0;
 
   @override
   TimelineViewMode get viewMode => TimelineViewMode.river;
-
   @override
   String get displayName => 'River View';
-
   @override
   IconData get icon => Icons.water;
-
   @override
-  String get description => 'Sankey-style visualization of merged timelines';
-
+  String get description => 'Flowing visualization of timeline events';
   @override
   bool get isReady => _config != null && _data != null;
-
   @override
   bool get supportsInfiniteScroll => false;
-
   @override
   bool get supportsZoom => true;
-
   @override
   bool get supportsFiltering => true;
-
   @override
   bool get supportsSearch => false;
 
   @override
   Future<void> initialize(TimelineRenderConfig config) async {
     _config = config;
-    if (_data != null) {
-      _initializeRiverData();
-    }
+    if (_data != null) _initializeRiverData();
   }
 
   @override
   Future<void> updateData(TimelineRenderData data) async {
     _data = data;
-    if (_config != null) {
-      _initializeRiverData();
-    }
+    if (_config != null) _initializeRiverData();
   }
 
   @override
   Future<void> updateConfig(TimelineRenderConfig config) async {
     _config = config;
-    if (_data != null) {
-      _initializeRiverData();
-    }
+    if (_data != null) _initializeRiverData();
   }
 
   @override
@@ -141,68 +132,260 @@ class RiverTimelineRenderer implements ITimelineRenderer {
     TimelineContextCallback? onContextTap,
     ScrollController? scrollController,
   }) {
+    debugPrint('DEBUG: RiverRenderer.build() called');
+    debugPrint('DEBUG: isReady = $isReady');
+    debugPrint('DEBUG: _nodes.isEmpty = ${_nodes.isEmpty}');
+    debugPrint('DEBUG: _nodes.length = ${_nodes.length}');
+    
     if (!isReady || _nodes.isEmpty) {
+      debugPrint('DEBUG: Showing empty state');
       return _buildEmptyState(context);
     }
 
-    return Scaffold(
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: _buildRiverVisualization(context, onEventTap),
+    debugPrint('DEBUG: About to build river visualization');
+    
+    return Column(
+      children: [
+        if (context != null) _buildHeader(context),
+        Expanded(
+          child: InteractiveViewer(
+            boundaryMargin: const EdgeInsets.all(100),
+            minScale: 0.1,
+            maxScale: 4.0,
+            constrained: false, // Allow canvas to be larger than screen
+            child: SizedBox(
+              width: _totalWidth,
+              height: 800, // Fixed height canvas
+              child: _buildRiverVisualization(context, onEventTap),
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  @override
-  List<TimelineEvent> getVisibleEvents() {
-    return _data?.events ?? [];
+  /// Generate a vibrant color palette for multiple users
+  List<Color> _generateColorPalette(int userCount) {
+    // Base palette of distinct, vibrant colors
+    final baseColors = [
+      Colors.blue.shade400,      // Blue
+      Colors.purple.shade400,    // Purple
+      Colors.green.shade400,     // Green
+      Colors.orange.shade400,    // Orange
+      Colors.pink.shade400,      // Pink
+      Colors.teal.shade400,      // Teal
+      Colors.amber.shade400,     // Amber
+      Colors.cyan.shade400,      // Cyan
+      Colors.lime.shade400,      // Lime
+      Colors.indigo.shade400,    // Indigo
+    ];
+    
+    if (userCount <= baseColors.length) {
+      return baseColors.sublist(0, userCount);
+    }
+    
+    // If more users than base colors, generate additional colors
+    final colors = List<Color>.from(baseColors);
+    for (int i = baseColors.length; i < userCount; i++) {
+      final hue = (i * 360.0 / userCount) % 360;
+      colors.add(HSLColor.fromAHSL(1.0, hue, 0.6, 0.6).toColor());
+    }
+    return colors;
   }
 
-  @override
-  DateTimeRange? getVisibleDateRange() {
-    if (_data?.events.isEmpty ?? true) return null;
+  void _initializeRiverData() {
+    debugPrint('DEBUG: RiverRenderer._initializeRiverData() called');
     
+    if (_data?.events.isEmpty ?? true) {
+      _nodes = [];
+      _connections = [];
+      _events = [];
+      return;
+    }
+
     final events = _data!.events;
     final sortedEvents = List<TimelineEvent>.from(events)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+    // Group events by both time period AND user
+    final Map<String, Map<String, List<TimelineEvent>>> timeUserGroups = {};
+    final Set<String> allUserIds = {};
     
-    return DateTimeRange(
-      start: sortedEvents.first.timestamp,
-      end: sortedEvents.last.timestamp,
+    for (var event in sortedEvents) {
+      final timeKey = "${event.timestamp.year}-${event.timestamp.month.toString().padLeft(2, '0')}";
+      final userId = event.ownerId; // Extract user ID from event
+      
+      allUserIds.add(userId);
+      
+      if (!timeUserGroups.containsKey(timeKey)) {
+        timeUserGroups[timeKey] = {};
+      }
+      
+      if (!timeUserGroups[timeKey]!.containsKey(userId)) {
+        timeUserGroups[timeKey]![userId] = [];
+      }
+      timeUserGroups[timeKey]![userId]!.add(event);
+    }
+
+    _nodes = [];
+    _connections = [];
+    _events = [];
+
+    // Dynamic color palette for unlimited users
+    final colorPalette = _generateColorPalette(allUserIds.length);
+    final Map<String, Color> userColors = {};
+    int colorIndex = 0;
+    for (final userId in allUserIds) {
+      userColors[userId] = colorPalette[colorIndex % colorPalette.length];
+      colorIndex++;
+    }
+
+    // Calculate dynamic Y positions based on user count
+    final userCount = allUserIds.length;
+    const canvasHeight = 800.0; // Matches the fixed height in build method
+    const verticalPadding = 150.0; // Padding from top/bottom
+    final availableHeight = canvasHeight - (2 * verticalPadding);
+    
+    final Map<String, double> userYPositions = {};
+    if (userCount == 1) {
+      userYPositions[allUserIds.first] = canvasHeight / 2;
+    } else {
+      final userSpacing = availableHeight / (userCount - 1);
+      int userIndex = 0;
+      for (final userId in allUserIds) {
+        userYPositions[userId] = verticalPadding + (userIndex * userSpacing);
+        userIndex++;
+      }
+    }
+
+    double currentX = 50.0;
+    final sortedTimeKeys = timeUserGroups.keys.toList()..sort();
+    
+    // Track previous nodes for each user to create connections
+    final Map<String, RiverNode> previousNodes = {};
+
+    for (var timeKey in sortedTimeKeys) {
+      final usersInPeriod = timeUserGroups[timeKey]!;
+      final parts = timeKey.split('-');
+      final date = DateTime(int.parse(parts[0]), int.parse(parts[1]));
+      final monthName = _getMonthName(date.month);
+      
+      // Check if this is a shared event (both users have events at same time)
+      final isSharedPeriod = usersInPeriod.length > 1;
+      final sharedY = isSharedPeriod ? 250.0 : null; // Middle position for shared events
+
+      // Create nodes for each user in this time period
+      for (var userId in usersInPeriod.keys) {
+        final userEvents = usersInPeriod[userId]!;
+        final adaptiveWidth = 120.0 + (userEvents.length * 80.0);
+        final yPos = sharedY ?? userYPositions[userId]!;
+        
+        final node = RiverNode(
+          id: 'node_${timeKey}_$userId',
+          userId: userId,
+          userName: isSharedPeriod ? "$monthName ${date.year} (Shared)" : "$monthName ${date.year}",
+          timestamp: date,
+          x: currentX,
+          y: yPos,
+          width: adaptiveWidth,
+          color: userColors[userId] ?? Colors.teal.shade400,
+          events: userEvents.map((e) => RiverEvent(
+            id: e.id,
+            eventId: e.id,
+            title: e.title ?? 'Untitled Event',
+            timestamp: e.timestamp,
+            participantIds: [],
+            type: EventType.individual,
+          )).toList(),
+        );
+        
+        _nodes.add(node);
+
+        // Create connection from previous node for this user
+        if (previousNodes.containsKey(userId)) {
+          final prevNode = previousNodes[userId]!;
+          final gap = 100.0;
+          
+          _connections.add(RiverConnection(
+            id: 'conn_${prevNode.id}_${node.id}',
+            fromNodeId: prevNode.id,
+            toNodeId: node.id,
+            controlPoints: [
+              Offset(prevNode.x + prevNode.width, prevNode.y + (_nodeHeight/2)),
+              Offset(prevNode.x + prevNode.width + (gap/2), prevNode.y + (_nodeHeight/2)),
+              Offset(node.x - (gap/2), node.y + (_nodeHeight/2)),
+              Offset(node.x, node.y + (_nodeHeight/2)),
+            ],
+            width: 20,
+            color: (userColors[userId] ?? Colors.teal.shade400).withOpacity(0.6),
+          ));
+        }
+        
+        previousNodes[userId] = node;
+      }
+      
+      // Advance X position for next time period
+      final maxWidth = usersInPeriod.values
+          .map((events) => 120.0 + (events.length * 80.0))
+          .reduce((a, b) => a > b ? a : b);
+      currentX += maxWidth + 100.0;
+    }
+
+    _events = _nodes.expand((n) => n.events).toList();
+    _totalWidth = currentX + 200.0;
+  }
+
+  String _getMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
+  }
+
+  Widget _buildRiverVisualization(BuildContext? context, TimelineEventCallback? onEventTap) {
+    if (context == null) return const SizedBox.shrink();
+    
+    debugPrint('DEBUG: _buildRiverVisualization called');
+    debugPrint('DEBUG: _totalWidth = $_totalWidth');
+    debugPrint('DEBUG: _nodes.length = ${_nodes.length}');
+    
+    // Pass the calculated data to the Painter
+    return RiverVisualization(
+      nodes: _nodes,
+      connections: _connections,
+      events: _events,
+      onNodeTap: (node) => _handleNodeTap(context, node),
+      onEventTap: (event) {
+        final timelineEvent = _data?.events.firstWhere(
+          (e) => e.id == event.eventId,
+          orElse: () => throw Exception('Event not found'),
+        );
+        if (timelineEvent != null) {
+          onEventTap?.call(timelineEvent);
+        }
+      },
     );
   }
 
-  @override
-  Future<void> navigateToDate(DateTime date) async {
-    // Implementation for navigating to specific date in river view
-    // This would involve scrolling/zooming to the appropriate section
+  void _handleNodeTap(BuildContext context, RiverNode node) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${node.userName}: ${node.events.length} events')),
+    );
   }
 
+  // --- Boilerplate implementations for Interface ---
   @override
-  Future<void> navigateToEvent(String eventId) async {
-    // Implementation for navigating to specific event in river view
-    // This would highlight the event and scroll to its position
-  }
-
+  List<TimelineEvent> getVisibleEvents() => _data?.events ?? [];
   @override
-  Future<void> setZoomLevel(double level) async {
-    // Implementation for zooming the river visualization
-    // This would adjust the spacing and width of river flows
-  }
-
+  DateTimeRange? getVisibleDateRange() => null;
   @override
-  Future<Uint8List?> exportAsImage() async {
-    // Implementation for exporting river visualization as image
-    return null;
-  }
-
+  Future<void> navigateToDate(DateTime date) async {}
+  @override
+  Future<void> navigateToEvent(String eventId) async {}
+  @override
+  Future<void> setZoomLevel(double level) async {}
+  @override
+  Future<Uint8List?> exportAsImage() async => null;
   @override
   TimelineRenderConfig get config => _config ?? TimelineRenderConfig(viewMode: viewMode);
-
   @override
   TimelineRenderData get data => _data ?? TimelineRenderData(
     events: [],
@@ -211,7 +394,6 @@ class RiverTimelineRenderer implements ITimelineRenderer {
     latestDate: DateTime.now(),
     clusteredEvents: {},
   );
-
   @override
   void dispose() {
     _nodes.clear();
@@ -221,494 +403,24 @@ class RiverTimelineRenderer implements ITimelineRenderer {
 
   Widget _buildEmptyState(BuildContext? context) {
     if (context == null) return const SizedBox.shrink();
-    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.water_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          Icon(Icons.water_outlined, size: 64, color: Theme.of(context).disabledColor),
           const SizedBox(height: 16),
-          Text(
-            'No Timeline Data',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Connect with others to see merged timelines',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
+          Text('Add events to see the river flow', style: Theme.of(context).textTheme.bodyLarge),
         ],
       ),
     );
   }
-
-  Widget _buildHeader(BuildContext? context) {
-    if (context == null) return const SizedBox.shrink();
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.water,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'River Visualization',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                onPressed: () => _showInfoDialog(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Visualize how timelines merge and diverge between connected users',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildStatsRow(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsRow(BuildContext? context) {
-    if (context == null) return const SizedBox.shrink();
-    
-    return Row(
-      children: [
-        _buildStatCard(context, 'Users', _nodes.length.toString(), Icons.people),
-        const SizedBox(width: 12),
-        _buildStatCard(context, 'Connections', _connections.length.toString(), Icons.link),
-        const SizedBox(width: 12),
-        _buildStatCard(context, 'Shared Events', _events.length.toString(), Icons.share),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(BuildContext context, String label, String value, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRiverVisualization(BuildContext? context, TimelineEventCallback? onEventTap) {
-    if (context == null) return const SizedBox.shrink();
-    
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: RiverVisualization(
-          nodes: _nodes,
-          connections: _connections,
-          events: _events,
-          onNodeTap: (node) => _handleNodeTap(context, node),
-          onEventTap: (event) {
-            final timelineEvent = _data?.events.firstWhere(
-              (e) => e.id == event.eventId,
-              orElse: () => throw Exception('Event not found'),
-            );
-            if (timelineEvent != null) {
-              onEventTap?.call(timelineEvent);
-            }
-          },
-          onAreaSelected: (area) => _handleAreaSelected(context, area),
-        ),
-      ),
-    );
-  }
-
-  void _handleNodeTap(BuildContext context, RiverNode node) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(node.userName),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('User ID: ${node.userId}'),
-            Text('Events: ${node.events.length}'),
-            if (node.events.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              const Text('Recent Events:'),
-              ...node.events.take(3).map((event) => Text('• ${event.title}')),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleAreaSelected(BuildContext context, Rect area) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Selected area: ${area.width.toInt()}x${area.height.toInt()}'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _showInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('River Visualization'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'This view shows how timelines merge and flow between connected users:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Text('• Blue flows: Individual timeline segments'),
-            Text('• Green flows: Shared events between users'),
-            Text('• Purple flows: Merged timeline sections'),
-            Text('• Orange flows: Diverged timeline sections'),
-            SizedBox(height: 16),
-            Text(
-              'Tap on nodes to see user details, or on events to view specific moments.',
-              style: TextStyle(fontStyle: FontStyle.italic),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _createSampleRiverData() {
-    final now = DateTime.now();
-    final userColors = [
-      Colors.blue.shade400,
-      Colors.green.shade400,
-      Colors.purple.shade400,
-      Colors.orange.shade400,
-    ];
-
-    // Create sample nodes (timeline segments)
-    _nodes = [
-      RiverNode(
-        id: 'user1',
-        userId: 'user1',
-        userName: 'You',
-        timestamp: now.subtract(const Duration(days: 30)),
-        x: 50,
-        y: 100,
-        width: 200,
-        color: userColors[0],
-        events: [
-          RiverEvent(
-            id: 'event1',
-            eventId: 'event1',
-            title: 'Started Journey',
-            timestamp: now.subtract(const Duration(days: 30)),
-            participantIds: ['user1'],
-            type: EventType.individual,
-          ),
-        ],
-      ),
-      RiverNode(
-        id: 'user2',
-        userId: 'user2',
-        userName: 'Friend',
-        timestamp: now.subtract(const Duration(days: 25)),
-        x: 300,
-        y: 100,
-        width: 180,
-        color: userColors[1],
-        events: [
-          RiverEvent(
-            id: 'event2',
-            eventId: 'event2',
-            title: 'Joined Project',
-            timestamp: now.subtract(const Duration(days: 25)),
-            participantIds: ['user2'],
-            type: EventType.individual,
-          ),
-        ],
-      ),
-      RiverNode(
-        id: 'merged1',
-        userId: 'merged',
-        userName: 'Shared Timeline',
-        timestamp: now.subtract(const Duration(days: 20)),
-        x: 550,
-        y: 100,
-        width: 220,
-        color: Colors.purple.shade400,
-        events: [
-          RiverEvent(
-            id: 'event3',
-            eventId: 'event3',
-            title: 'Collaboration Started',
-            timestamp: now.subtract(const Duration(days: 20)),
-            participantIds: ['user1', 'user2'],
-            type: EventType.shared,
-          ),
-        ],
-      ),
-      RiverNode(
-        id: 'user3',
-        userId: 'user3',
-        userName: 'Partner',
-        timestamp: now.subtract(const Duration(days: 15)),
-        x: 300,
-        y: 200,
-        width: 160,
-        color: userColors[2],
-        events: [
-          RiverEvent(
-            id: 'event4',
-            eventId: 'event4',
-            title: ' Partnership',
-            timestamp: now.subtract(const Duration(days: 15)),
-            participantIds: ['user3'],
-            type: EventType.individual,
-          ),
-        ],
-      ),
-    ];
-
-    // Create connections (river flows)
-    _connections = [
-      RiverConnection(
-        id: 'flow1',
-        fromNodeId: 'user1',
-        toNodeId: 'merged1',
-        controlPoints: [
-          const Offset(150, 118),
-          const Offset(250, 118),
-          const Offset(450, 118),
-          const Offset(550, 118),
-        ],
-        width: 20,
-        color: Colors.blue.shade300,
-      ),
-      RiverConnection(
-        id: 'flow2',
-        fromNodeId: 'user2',
-        toNodeId: 'merged1',
-        controlPoints: [
-          const Offset(390, 118),
-          const Offset(450, 118),
-          const Offset(490, 118),
-          const Offset(550, 118),
-        ],
-        width: 18,
-        color: Colors.green.shade300,
-      ),
-      RiverConnection(
-        id: 'flow3',
-        fromNodeId: 'user3',
-        toNodeId: 'merged1',
-        controlPoints: [
-          const Offset(380, 218),
-          const Offset(450, 180),
-          const Offset(500, 150),
-          const Offset(550, 118),
-        ],
-        width: 16,
-        color: Colors.purple.shade300,
-      ),
-    ];
-
-    // Create events for visualization
-    _events = [
-      ..._nodes.expand((node) => node.events),
-    ];
-  }
-
-  void _initializeRiverData() {
-    if (_data?.events.isEmpty ?? true) return;
-
-    // Create river visualization from actual timeline data
-    _createRiverDataFromEvents();
-  }
-
-  void _createRiverDataFromEvents() {
-    if (_data?.events.isEmpty ?? true) return;
-
-    final events = _data!.events;
-    final now = DateTime.now();
-    final userColors = [
-      Colors.blue.shade400,
-      Colors.green.shade400,
-      Colors.purple.shade400,
-      Colors.orange.shade400,
-    ];
-
-    // Sort events by timestamp
-    final sortedEvents = List<TimelineEvent>.from(events)
-      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-
-    // Create river nodes based on actual timeline data
-    _nodes = [
-      RiverNode(
-        id: 'main_timeline',
-        userId: 'current_user',
-        userName: 'Your Timeline',
-        timestamp: sortedEvents.first.timestamp,
-        x: 50,
-        y: 150,
-        width: 300,
-        color: userColors[0],
-        events: sortedEvents.map((event) => RiverEvent(
-          id: 'river_${event.id}',
-          eventId: event.id,
-          title: event.title?.isNotEmpty == true ? event.title! : 'Timeline Event',
-          timestamp: event.timestamp,
-          participantIds: ['current_user'],
-          type: EventType.individual,
-        )).toList(),
-      ),
-    ];
-
-    // Create connections between related events (grouped by context or time proximity)
-    _connections = [];
-    
-    // Group events by month to create visual flows
-    final monthlyGroups = <String, List<TimelineEvent>>{};
-    for (final event in sortedEvents) {
-      final monthKey = '${event.timestamp.year}-${event.timestamp.month.toString().padLeft(2, '0')}';
-      monthlyGroups.putIfAbsent(monthKey, () => []).add(event);
-    }
-
-    // Create flow connections between monthly groups
-    final sortedMonths = monthlyGroups.keys.toList()..sort();
-    for (int i = 0; i < sortedMonths.length - 1; i++) {
-      final currentMonth = sortedMonths[i];
-      final nextMonth = sortedMonths[i + 1];
-      
-      final currentEvents = monthlyGroups[currentMonth]!;
-      final nextEvents = monthlyGroups[nextMonth]!;
-      
-      if (currentEvents.isNotEmpty && nextEvents.isNotEmpty) {
-        _connections.add(RiverConnection(
-          id: 'flow_$i',
-          fromNodeId: 'main_timeline',
-          toNodeId: 'main_timeline',
-          controlPoints: [
-            Offset(50 + (i * 80), 168),
-            Offset(90 + (i * 80), 168),
-            Offset(130 + (i * 80), 168),
-            Offset(170 + (i * 80), 168),
-          ],
-          width: 20.0 - (i * 2), // Gradually decrease width
-          color: userColors[0].withOpacity(0.7),
-        ));
-      }
-    }
-
-    // Create events for visualization
-    _events = _nodes.expand((node) => node.events).toList();
-
-    // Add shared events if there are any with location data
-    final locationEvents = sortedEvents.where((e) => e.location != null).toList();
-    if (locationEvents.isNotEmpty) {
-      _nodes.add(RiverNode(
-        id: 'location_timeline',
-        userId: 'location_user',
-        userName: 'Location Events',
-        timestamp: locationEvents.first.timestamp,
-        x: 400,
-        y: 150,
-        width: 250,
-        color: userColors[1],
-        events: locationEvents.map((event) => RiverEvent(
-          id: 'loc_${event.id}',
-          eventId: event.id,
-          title: event.title?.isNotEmpty == true ? event.title! : 'Location Event',
-          timestamp: event.timestamp,
-          participantIds: ['current_user'],
-          type: EventType.shared,
-        )).toList(),
-      ));
-
-      // Add connection from main timeline to location events
-      _connections.add(RiverConnection(
-        id: 'location_flow',
-        fromNodeId: 'main_timeline',
-        toNodeId: 'location_timeline',
-        controlPoints: [
-          const Offset(350, 168),
-          const Offset(375, 168),
-          const Offset(400, 168),
-        ],
-        width: 15,
-        color: userColors[1].withOpacity(0.7),
-      ));
-    }
+  
+  Widget _buildHeader(BuildContext context) {
+     return Padding(
+       padding: const EdgeInsets.all(16.0),
+       child: Text("River View (Drag to pan, Pinch to zoom)", 
+         style: Theme.of(context).textTheme.labelSmall
+       ),
+     );
   }
 }

@@ -84,10 +84,13 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(16),
-              child: QuillEditor(
-                controller: _controller,
-                scrollController: _scrollController,
-                focusNode: _focusNode,
+              child: QuillEditor.basic(
+                configurations: QuillEditorConfigurations(
+                  controller: _controller,
+                  sharedConfigurations: const QuillSharedConfigurations(
+                    locale: Locale('en'),
+                  ),
+                ),
               ),
             ),
           ),
@@ -111,7 +114,12 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
         ),
       ),
       child: QuillSimpleToolbar(
-        controller: _controller,
+        configurations: QuillSimpleToolbarConfigurations(
+          controller: _controller,
+          showFontFamily: false,
+          showFontSize: false,
+          showSearchButton: false,
+        ),
       ),
     );
   }

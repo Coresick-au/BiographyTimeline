@@ -274,7 +274,14 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
           
           // Quill toolbar
           QuillSimpleToolbar(
-            controller: _quillController,
+            configurations: QuillSimpleToolbarConfigurations(
+              controller: _quillController,
+              showFontFamily: false,
+              showFontSize: false,
+              showSearchButton: false,
+              showSubscript: false,
+              showSuperscript: false,
+            ),
           ),
           
           const SizedBox(height: 8),
@@ -286,10 +293,13 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
                 border: Border.all(color: Theme.of(context).colorScheme.outline),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: QuillEditor(
-                controller: _quillController,
-                scrollController: ScrollController(),
-                focusNode: FocusNode(),
+              child: QuillEditor.basic(
+                configurations: QuillEditorConfigurations(
+                  controller: _quillController,
+                  sharedConfigurations: const QuillSharedConfigurations(
+                    locale: Locale('en'),
+                  ),
+                ),
               ),
             ),
           ),

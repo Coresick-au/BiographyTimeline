@@ -348,56 +348,105 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
   }
 
   void _showAddConnectionDialog() {
+    final emailController = TextEditingController();
+    final messageController = TextEditingController();
+    RelationshipType selectedType = RelationshipType.friend;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Connection'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const TextField(
-              decoration: InputDecoration(
-                labelText: 'Email or Username',
-                prefixIcon: Icon(Icons.person),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Add Connection'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email or Username',
+                  prefixIcon: Icon(Icons.person),
+                  hintText: 'user@example.com',
+                ),
               ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<RelationshipType>(
+                value: selectedType,
+                decoration: const InputDecoration(
+                  labelText: 'Relationship Type',
+                  prefixIcon: Icon(Icons.category),
+                ),
+                items: RelationshipType.values.map((type) {
+                  return DropdownMenuItem(
+                    value: type,
+                    child: Text(_getRelationshipDisplayName(type)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedType = value;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: messageController,
+                decoration: const InputDecoration(
+                  labelText: 'Message (optional)',
+                  prefixIcon: Icon(Icons.message),
+                  hintText: 'Say hello...',
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<RelationshipType>(
-              decoration: const InputDecoration(
-                labelText: 'Relationship Type',
-                prefixIcon: Icon(Icons.category),
-              ),
-              items: RelationshipType.values.map((type) {
-                return DropdownMenuItem(
-                  value: type,
-                  child: Text(_getRelationshipDisplayName(type)),
-                );
-              }).toList(),
-              onChanged: (value) {},
-            ),
-            const SizedBox(height: 16),
-            const TextField(
-              decoration: InputDecoration(
-                labelText: 'Message (optional)',
-                prefixIcon: Icon(Icons.message),
-              ),
-              maxLines: 3,
+            ElevatedButton(
+              onPressed: () async {
+                final email = emailController.text.trim();
+                if (email.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter an email or username')),
+                  );
+                  return;
+                }
+
+                Navigator.pop(context);
+                
+                try {
+                  final service = ref.read(relationshipServiceProvider);
+                  // TODO: Replace with actual current user ID from auth
+                  await service.sendConnectionRequest(
+                    fromUserId: 'current-user-id',
+                    toUserId: email, // In real app, would look up user by email
+                    type: selectedType,
+                    message: messageController.text.trim().isEmpty 
+                        ? null 
+                        : messageController.text.trim(),
+                  );
+                  
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Connection request sent!')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Send Request'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement send connection request
-            },
-            child: const Text('Send Request'),
-          ),
-        ],
       ),
     );
   }

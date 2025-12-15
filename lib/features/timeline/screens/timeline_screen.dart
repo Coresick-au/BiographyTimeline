@@ -16,7 +16,9 @@ import '../widgets/timeline_event_card.dart';
 import '../../../shared/widgets/modern/dark_theme.dart';
 import '../../../shared/widgets/modern/animated_buttons.dart';
 import '../widgets/search_dialog.dart';
+import '../widgets/export_dialog.dart';
 import 'event_details_screen.dart';
+import '../providers/timeline_view_provider.dart';
 
 /// Main timeline screen with view switcher and controls
 class TimelineScreen extends ConsumerStatefulWidget {
@@ -35,6 +37,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   
   // Renderer cache to preserve state across view switches
   final Map<TimelineViewMode, ITimelineRenderer> _rendererCache = {};
+  
+  // Track if welcome dialog has been shown
+  bool _hasShownWelcome = false;
 
   @override
   void initState() {
@@ -73,6 +78,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       _tabController.index = TimelineViewMode.values.indexOf(newMode);
       // Don't force rebuild - let renderer cache work
     });
+    
+    // Update provider to keep in sync
+    ref.read(timelineViewProvider.notifier).setViewMode(newMode);
 
     // Restore view state after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,6 +110,23 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   @override
   Widget build(BuildContext context) {
     final timelineState = ref.watch(timelineDataProvider);
+    
+    // Watch timeline view provider and update view mode when it changes
+    ref.listen<TimelineViewMode>(timelineViewProvider, (previous, next) {
+      if (next != _currentViewMode) {
+        _switchViewMode(next);
+      }
+    });
+
+    // Show welcome dialog on first launch if timeline is empty
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_hasShownWelcome && 
+          timelineState.hasValue && 
+          timelineState.value!.allEvents.isEmpty) {
+        _hasShownWelcome = true;
+        _showWelcomeDialog();
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -244,6 +269,14 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       ),
       actions: [
         IconButton(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (context) => ExportDialog(events: state.allEvents),
+          ),
+          icon: const Icon(Icons.ios_share, color: Colors.white),
+          tooltip: 'Export Timeline',
+        ),
+        IconButton(
           onPressed: () => _showSearchDialog(state.allEvents, state.contexts),
           icon: const Icon(Icons.search, color: Colors.white),
           tooltip: 'Search Events',
@@ -284,6 +317,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     
     // Note: Calling build on the renderer.
     return _currentRenderer!.build(
+      context: context,
       onEventTap: (event) {
         Navigator.of(context).push(
           MaterialPageRoute(
