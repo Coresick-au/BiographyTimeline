@@ -17,13 +17,30 @@ class TimelineDataService extends AsyncNotifier<TimelineState> {
 
   @override
   FutureOr<TimelineState> build() async {
-    // Await the repository from the FutureProvider
-    _repository = await ref.watch(timelineRepositoryProvider.future);
-    _filterService = ref.watch(timelineFilterServiceProvider);
-    _clusteringService = ref.watch(timelineClusteringServiceProvider);
+    try {
+      print('DEBUG: TimelineDataService.build() starting...');
+      
+      // Await the repository from the FutureProvider
+      print('DEBUG: Waiting for repository...');
+      _repository = await ref.watch(timelineRepositoryProvider.future);
+      print('DEBUG: Repository obtained.');
+      
+      _filterService = ref.watch(timelineFilterServiceProvider);
+      print('DEBUG: FilterService obtained.');
+      
+      _clusteringService = ref.watch(timelineClusteringServiceProvider);
+      print('DEBUG: ClusteringService obtained.');
 
-    // Initial load (repository is already initialized via database connection)
-    return _loadData();
+      // Initial load (repository is already initialized via database connection)
+      print('DEBUG: Loading data...');
+      final result = await _loadData();
+      print('DEBUG: Data loaded. Events: ${result.allEvents.length}');
+      return result;
+    } catch (e, stackTrace) {
+      print('ERROR in TimelineDataService.build(): $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   /// Load initial data from repository
