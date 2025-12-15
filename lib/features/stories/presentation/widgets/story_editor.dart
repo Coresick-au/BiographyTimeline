@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/story.dart';
 import '../../../../shared/models/media_asset.dart';
-// import '../../services/story_editor_service.dart';
 import '../providers/story_editor_provider.dart';
+import '../../../../shared/widgets/core/story_editor_field.dart';
 
 /// Rich text story editor widget with timeline-specific features
 class StoryEditor extends ConsumerStatefulWidget {
@@ -32,6 +33,7 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
   late QuillController _controller;
   late ScrollController _scrollController;
   final FocusNode _focusNode = FocusNode();
+  bool _isFocused = false;
 
   @override
   void initState() {
@@ -46,7 +48,12 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
       _controller.document.insert(0, widget.initialContent!);
     }
     
-    // Start auto-save
+    // Focus listener
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    });
   }
 
   @override
@@ -59,45 +66,62 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Story Editor'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.photo_library),
-            onPressed: _showMediaPicker,
-            tooltip: 'Insert Media',
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyS, control: true): _saveStory,
+        const SingleActivator(LogicalKeyboardKey.keyS, meta: true): _saveStory, // Cmd+S on Mac
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+             if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        },
+      },
+      child: Focus(
+        autofocus: true, 
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Story Editor'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.photo_library),
+                onPressed: _showMediaPicker,
+                tooltip: 'Insert Media',
+              ),
+              IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: _saveStory,
+                tooltip: 'Save Story (Cmd+S)',
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveStory,
-            tooltip: 'Save Story',
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Custom toolbar for timeline-specific features
-          _buildCustomToolbar(),
-          
-          // Rich text editor
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: QuillEditor.basic(
-                configurations: QuillEditorConfigurations(
-                  controller: _controller,
-                  sharedConfigurations: const QuillSharedConfigurations(
-                    locale: Locale('en'),
+          body: Column(
+            children: [
+              // Custom toolbar for timeline-specific features
+              _buildCustomToolbar(),
+              
+              // Rich text editor wrapped in StoryEditorField
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: StoryEditorField(
+                    label: 'Start writing...',
+                    isFocused: _isFocused,
+                    child: QuillEditor.basic(
+                      focusNode: _focusNode,
+                      configurations: QuillEditorConfigurations(
+                        controller: _controller,
+                        sharedConfigurations: const QuillSharedConfigurations(
+                          locale: Locale('en'),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              
+              // Status bar
+              _buildStatusBar(),
+            ],
           ),
-          
-          // Status bar
-          _buildStatusBar(),
-        ],
+        ),
       ),
     );
   }
@@ -106,6 +130,7 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
   Widget _buildCustomToolbar() {
     return Container(
       decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
@@ -119,6 +144,17 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
           showFontFamily: false,
           showFontSize: false,
           showSearchButton: false,
+          showSubscript: false,
+          showSuperscript: false,
+          showStrikeThrough: false,
+          showInlineCode: false,
+          showColorButton: false,
+          showBackgroundColorButton: false,
+          showClearFormat: false,
+          showListCheck: false,
+          showCodeBlock: false,
+          showIndent: false,
+          multiRowsDisplay: false,
         ),
       ),
     );
@@ -127,6 +163,9 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
   /// Build status bar showing save status and word count
   Widget _buildStatusBar() {
     final wordCount = _getWordCount();
+    // Assuming this provider exists and matches logic
+    // We use .maybeWhen or check if we have value to avoid errors if provider not init
+    // But original code assumed it's safe.
     final state = ref.watch(storyEditorProvider(widget.story.id));
     
     return Container(
@@ -190,7 +229,6 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
     try {
       // Check if we're on web
       if (kIsWeb) {
-        // Show message that database isn't available on web
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

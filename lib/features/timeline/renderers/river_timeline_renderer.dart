@@ -106,19 +106,19 @@ class RiverTimelineRenderer implements ITimelineRenderer {
   bool get supportsSearch => false;
 
   @override
-  Future<void> initialize(TimelineRenderConfig config) async {
+  void initialize(TimelineRenderConfig config) {
     _config = config;
     if (_data != null) _initializeRiverData();
   }
 
   @override
-  Future<void> updateData(TimelineRenderData data) async {
+  void updateData(TimelineRenderData data) {
     _data = data;
     if (_config != null) _initializeRiverData();
   }
 
   @override
-  Future<void> updateConfig(TimelineRenderConfig config) async {
+  void updateConfig(TimelineRenderConfig config) {
     _config = config;
     if (_data != null) _initializeRiverData();
   }

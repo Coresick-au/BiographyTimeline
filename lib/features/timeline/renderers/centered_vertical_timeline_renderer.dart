@@ -400,7 +400,8 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
   }
 
   @override
-  Future<void> initialize(dynamic config) async {
+  void initialize(TimelineRenderConfig config) {
+    super.initialize(config);
     // No complex init needed
   }
 

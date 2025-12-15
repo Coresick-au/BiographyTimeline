@@ -420,7 +420,6 @@ class EventClusteringService {
       // Create timeline event
       final event = TimelineEvent.create(
         id: eventId,
-        contextId: contextId,
         ownerId: ownerId,
         timestamp: cluster.startTime,
         location: cluster.centerLocation,

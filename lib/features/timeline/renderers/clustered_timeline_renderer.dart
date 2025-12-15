@@ -536,10 +536,11 @@ class ClusteredTimelineRenderer extends BaseTimelineRenderer {
   }
 
   @override
-  Future<void> updateData(TimelineRenderData data) async {
-    await super.updateData(data);
-    await _generateClusters();
-    await _updateClusters();
+  void updateData(TimelineRenderData data) {
+    super.updateData(data);
+    _generateClusters().then((_) {
+      _updateClusters();
+    });
   }
 
   @override

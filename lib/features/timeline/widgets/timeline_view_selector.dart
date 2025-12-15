@@ -49,10 +49,14 @@ class TimelineViewSelector extends StatelessWidget {
         return 'Story';
       case TimelineViewMode.mapView:
         return 'Map';
-      case TimelineViewMode.clustered:
+      case TimelineViewMode.cluster:
         return 'Clustered';
+      case TimelineViewMode.bubble:
+        return 'Overview';
+      case TimelineViewMode.swimlanes:
+        return 'Lanes';
       case TimelineViewMode.river:
-        return 'River';
+        return 'Flow';
     }
   }
 
@@ -68,8 +72,12 @@ class TimelineViewSelector extends StatelessWidget {
         return Icons.book;
       case TimelineViewMode.mapView:
         return Icons.map;
-      case TimelineViewMode.clustered:
+      case TimelineViewMode.cluster:
         return Icons.scatter_plot;
+      case TimelineViewMode.bubble:
+        return Icons.bubble_chart;
+      case TimelineViewMode.swimlanes:
+        return Icons.table_rows;
       case TimelineViewMode.river:
         return Icons.water;
     }

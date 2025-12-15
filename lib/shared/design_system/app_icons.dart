@@ -28,6 +28,7 @@ class AppIcons {
   static const IconData audioFile = Icons.audio_file;
   static const IconData mic = Icons.mic;
   static const IconData micOff = Icons.mic_off;
+  static const IconData camera = Icons.camera_alt; // Alias for camera
   
   /// Milestone icons for achievements and important dates
   static const IconData star = Icons.star;
@@ -113,6 +114,8 @@ class AppIcons {
   static const IconData viewModule = Icons.view_module;
   static const IconData viewCarousel = Icons.view_carousel;
   static const IconData viewTimeline = Icons.view_timeline;
+  static const IconData timeline = Icons.timeline; // Timeline icon
+  static const IconData offline = Icons.cloud_off; // Offline mode icon
   
   /// Status and feedback icons
   static const IconData check = Icons.check;
@@ -193,8 +196,44 @@ class AppIcons {
   static const IconData spa = Icons.spa;
   static const IconData medication = Icons.medication;
   static const IconData medicalServices = Icons.medical_services;
-  static const IconData healthAndSafety = Icons.health_andSafety;
+  static const IconData healthAndSafety = Icons.health_and_safety;
   static const IconData monitorHeart = Icons.monitor_heart;
+
+  // ===========================================================================
+  // UI CONTROL ICONS
+  // ===========================================================================
+  static const IconData expandMore = Icons.expand_more;
+  static const IconData expandLess = Icons.expand_less;
+  static const IconData close = Icons.close;
+  static const IconData menu = Icons.menu;
+  static const IconData moreVert = Icons.more_vert;
+  static const IconData moreHoriz = Icons.more_horiz;
+  static const IconData arrowForward = Icons.arrow_forward;
+  static const IconData arrowBack = Icons.arrow_back;
+  static const IconData checkBox = Icons.check_box;
+  static const IconData checkBoxOutlineBlank = Icons.check_box_outline_blank;
+  static const IconData brokenImage = Icons.broken_image;
+  static const IconData playCircle = Icons.play_circle_outline;
+  static const IconData labelOutline = Icons.label_outline;
+  static const IconData peopleOutline = Icons.people_outline;
+  static const IconData inboxOutline = Icons.inbox_outlined;
+  static const IconData linkOff = Icons.link_off;
+  static const IconData category = Icons.category;
+  static const IconData groupWork = Icons.group_work;
+  static const IconData timelineOutlined = Icons.timeline; 
+
+  // ===========================================================================
+  // SPECIFIC EVENT ICONS
+  // ===========================================================================
+  static const IconData burstMode = Icons.burst_mode;
+  static const IconData collections = Icons.collections;
+  static const IconData construction = Icons.construction;
+  static const IconData pets = Icons.pets;
+  static const IconData business = Icons.business;
+  static const IconData editNote = Icons.edit_note;
+  static const IconData audiotrack = Icons.audiotrack;
+
+
   
   /// Travel and transportation icons
   static const IconData flight = Icons.flight;
@@ -326,7 +365,7 @@ class AppIcons {
   }
   
   /// Create an outlined icon button with consistent styling
-  static OutlinedButton.icon createOutlinedIconButton({
+  static Widget createOutlinedIconButton({
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
@@ -340,7 +379,7 @@ class AppIcons {
   }
   
   /// Create an elevated icon button with consistent styling
-  static ElevatedButton.icon createElevatedIconButton({
+  static Widget createElevatedIconButton({
     required IconData icon,
     required String label,
     required VoidCallback onPressed,

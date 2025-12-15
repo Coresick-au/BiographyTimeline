@@ -218,6 +218,32 @@ class MockTimelineRepository {
         ],
         isPrivate: false,
       ),
+      
+      // === BIRTH POINTS (Timeline Anchors) ===
+      
+      // User 1 Birth Point
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Birth', 'Origin', 'Milestone'],
+        ownerId: 'user-1',
+        timestamp: DateTime(1990, 3, 15),
+        eventType: 'milestone',
+        title: 'Born',
+        description: 'The beginning of my story. Born in Melbourne, Australia.',
+        isPrivate: false,
+      ),
+      
+      // User 2 Birth Point
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Birth', 'Origin', 'Milestone'],
+        ownerId: 'user-2',
+        timestamp: DateTime(1992, 7, 22),
+        eventType: 'milestone',
+        title: 'Born',
+        description: 'Where it all began. Born in Sydney, Australia.',
+        isPrivate: false,
+      ),
     ];
   }
   

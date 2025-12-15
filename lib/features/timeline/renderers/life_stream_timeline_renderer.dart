@@ -97,14 +97,14 @@ class LifeStreamTimelineRenderer extends BaseTimelineRenderer {
   }
   
   @override
-  Future<void> onDataUpdated() async {
+  void onDataUpdated() {
     _resetPagination();
-    await super.onDataUpdated();
+    super.onDataUpdated();
   }
   
   @override
-  Future<void> onConfigUpdated() async {
-    await super.onConfigUpdated();
+  void onConfigUpdated() {
+    super.onConfigUpdated();
   }
   
   @override

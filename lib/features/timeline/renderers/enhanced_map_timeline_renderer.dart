@@ -88,7 +88,7 @@ class EnhancedMapTimelineRenderer extends ITimelineRenderer {
   ];
   
   @override
-  Future<void> initialize(TimelineRenderConfig config) async {
+  void initialize(TimelineRenderConfig config) {
     _config = config;
     _sortedEvents = [];
     _currentEventIndex = 0;
@@ -691,7 +691,7 @@ class EnhancedMapTimelineRenderer extends ITimelineRenderer {
   }
   
   @override
-  Future<void> updateData(TimelineRenderData data) async {
+  void updateData(TimelineRenderData data) {
     _data = data;
     _sortedEvents = List<TimelineEvent>.from(data.events)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -699,7 +699,7 @@ class EnhancedMapTimelineRenderer extends ITimelineRenderer {
   }
   
   @override
-  Future<void> updateConfig(TimelineRenderConfig config) async {
+  void updateConfig(TimelineRenderConfig config) {
     _config = config;
   }
   

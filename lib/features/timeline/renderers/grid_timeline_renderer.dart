@@ -6,24 +6,10 @@ import '../models/timeline_render_data.dart';
 
 /// Grid timeline renderer implementation
 class GridTimelineRenderer extends BaseTimelineRenderer {
-  GridTimelineRenderer() : super(
-    TimelineRenderConfig(
-      viewMode: TimelineViewMode.bentoGrid,
-      startDate: null,
-      endDate: null,
-      selectedEventIds: <String>{},
-      showPrivateEvents: false,
-      zoomLevel: 1.0,
-      customSettings: {},
-    ),
-    TimelineRenderData(
-      events: [],
-      contexts: [],
-      earliestDate: DateTime.now(),
-      latestDate: DateTime.now(),
-      clusteredEvents: {},
-    ),
-  );
+  GridTimelineRenderer(
+    TimelineRenderConfig config,
+    TimelineRenderData data,
+  ) : super(config, data);
   @override
   Widget build({
     BuildContext? context,
@@ -41,7 +27,8 @@ class GridTimelineRenderer extends BaseTimelineRenderer {
   }
   
   @override
-  Future<void> initialize(dynamic config) async {
+  void initialize(TimelineRenderConfig config) {
+    super.initialize(config);
     // Initialize renderer
   }
   

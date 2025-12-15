@@ -10,9 +10,11 @@ enum TimelineViewMode {
   mapView,
   bentoGrid,
   chronological,
-  clustered,
+  cluster,
   story,
   river,
+  bubble,
+  swimlanes, // New swimlanes view
 }
 
 /// Configuration for timeline rendering
@@ -114,13 +116,13 @@ abstract class ITimelineRenderer {
   bool get isReady;
   
   /// Initialize the renderer with configuration
-  Future<void> initialize(TimelineRenderConfig config);
+  void initialize(TimelineRenderConfig config);
   
   /// Update the data to be rendered
-  Future<void> updateData(TimelineRenderData data);
+  void updateData(TimelineRenderData data);
   
   /// Update configuration without rebuilding data
-  Future<void> updateConfig(TimelineRenderConfig config);
+  void updateConfig(TimelineRenderConfig config);
   
   /// Build the widget for this timeline view
   Widget build({
@@ -172,29 +174,29 @@ abstract class BaseTimelineRenderer implements ITimelineRenderer {
   bool get isReady => _isReady;
 
   @override
-  Future<void> initialize(TimelineRenderConfig config) async {
+  void initialize(TimelineRenderConfig config) {
     _config = config;
     _isReady = true;
-    await onConfigUpdated();
+    onConfigUpdated();
   }
 
   @override
-  Future<void> updateData(TimelineRenderData data) async {
+  void updateData(TimelineRenderData data) {
     _data = data;
-    await onDataUpdated();
+    onDataUpdated();
   }
 
   @override
-  Future<void> updateConfig(TimelineRenderConfig config) async {
+  void updateConfig(TimelineRenderConfig config) {
     _config = config;
-    await onConfigUpdated();
+    onConfigUpdated();
   }
 
   @override
   Future<void> navigateToDate(DateTime date) async {
     // Default implementation - override in subclasses
     _config = _config.copyWith(startDate: date);
-    await onConfigUpdated();
+    onConfigUpdated();
   }
 
   @override
@@ -205,11 +207,11 @@ abstract class BaseTimelineRenderer implements ITimelineRenderer {
     );
     await navigateToDate(event.timestamp);
   }
+  
+  // ... rest of implementation ...
 
   @override
   List<TimelineEvent> getVisibleEvents() {
-    // Default implementation - return all events
-    // Override in subclasses for viewport-specific filtering
     return _data.events;
   }
 
@@ -229,12 +231,11 @@ abstract class BaseTimelineRenderer implements ITimelineRenderer {
   @override
   Future<void> setZoomLevel(double level) async {
     _config = _config.copyWith(zoomLevel: level);
-    await onConfigUpdated();
+    onConfigUpdated();
   }
 
   @override
   Future<Uint8List?> exportAsImage() async {
-    // Default implementation - not supported
     return null;
   }
 
@@ -244,10 +245,10 @@ abstract class BaseTimelineRenderer implements ITimelineRenderer {
   }
 
   /// Hook called when data is updated
-  Future<void> onDataUpdated() async {}
+  void onDataUpdated() {}
 
   /// Hook called when configuration is updated
-  Future<void> onConfigUpdated() async {}
+  void onConfigUpdated() {}
 
   /// Filter events based on current configuration
   List<TimelineEvent> filterEvents(List<TimelineEvent> events) {

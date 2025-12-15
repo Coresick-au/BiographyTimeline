@@ -6,24 +6,10 @@ import '../models/timeline_render_data.dart';
 
 /// Enhanced vertical timeline renderer implementation
 class EnhancedVerticalTimelineRenderer extends BaseTimelineRenderer {
-  EnhancedVerticalTimelineRenderer() : super(
-    TimelineRenderConfig(
-      viewMode: TimelineViewMode.lifeStream,
-      startDate: null,
-      endDate: null,
-      selectedEventIds: <String>{},
-      showPrivateEvents: false,
-      zoomLevel: 1.0,
-      customSettings: {},
-    ),
-    TimelineRenderData(
-      events: [],
-      contexts: [],
-      earliestDate: DateTime.now(),
-      latestDate: DateTime.now(),
-      clusteredEvents: {},
-    ),
-  );
+  EnhancedVerticalTimelineRenderer(
+    TimelineRenderConfig config,
+    TimelineRenderData data,
+  ) : super(config, data);
   @override
   Widget build({
     BuildContext? context,
@@ -41,7 +27,8 @@ class EnhancedVerticalTimelineRenderer extends BaseTimelineRenderer {
   }
   
   @override
-  Future<void> initialize(dynamic config) async {
+  void initialize(TimelineRenderConfig config) {
+    super.initialize(config);
     // Initialize renderer
   }
   

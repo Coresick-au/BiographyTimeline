@@ -740,10 +740,10 @@ class MapTimelineRenderer extends BaseTimelineRenderer {
   }
 
   @override
-  Future<void> updateData(TimelineRenderData data) async {
-    await super.updateData(data);
-    await _updateLocationClusters();
-    await _updateMapMarkers();
+  void updateData(TimelineRenderData data) {
+    super.updateData(data);
+    _updateLocationClusters().then((_) {});
+    _updateMapMarkers().then((_) {});
   }
 
   @override

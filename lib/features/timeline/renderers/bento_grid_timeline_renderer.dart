@@ -757,14 +757,14 @@ class BentoGridTimelineRenderer extends BaseTimelineRenderer {
   }
   
   @override
-  Future<void> onDataUpdated() async {
+  void onDataUpdated() {
     _calculateStatistics();
-    await super.onDataUpdated();
+    super.onDataUpdated();
   }
   
   @override
-  Future<void> onConfigUpdated() async {
-    await super.onConfigUpdated();
+  void onConfigUpdated() {
+    super.onConfigUpdated();
   }
   
   @override

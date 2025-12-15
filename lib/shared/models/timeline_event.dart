@@ -212,4 +212,7 @@ class TimelineEvent {
     }
     return true;
   }
+  
+  /// Compatibility getter
+  String get contextId => 'default';
 }

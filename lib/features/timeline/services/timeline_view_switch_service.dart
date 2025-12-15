@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/timeline_provider.dart'; // Add this import
 import '../models/timeline_render_data.dart';
 import '../models/view_state.dart';
 import '../services/timeline_service.dart';
-import '../renderers/timeline_renderer_interface.dart';
+import '../services/timeline_renderer_interface.dart';
 import '../renderers/enhanced_vertical_timeline_renderer.dart';
 import '../renderers/life_stream_timeline_renderer.dart';
 import '../renderers/clustered_timeline_renderer.dart';
@@ -16,7 +17,7 @@ class TimelineViewSwitchService {
   final Map<TimelineViewMode, ITimelineRenderer> _renderers = {};
   
   TimelineViewMode _currentViewMode = TimelineViewMode.lifeStream;
-  ViewState _viewState = ViewState.loading;
+  ViewState _viewState = const ViewState(viewMode: TimelineViewMode.lifeStream);
   String? _errorMessage;
   
   TimelineViewSwitchService(this._timelineService) {
@@ -37,12 +38,22 @@ class TimelineViewSwitchService {
   
   /// Initialize all available renderers
   void _initializeRenderers() {
-    _renderers[TimelineViewMode.vertical] = EnhancedVerticalTimelineRenderer();
-    _renderers[TimelineViewMode.lifeStream] = LifeStreamTimelineRenderer();
-    _renderers[TimelineViewMode.clustered] = ClusteredTimelineRenderer();
-    _renderers[TimelineViewMode.grid] = GridTimelineRenderer();
-    _renderers[TimelineViewMode.map] = MapTimelineRenderer();
-    _renderers[TimelineViewMode.story] = StoryTimelineRenderer();
+    // simplified initial config/data
+    final initialConfig = _timelineService.currentConfig;
+    final initialData = TimelineRenderData(
+      events: _timelineService.events,
+      contexts: _timelineService.contexts,
+      earliestDate: DateTime.now(), // approximation
+      latestDate: DateTime.now(),
+      clusteredEvents: {},
+    );
+
+    _renderers[TimelineViewMode.chronological] = EnhancedVerticalTimelineRenderer(initialConfig, initialData);
+    _renderers[TimelineViewMode.lifeStream] = LifeStreamTimelineRenderer(initialConfig, initialData);
+    _renderers[TimelineViewMode.cluster] = ClusteredTimelineRenderer(initialConfig, initialData);
+    _renderers[TimelineViewMode.bentoGrid] = GridTimelineRenderer(initialConfig, initialData);
+    _renderers[TimelineViewMode.mapView] = MapTimelineRenderer(initialConfig, initialData);
+    _renderers[TimelineViewMode.story] = StoryTimelineRenderer(initialConfig, initialData);
     
     // Register all renderers with the timeline service
     for (final renderer in _renderers.values) {
@@ -53,7 +64,7 @@ class TimelineViewSwitchService {
   /// Switch to a different view mode
   Future<bool> switchToView(TimelineViewMode viewMode) async {
     try {
-      _viewState = ViewState.loading;
+      // _viewState = ViewState.loading; // ViewState is freezed class now
       _errorMessage = null;
       
       // Check if renderer exists
@@ -66,7 +77,7 @@ class TimelineViewSwitchService {
         viewMode: viewMode,
         startDate: _timelineService.currentConfig.startDate,
         endDate: _timelineService.currentConfig.endDate,
-        activeContext: _timelineService.currentConfig.activeContext,
+        // activeContext: _timelineService.currentConfig.activeContext, // Removed property
         selectedEventIds: _timelineService.currentConfig.selectedEventIds,
         showPrivateEvents: _timelineService.currentConfig.showPrivateEvents,
         zoomLevel: _timelineService.currentConfig.zoomLevel,
@@ -76,11 +87,13 @@ class TimelineViewSwitchService {
       await _timelineService.updateConfig(newConfig);
       
       _currentViewMode = viewMode;
-      _viewState = ViewState.ready;
+      // _viewState = ViewState.ready;
+      _viewState = ViewState(viewMode: viewMode);
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      _viewState = ViewState.error;
+      // _viewState = ViewState.error;
+      _viewState = ViewState(viewMode: viewMode);
       return false;
     }
   }
@@ -112,14 +125,14 @@ class TimelineViewSwitchService {
     Map<String, dynamic>? customSettings,
   }) async {
     try {
-      _viewState = ViewState.loading;
+      // _viewState = ViewState.loading;
       _errorMessage = null;
       
       final newConfig = TimelineRenderConfig(
         viewMode: _currentViewMode,
         startDate: startDate ?? _timelineService.currentConfig.startDate,
         endDate: endDate ?? _timelineService.currentConfig.endDate,
-        activeContext: activeContext ?? _timelineService.currentConfig.activeContext,
+        // activeContext: activeContext ?? _timelineService.currentConfig.activeContext,
         selectedEventIds: selectedEventIds ?? _timelineService.currentConfig.selectedEventIds,
         showPrivateEvents: showPrivateEvents ?? _timelineService.currentConfig.showPrivateEvents,
         zoomLevel: zoomLevel ?? _timelineService.currentConfig.zoomLevel,
@@ -127,11 +140,13 @@ class TimelineViewSwitchService {
       );
       
       await _timelineService.updateConfig(newConfig);
-      _viewState = ViewState.ready;
+      // _viewState = ViewState.ready;
+      _viewState = ViewState(viewMode: _currentViewMode);
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      _viewState = ViewState.error;
+      // _viewState = ViewState.error;
+      _viewState = ViewState(viewMode: _currentViewMode);
       return false;
     }
   }
@@ -139,11 +154,11 @@ class TimelineViewSwitchService {
   /// Get available view modes with their display names
   Map<TimelineViewMode, String> getAvailableViews() {
     return {
-      TimelineViewMode.vertical: 'Vertical Timeline',
+      TimelineViewMode.chronological: 'Vertical Timeline',
       TimelineViewMode.lifeStream: 'Life Stream',
-      TimelineViewMode.clustered: 'Clustered View',
-      TimelineViewMode.grid: 'Grid View',
-      TimelineViewMode.map: 'Map View',
+      TimelineViewMode.cluster: 'Clustered View',
+      TimelineViewMode.bentoGrid: 'Grid View',
+      TimelineViewMode.mapView: 'Map View',
       TimelineViewMode.story: 'Story View',
     };
   }

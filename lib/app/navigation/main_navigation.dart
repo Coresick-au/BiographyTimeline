@@ -66,12 +66,12 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             blurRadius: 30,
             offset: const Offset(0, -10),
           ),
@@ -129,7 +129,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     final isSelected = _currentIndex == index;
     final color = isSelected 
         ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
     
     return Expanded(
       child: GestureDetector(
@@ -158,12 +158,12 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
                 padding: EdgeInsets.all(isSelected ? 8.0 : 4.0),
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: isSelected ? [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -413,7 +413,7 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
                 Text(
                   'Your life story, beautifully organized',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
+                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                     fontSize: 14,
                   ),
                 ),
@@ -483,12 +483,12 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             blurRadius: 30,
             offset: const Offset(0, -10),
           ),
@@ -526,7 +526,7 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
     final isSelected = currentIndex == index;
     final color = isSelected 
         ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
     
     return Expanded(
       child: GestureDetector(
@@ -545,12 +545,12 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
                 padding: EdgeInsets.all(isSelected ? 8.0 : 4.0),
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: isSelected ? [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

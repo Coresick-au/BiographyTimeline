@@ -5,6 +5,7 @@
 /// animations, and accessibility features.
 
 // Core components
+export '../../widgets/core/core.dart';
 export 'modern_card.dart';
 export 'modern_button.dart';
 export 'modern_input.dart';

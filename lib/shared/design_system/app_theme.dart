@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'color_palettes.dart';
+import 'color_palettes.dart';
 import 'design_tokens.dart';
+import 'app_spacing.dart';
+import 'app_radii.dart';
 
 /// Represents a complete theme configuration for the Users Timeline app
 class AppTheme {
@@ -55,9 +58,9 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: DesignTokens.elevation2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+          borderRadius: BorderRadius.circular(AppRadii.md),
         ),
-        margin: EdgeInsets.all(DesignTokens.space2),
+        margin: EdgeInsets.all(AppSpacing.sm),
       ),
       
       // Elevated button theme
@@ -65,11 +68,11 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           elevation: DesignTokens.elevation2,
           padding: EdgeInsets.symmetric(
-            horizontal: DesignTokens.space6,
-            vertical: DesignTokens.space3,
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           textStyle: DesignTokens.labelLarge,
         ),
@@ -79,11 +82,11 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.symmetric(
-            horizontal: DesignTokens.space6,
-            vertical: DesignTokens.space3,
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           textStyle: DesignTokens.labelLarge,
         ),
@@ -93,11 +96,11 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(
-            horizontal: DesignTokens.space4,
-            vertical: DesignTokens.space2,
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           textStyle: DesignTokens.labelLarge,
         ),
@@ -108,24 +111,24 @@ class AppTheme {
         filled: true,
         fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
           borderSide: BorderSide(color: colorScheme.outline),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
           borderSide: BorderSide(color: colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
           borderSide: BorderSide(color: colorScheme.primary, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
           borderSide: BorderSide(color: colorScheme.error),
         ),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: DesignTokens.space4,
-          vertical: DesignTokens.space3,
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
         ),
         labelStyle: DesignTokens.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
         hintStyle: DesignTokens.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant.withOpacity(0.6)),
@@ -155,7 +158,7 @@ class AppTheme {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
         ),
       ),
       
@@ -163,7 +166,7 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         elevation: DesignTokens.elevation6,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
         ),
         backgroundColor: colorScheme.surface,
         titleTextStyle: DesignTokens.headlineSmall.copyWith(color: colorScheme.onSurface),
@@ -175,19 +178,19 @@ class AppTheme {
         backgroundColor: colorScheme.surfaceVariant,
         labelStyle: DesignTokens.labelMedium.copyWith(color: colorScheme.onSurfaceVariant),
         padding: EdgeInsets.symmetric(
-          horizontal: DesignTokens.space3,
-          vertical: DesignTokens.space1,
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
         ),
       ),
       
       // List tile theme
       listTileTheme: ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(
-          horizontal: DesignTokens.space4,
-          vertical: DesignTokens.space2,
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
         ),
         titleTextStyle: DesignTokens.bodyLarge.copyWith(color: colorScheme.onSurface),
         subtitleTextStyle: DesignTokens.bodyMedium.copyWith(color: colorScheme.onSurfaceVariant),
@@ -197,7 +200,7 @@ class AppTheme {
       dividerTheme: DividerThemeData(
         color: colorScheme.outlineVariant,
         thickness: 1.0,
-        space: DesignTokens.space4,
+        space: AppSpacing.lg,
       ),
       
       // Icon theme

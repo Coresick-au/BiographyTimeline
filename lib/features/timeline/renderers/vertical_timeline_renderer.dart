@@ -7,72 +7,10 @@ import '../widgets/timeline_event_card.dart'; // Ensure this import points to yo
 
 /// Vertical timeline renderer implementation
 class VerticalTimelineRenderer extends BaseTimelineRenderer {
-  VerticalTimelineRenderer() : super(
-    // 1. Fixed Configuration (Removed invalid 'activeContext')
-    const TimelineRenderConfig(
-      viewMode: TimelineViewMode.chronological,
-      startDate: null,
-      endDate: null,
-      selectedEventIds: <String>{},
-      showPrivateEvents: false,
-      zoomLevel: 1.0,
-      customSettings: {},
-    ),
-    // 2. Sample Data Added
-    TimelineRenderData(
-      events: [
-        TimelineEvent(
-          id: 'sample-1',
-          tags: ['Coding', 'Milestone'],
-          ownerId: 'current-user',
-          timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-          eventType: 'milestone',
-          customAttributes: {},
-          assets: [],
-          title: 'Timeline Fixed',
-          description: 'Successfully restored the vertical timeline renderer with a visual spine and resolved compilation errors.',
-          participantIds: [],
-          isPrivate: false,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-        TimelineEvent(
-          id: 'sample-2',
-          tags: ['Design'],
-          ownerId: 'current-user',
-          timestamp: DateTime.now().subtract(const Duration(days: 2)),
-          eventType: 'text',
-          customAttributes: {},
-          assets: [],
-          title: 'Design Review',
-          description: 'Analyzing the new vertical layout structure. The spine connects events chronologically.',
-          participantIds: [],
-          isPrivate: false,
-          createdAt: DateTime.now().subtract(const Duration(days: 2)),
-          updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-        ),
-        TimelineEvent(
-          id: 'sample-3',
-          tags: ['Memory'],
-          ownerId: 'current-user',
-          timestamp: DateTime.now().subtract(const Duration(days: 5)),
-          eventType: 'photo',
-          customAttributes: {},
-          assets: [],
-          title: 'Project Start',
-          description: 'The beginning of this biography application journey.',
-          participantIds: [],
-          isPrivate: false,
-          createdAt: DateTime.now().subtract(const Duration(days: 5)),
-          updatedAt: DateTime.now().subtract(const Duration(days: 5)),
-        ),
-      ],
-      contexts: [],
-      earliestDate: DateTime.now().subtract(const Duration(days: 10)),
-      latestDate: DateTime.now(),
-      clusteredEvents: {},
-    ),
-  );
+  VerticalTimelineRenderer(
+    TimelineRenderConfig config,
+    TimelineRenderData data,
+  ) : super(config, data);
 
   @override
   Widget build({
@@ -186,7 +124,8 @@ class VerticalTimelineRenderer extends BaseTimelineRenderer {
   }
   
   @override
-  Future<void> initialize(dynamic config) async {
+  void initialize(TimelineRenderConfig config) {
+    super.initialize(config);
     // No complex init needed for simple vertical list
   }
   

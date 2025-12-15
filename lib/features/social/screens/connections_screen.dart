@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_models.dart';
 import '../services/relationship_service.dart';
+import '../../../shared/design_system/design_system.dart';
+import '../../../shared/design_system/components/components.dart';
 
 /// Provider for relationship service
 final relationshipServiceProvider = Provider((ref) => RelationshipService());
@@ -54,24 +56,26 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
     final requestsAsync = ref.watch(pendingRequestsProvider);
     final activityAsync = ref.watch(activityFeedProvider);
 
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Connections'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Connections', icon: Icon(Icons.people)),
-            Tab(text: 'Requests', icon: Icon(Icons.person_add)),
-            Tab(text: 'Activity', icon: Icon(Icons.timeline)),
+          tabs: [
+            Tab(text: 'Connections', icon: Icon(AppIcons.people)),
+            Tab(text: 'Requests', icon: Icon(AppIcons.personAdd)),
+            Tab(text: 'Activity', icon: Icon(AppIcons.timeline)),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: Icon(AppIcons.search),
             onPressed: _showSearchDialog,
           ),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(AppIcons.add),
             onPressed: _showAddConnectionDialog,
           ),
         ],
@@ -92,7 +96,7 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
       data: (connections) {
         if (connections.isEmpty) {
           return _buildEmptyState(
-            icon: Icons.people_outline,
+            icon: AppIcons.peopleOutline,
             title: 'No Connections Yet',
             subtitle: 'Start connecting with others to share timelines',
           );
@@ -117,7 +121,7 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
       data: (requests) {
         if (requests.isEmpty) {
           return _buildEmptyState(
-            icon: Icons.inbox_outlined,
+            icon: AppIcons.inboxOutline,
             title: 'No Pending Requests',
             subtitle: 'You\'ll see connection requests here',
           );
@@ -142,7 +146,7 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
       data: (activities) {
         if (activities.isEmpty) {
           return _buildEmptyState(
-            icon: Icons.timeline_outlined,
+            icon: AppIcons.timelineOutlined,
             title: 'No Recent Activity',
             subtitle: 'Activity from your connections will appear here',
           );
@@ -163,105 +167,136 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
   }
 
   Widget _buildConnectionCard(Relationship relationship) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(_getRelationshipIcon(relationship.type)),
-        ),
-        title: Text(_getRelationshipDisplayName(relationship)),
-        subtitle: Text(
-          'Connected ${_formatDate(relationship.startDate)}',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        trailing: PopupMenuButton(
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'privacy',
-              child: Row(
-                children: const [
-                  Icon(Icons.privacy_tip),
-                  SizedBox(width: 8),
-                  Text('Privacy Settings'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'end',
-              child: Row(
-                children: const [
-                  Icon(Icons.link_off),
-                  SizedBox(width: 8),
-                  Text('End Connection'),
-                ],
-              ),
-            ),
-          ],
-          onSelected: (value) => _handleConnectionAction(relationship, value),
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
         onTap: () => _showConnectionDetails(relationship),
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(AppSpacing.sm),
+          leading: AppAvatar(
+            name: _getRelationshipDisplayName(relationship),
+            radius: 24,
+          ),
+          title: Text(
+            _getRelationshipDisplayName(relationship),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          subtitle: Text(
+            'Connected ${_formatDate(relationship.startDate)}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          trailing: PopupMenuButton(
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'privacy',
+                child: Row(
+                  children: [
+                    Icon(AppIcons.privacyTip),
+                    SizedBox(width: AppSpacing.sm),
+                    Text('Privacy Settings'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'end',
+                child: Row(
+                  children: [
+                    Icon(AppIcons.linkOff),
+                    SizedBox(width: AppSpacing.sm),
+                    Text('End Connection'),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (value) => _handleConnectionAction(relationship, value),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildRequestCard(ConnectionRequest request) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(_getRelationshipIcon(request.requestedType)),
-        ),
-        title: Text('Connection Request'),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'From: ${request.fromUserId}',
-              style: Theme.of(context).textTheme.bodySmall,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(AppSpacing.sm),
+          leading: AppAvatar(
+            name: request.fromUserId,
+            radius: 24,
+          ),
+          title: Text(
+            'Connection Request',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
             ),
-            if (request.message != null)
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                request.message!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
+                'From: ${request.fromUserId}',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-            Text(
-              'Sent ${_formatDate(request.createdAt)}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.check, color: Colors.green),
-              onPressed: () => _acceptRequest(request),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.red),
-              onPressed: () => _declineRequest(request),
-            ),
-          ],
+              if (request.message != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: Text(
+                    request.message!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              SizedBox(height: AppSpacing.xs),
+              Text(
+                'Sent ${_formatDate(request.createdAt)}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(AppIcons.check, color: Colors.green),
+                onPressed: () => _acceptRequest(request),
+              ),
+              IconButton(
+                icon: Icon(AppIcons.close, color: Colors.red),
+                onPressed: () => _declineRequest(request),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildActivityCard(UserActivity activity) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(_getActivityIcon(activity.type)),
-        ),
-        title: Text(_getActivityTitle(activity)),
-        subtitle: Text(
-          _formatDate(activity.createdAt),
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
         onTap: () => _handleActivityTap(activity),
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(AppSpacing.sm),
+          leading: AppAvatar(
+            name: activity.userId,
+            radius: 24,
+          ),
+          title: Text(
+            _getActivityTitle(activity),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          subtitle: Text(
+            _formatDate(activity.createdAt),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
       ),
     );
   }
@@ -271,54 +306,17 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen>
     required String title,
     required String subtitle,
   }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-        ],
-      ),
+    return AppEmptyState(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
     );
   }
 
   Widget _buildErrorState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => setState(() {}),
-            child: const Text('Retry'),
-          ),
-        ],
-      ),
+    return AppEmptyState.error(
+      message: message, 
+      onRetry: () => setState(() {}),
     );
   }
 

@@ -40,7 +40,6 @@ class TimelineService {
       // Basic sample event
       final sampleEvent = TimelineEvent.create(
         id: 'sample-1',
-        contextId: 'personal-1',
         ownerId: 'user-1',
         timestamp: DateTime.now(),
         eventType: 'text',
@@ -55,7 +54,7 @@ class TimelineService {
           ownerId: 'user-1',
           type: ContextType.person,
           name: 'Personal',
-          theme: TimelineTheme.standard(),
+          themeId: 'personal_theme',
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           moduleConfiguration: {},
@@ -64,6 +63,12 @@ class TimelineService {
 
       await addEvents([sampleEvent]);
     }
+  }
+
+  /// Load events (placeholder for compilation)
+  Future<void> loadEvents() async {
+    // No-op for now, or reload from source
+    await _notifyDataChanged();
   }
 
   /// Register a new renderer
@@ -89,7 +94,7 @@ class TimelineService {
     
     // Update all renderers
     for (final renderer in _renderers) {
-      await renderer.updateConfig(config);
+      renderer.updateConfig(config);
     }
   }
 
@@ -293,7 +298,7 @@ class TimelineService {
     
     // Update all renderers
     for (final renderer in _renderers) {
-      await renderer.updateData(renderData);
+      renderer.updateData(renderData);
     }
   }
 

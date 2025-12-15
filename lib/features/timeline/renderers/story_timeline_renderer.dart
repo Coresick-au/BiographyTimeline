@@ -75,8 +75,12 @@ class StoryTimelineRenderer extends BaseTimelineRenderer {
   DateTimeRange? getVisibleDateRange() => null;
   
   @override
-  Future<void> onDataUpdated() async {
-      await _generateStoryGroups();
+  void onDataUpdated() {
+      // Note: _generateStoryGroups is async, but we can't await it in void.
+      // We fire it off and it will rebuild when done if it uses setState or similar?
+      // But here we are in a renderer class.
+      // We can iterate the Future.
+      _generateStoryGroups().then((_) {});
       super.onDataUpdated();
   }
 

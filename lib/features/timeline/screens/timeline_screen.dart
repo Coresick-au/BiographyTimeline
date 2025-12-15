@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/design_system/design_system.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
+import '../../../shared/widgets/welcome_dialog.dart';
 import '../models/timeline_state.dart';
 import '../models/view_state.dart';
 import '../services/timeline_data_service.dart';
@@ -19,6 +20,10 @@ import '../widgets/search_dialog.dart';
 import '../widgets/export_dialog.dart';
 import 'event_details_screen.dart';
 import '../providers/timeline_view_provider.dart';
+import '../providers/timeline_viewport_provider.dart';
+import '../models/timeline_view_state.dart';
+import '../widgets/timeline_viewport.dart';
+import '../../dashboard/screens/dashboard_screen.dart';
 
 /// Main timeline screen with view switcher and controls
 class TimelineScreen extends ConsumerStatefulWidget {
@@ -128,65 +133,15 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       }
     });
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Consumer(
-        builder: (context, ref, child) {
-          final theme = Theme.of(context);
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.colorScheme.background,
-                  theme.colorScheme.surface,
-                ],
-              ),
-            ),
-            child: timelineState.when(
-              data: (state) => _buildTimelineContent(context, state),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) {
-                debugPrint('Timeline Error: $error');
-                debugPrint('Stack: $stack');
-                return Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: Colors.white.withOpacity(0.5),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Unable to load timeline',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Error: $error',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.7),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => ref.invalidate(timelineDataProvider),
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+    return AppScaffold(
+      body: timelineState.when(
+        data: (state) => _buildTimelineContent(context, state),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) {
+          debugPrint('Timeline Error: $error');
+          return AppEmptyState.error(
+            message: error.toString(),
+            onRetry: () => ref.invalidate(timelineDataProvider),
           );
         },
       ),
@@ -229,40 +184,25 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       backgroundColor: Colors.transparent,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
+        background: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'Your Timeline',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Text(
+                  '${state.allEvents.length} events',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               ],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    'Your Timeline',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${state.allEvents.length} events',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
@@ -280,6 +220,13 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           onPressed: () => _showSearchDialog(state.allEvents, state.contexts),
           icon: const Icon(Icons.search, color: Colors.white),
           tooltip: 'Search Events',
+        ),
+        IconButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          ),
+          icon: const Icon(Icons.dashboard, color: Colors.white),
+          tooltip: 'Dashboard',
         ),
       ],
     );
@@ -313,6 +260,10 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       _rendererCache[_currentViewMode] = renderer;
       _currentRenderer = renderer;
     } else {
+      _currentRenderer = _rendererCache[_currentViewMode];
+      // Sync the renderer with the latest state
+      _currentRenderer?.updateConfig(config);
+      _currentRenderer?.updateData(data);
     }
     
     // Note: Calling build on the renderer.
@@ -354,6 +305,22 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     // ...
   }
   
+  void _showWelcomeDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => WelcomeDialog(
+        onCreateEvent: () {
+          Navigator.of(context).pop();
+          _showAddEventDialog(context, ref);
+        },
+        onExplore: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+  
   void _switchToContext(Context context, WidgetRef ref) {
     // setActiveContext removed in Family-First MVP
     // All events are now family events with tags
@@ -366,6 +333,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       case TimelineViewMode.lifeStream: return 'Life Stream';
       case TimelineViewMode.bentoGrid: return 'Grid';
       case TimelineViewMode.story: return 'Story';
+      case TimelineViewMode.bubble: return 'Overview';
+      case TimelineViewMode.swimlanes: return 'Timeline Lanes';
+      case TimelineViewMode.river: return 'Flow View';
       default: return mode.toString();
     }
   }
@@ -375,54 +345,20 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/images/empty_timeline.png',
-            width: 250,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              // Fallback if image path is wrong
-              return Icon(
-                Icons.timeline,
-                size: 80,
-                color: Colors.white.withOpacity(0.5),
-              );
-            },
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No Timeline Data',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Start by adding your first event',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () => _showAddEventDialog(context, ref),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Event'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
-          ),
-        ],
+    return AppEmptyState(
+      title: 'No Timeline Data',
+      subtitle: 'Start by adding your first event',
+      icon: Icons.timeline,
+      action: FilledButton.icon(
+        onPressed: () => _showAddEventDialog(context, ref),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Event'),
       ),
     );
   }
 
   Widget _buildErrorState(BuildContext context, String error) {
-    return Center(child: Text("Error: $error"));
+    return AppEmptyState.error(message: error);
   }
 }
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/media_asset.dart';
-import '../../../shared/widgets/modern/glassmorphism_card.dart';
+import '../../../shared/widgets/core/core.dart';
 import '../../../shared/widgets/modern/shimmer_loading.dart';
-import '../../../shared/design_system/design_tokens.dart';
+import '../../../shared/design_system/design_system.dart';
 import '../../../shared/design_system/responsive_layout.dart';
 
 /// Widget that displays a timeline event with photo count indicators
@@ -30,122 +30,63 @@ class TimelineEventCard extends StatefulWidget {
 }
 
 class _TimelineEventCardState extends State<TimelineEventCard> {
-  bool _isHovered = false;
-  bool _isPressed = false;
-  
-  void _setHover(bool isHovered) {
-    if (mounted) {
-      setState(() {
-        _isHovered = isHovered;
-      });
-    }
-  }
-
-  void _setPressed(bool isPressed) {
-    if (mounted) {
-      setState(() {
-        _isPressed = isPressed;
-      });
-    }
-  }
+  // Logic for hover/press states is now handled by AppCard or InkWell internally
+  // but we might want to keep some state if we do custom expansion animation inside
 
   @override
   Widget build(BuildContext context) {
-    // Note: isDark is kept for potential future use in responsive theming
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Determine card variant based on event type or context if needed
+    // For now using Glass variant for that premium feel as per original design
     
-    // Scale down slightly when pressed, scale up slightly when hovered
-    final scale = _isPressed ? 0.98 : (_isHovered ? 1.02 : 1.0);
-    
-    return MouseRegion(
-      onEnter: (_) => _setHover(true),
-      onExit: (_) => _setHover(false),
-      child: GestureDetector(
-        onTapDown: (_) => _setPressed(true),
-        onTapUp: (_) => _setPressed(false),
-        onTapCancel: () => _setPressed(false),
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: scale,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                ResponsiveLayout.getValue(
-                  context: context,
-                  mobile: DesignTokens.radiusLarge + 4,
-                  tablet: DesignTokens.radiusLarge + 6,
-                  desktop: DesignTokens.radiusLarge + 8,
-                ),
-              ),
-              boxShadow: _isHovered ? [
-                BoxShadow(
-                  color: Theme.of(context).shadowColor.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                )
-              ] : [],
-            ),
-            child: GlassmorphismCard(
-              margin: ResponsiveLayout.getResponsiveMargin(context),
-              borderRadius: ResponsiveLayout.getValue(
-                context: context,
-                mobile: DesignTokens.radiusLarge + 4, // 20px
-                tablet: DesignTokens.radiusLarge + 6, // 22px
-                desktop: DesignTokens.radiusLarge + 8, // 24px
-              ),
-              blur: 15,
-              // allow defaults to take over for better glass effect
-              padding: ResponsiveLayout.getResponsivePadding(context),
-              child: Column(
-              mainAxisSize: MainAxisSize.min, // Prevent overflow
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                  _buildHeader(context),
-                  SizedBox(height: context.getResponsiveValue(
-                    mobile: DesignTokens.space3,
-                    tablet: DesignTokens.space4,
-                    desktop: DesignTokens.space5,
-                  )),
-                  _buildMediaPreview(context),
-                  if (widget.event.description != null) ...[
-                    SizedBox(height: context.getResponsiveValue(
-                      mobile: DesignTokens.space2,
-                      tablet: DesignTokens.space3,
-                      desktop: DesignTokens.space4,
-                    )),
-                    _buildDescription(context),
-                  ],
-                  // Add tags display
-                  if (widget.event.tags.isNotEmpty) ...[
-                    SizedBox(height: context.getResponsiveValue(
-                      mobile: DesignTokens.space2,
-                      tablet: DesignTokens.space3,
-                      desktop: DesignTokens.space4,
-                    )),
-                    _buildTags(context),
-                  ],
-                  if (widget.showPhotoCount && widget.event.assets.length > 1) ...[
-                    SizedBox(height: context.getResponsiveValue(
-                      mobile: DesignTokens.space2,
-                      tablet: DesignTokens.space3,
-                      desktop: DesignTokens.space4,
-                    )),
-                    _buildPhotoCountIndicator(context),
-                  ],
-                  if (widget.isExpanded) ...[
-                    SizedBox(height: context.getResponsiveValue(
-                      mobile: DesignTokens.space3,
-                      tablet: DesignTokens.space4,
-                      desktop: DesignTokens.space5,
-                    )),
-                    _buildExpandedContent(context),
-                  ],
-                ],
-              ),
-            ),
+    // Constrain max width on large displays for better readability
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: ResponsiveLayout.getValue(
+            context: context,
+            mobile: double.infinity,
+            tablet: 560.0,
+            desktop: 600.0,
+          ),
+        ),
+        child: AppCard(
+          variant: AppCardVariant.glass,
+          onTap: widget.onTap,
+          padding: EdgeInsets.all(ResponsiveLayout.getValue(
+            context: context,
+            mobile: AppSpacing.md,
+            tablet: AppSpacing.lg,
+            desktop: AppSpacing.lg,
+          )),
+          margin: ResponsiveLayout.getResponsiveMargin(context),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              SizedBox(height: AppSpacing.md),
+              _buildMediaPreview(context),
+              
+              if (widget.event.description != null) ...[
+                SizedBox(height: AppSpacing.sm),
+                _buildDescription(context),
+              ],
+              
+              if (widget.event.tags.isNotEmpty) ...[
+                SizedBox(height: AppSpacing.sm),
+                _buildTags(context),
+              ],
+              
+              if (widget.showPhotoCount && widget.event.assets.length > 1) ...[
+                SizedBox(height: AppSpacing.sm),
+                _buildPhotoCountIndicator(context),
+              ],
+              
+              if (widget.isExpanded) ...[
+                SizedBox(height: AppSpacing.lg),
+                _buildExpandedContent(context),
+              ],
+            ],
           ),
         ),
       ),
@@ -156,11 +97,7 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
     return Row(
       children: [
         _buildEventTypeIcon(context),
-        SizedBox(width: context.getResponsiveValue(
-          mobile: DesignTokens.space2,
-          tablet: DesignTokens.space3,
-          desktop: DesignTokens.space4,
-        )),
+        SizedBox(width: AppSpacing.md),
         Flexible(
           fit: FlexFit.loose,
           child: Column(
@@ -197,7 +134,7 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
         ),
         if (widget.event.assets.length > 1 && widget.onExpandToggle != null)
           IconButton(
-            icon: Icon(widget.isExpanded ? Icons.expand_less : Icons.expand_more),
+            icon: Icon(widget.isExpanded ? AppIcons.expandLess : AppIcons.expandMore),
             onPressed: widget.onExpandToggle,
           ),
       ],
@@ -206,50 +143,52 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
 
   Widget _buildEventTypeIcon(BuildContext context) {
     IconData iconData;
-    Color? iconColor;
+    Color iconColor;
     
     switch (widget.event.eventType) {
       case 'photo_burst':
-        iconData = Icons.burst_mode;
+        iconData = AppIcons.burstMode;
         iconColor = Theme.of(context).colorScheme.primary;
         break;
       case 'photo_collection':
-        iconData = Icons.collections;
+        iconData = AppIcons.collections;
         iconColor = Theme.of(context).colorScheme.secondary;
         break;
       case 'renovation_progress':
-        iconData = Icons.construction;
-        iconColor = Colors.orange;
+        iconData = AppIcons.construction;
+        iconColor = Colors.orange; // warning color fallback
         break;
       case 'pet_milestone':
-        iconData = Icons.pets;
-        iconColor = Colors.green;
+        iconData = AppIcons.pets;
+        iconColor = Theme.of(context).colorScheme.tertiary; // Was green
         break;
       case 'business_milestone':
-        iconData = Icons.business;
-        iconColor = Colors.blue;
+        iconData = AppIcons.business;
+        iconColor = Theme.of(context).colorScheme.secondary; // Was blue
         break;
       case 'text':
-        iconData = Icons.edit_note;
+        iconData = AppIcons.editNote;
         iconColor = Theme.of(context).colorScheme.tertiary;
         break;
       default:
-        iconData = Icons.photo;
+        iconData = AppIcons.photo;
         iconColor = Theme.of(context).colorScheme.onSurfaceVariant;
     }
     
     return Container(
-      padding: EdgeInsets.all(context.getResponsiveValue(
-        mobile: DesignTokens.space2,
-        tablet: DesignTokens.space3,
-        desktop: DesignTokens.space4,
+      padding: EdgeInsets.all(ResponsiveLayout.getValue(
+        context: context,
+        mobile: AppSpacing.sm,
+        tablet: AppSpacing.md,
+        desktop: AppSpacing.lg,
       )),
       decoration: BoxDecoration(
         color: iconColor.withOpacity(widget.event.eventType == 'text' ? 0.2 : 0.1),
-        borderRadius: BorderRadius.circular(context.getResponsiveValue(
-          mobile: DesignTokens.radiusSmall,
-          tablet: DesignTokens.radiusMedium,
-          desktop: DesignTokens.radiusLarge,
+        borderRadius: BorderRadius.circular(ResponsiveLayout.getValue(
+          context: context,
+          mobile: AppRadii.sm,
+          tablet: AppRadii.md,
+          desktop: AppRadii.lg,
         )),
         border: widget.event.eventType == 'text' 
             ? Border.all(color: iconColor.withOpacity(0.3))
@@ -257,10 +196,11 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
       ),
       child: Icon(
         iconData,
-        size: context.getResponsiveValue(
-          mobile: DesignTokens.space4 + 4, // 20px
-          tablet: DesignTokens.space5 + 4, // 24px
-          desktop: DesignTokens.space6 + 4, // 28px
+        size: ResponsiveLayout.getValue(
+          context: context,
+          mobile: 20.0,
+          tablet: 24.0,
+          desktop: 28.0,
         ),
         color: iconColor,
       ),
@@ -279,10 +219,11 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
     );
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(context.getResponsiveValue(
-        mobile: DesignTokens.radiusSmall,
-        tablet: DesignTokens.radiusMedium,
-        desktop: DesignTokens.radiusLarge,
+      borderRadius: BorderRadius.circular(ResponsiveLayout.getValue(
+        context: context,
+        mobile: AppRadii.sm,
+        tablet: AppRadii.md,
+        desktop: AppRadii.lg,
       )),
       child: AspectRatio(
         aspectRatio: 16 / 9,
@@ -292,30 +233,14 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
             _buildAssetPreview(keyAsset),
             if (widget.event.assets.length > 1)
               Positioned(
-                top: context.getResponsiveValue(
-                  mobile: DesignTokens.space2,
-                  tablet: DesignTokens.space3,
-                  desktop: DesignTokens.space4,
-                ),
-                right: context.getResponsiveValue(
-                  mobile: DesignTokens.space2,
-                  tablet: DesignTokens.space3,
-                  desktop: DesignTokens.space4,
-                ),
+                top: AppSpacing.sm,
+                right: AppSpacing.sm,
                 child: _buildAssetCountBadge(context),
               ),
             if (widget.event.eventType == 'photo_burst')
               Positioned(
-                bottom: context.getResponsiveValue(
-                  mobile: DesignTokens.space2,
-                  tablet: DesignTokens.space3,
-                  desktop: DesignTokens.space4,
-                ),
-                left: context.getResponsiveValue(
-                  mobile: DesignTokens.space2,
-                  tablet: DesignTokens.space3,
-                  desktop: DesignTokens.space4,
-                ),
+                bottom: AppSpacing.sm,
+                left: AppSpacing.sm,
                 child: _buildBurstIndicator(context),
               ),
           ],
@@ -366,8 +291,8 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: Colors.grey[300],
-                      child: const Icon(
-                        Icons.broken_image,
+                      child: Icon(
+                        AppIcons.brokenImage,
                         size: 48,
                       ),
                     );
@@ -377,12 +302,12 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
       case AssetType.video:
         return Container(
           color: Colors.black87,
-          child: const Stack(
+          child: Stack(
             children: [
               Center(
                 child: Icon(
-                  Icons.play_circle_outline,
-                  size: 48, // Keep explicit size for video icon
+                  AppIcons.playCircle,
+                  size: 48,
                   color: Colors.white,
                 ),
               ),
@@ -392,10 +317,10 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
       case AssetType.audio:
         return Container(
           color: Colors.blue[100],
-          child: const Center(
+          child: Center(
             child: Icon(
-              Icons.audiotrack,
-              size: 48, // Keep explicit size for audio icon
+              AppIcons.audiotrack,
+              size: 48,
               color: Colors.blue,
             ),
           ),
@@ -403,10 +328,10 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
       case AssetType.document:
         return Container(
           color: Colors.grey[100],
-          child: const Center(
+          child: Center(
             child: Icon(
-              Icons.description,
-              size: 48, // Keep explicit size for document icon
+              AppIcons.description,
+              size: 48,
               color: Colors.grey,
             ),
           ),
@@ -518,59 +443,24 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
 
   Widget _buildTags(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: widget.event.tags.map((tag) {
-        // Color-code tags
+        // Simple color mapping based on tag content
         Color tagColor;
         switch (tag.toLowerCase()) {
-          case 'family':
-            tagColor = Colors.blue;
-            break;
-          case 'milestone':
-            tagColor = Colors.purple;
-            break;
-          case 'work':
-            tagColor = Colors.orange;
-            break;
-          case 'travel':
-            tagColor = Colors.green;
-            break;
-          case 'celebration':
-            tagColor = Colors.pink;
-            break;
-          default:
-            tagColor = Theme.of(context).colorScheme.primary;
+          case 'family': tagColor = Theme.of(context).colorScheme.primary; break;
+          case 'milestone': tagColor = Theme.of(context).colorScheme.tertiary; break;
+          case 'work': tagColor = Theme.of(context).colorScheme.secondary; break;
+          case 'travel': tagColor = Theme.of(context).colorScheme.error; break; // Use error for vibrant pop, or add a custom semantic
+          case 'celebration': tagColor = Theme.of(context).colorScheme.primary; break;
+          default: tagColor = Theme.of(context).colorScheme.outline;
         }
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: tagColor.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: tagColor.withOpacity(0.5),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.label,
-                size: 14,
-                color: tagColor,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                tag,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: tagColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+        return AppTag(
+          label: tag,
+          color: tagColor,
+          icon: Icons.label_outline,
         );
       }).toList(),
     );
@@ -581,18 +471,10 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
       children: [
         Icon(
           Icons.photo_library,
-          size: context.getResponsiveValue(
-            mobile: DesignTokens.space4, // 16px
-            tablet: DesignTokens.space5, // 20px
-            desktop: DesignTokens.space6, // 24px
-          ),
+          size: 16,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        SizedBox(width: context.getResponsiveValue(
-          mobile: DesignTokens.space1,
-          tablet: DesignTokens.space2,
-          desktop: DesignTokens.space2,
-        )),
+        SizedBox(width: AppSpacing.xs),
         Text(
           '${widget.event.assets.length} photos',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -600,25 +482,13 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
           ),
         ),
         if (widget.event.eventType == 'photo_burst') ...[
-          SizedBox(width: context.getResponsiveValue(
-            mobile: DesignTokens.space2,
-            tablet: DesignTokens.space3,
-            desktop: DesignTokens.space4,
-          )),
+          SizedBox(width: AppSpacing.md),
           Icon(
             Icons.burst_mode,
-            size: context.getResponsiveValue(
-              mobile: DesignTokens.space4, // 16px
-              tablet: DesignTokens.space5, // 20px
-              desktop: DesignTokens.space6, // 24px
-            ),
+            size: 16,
             color: Theme.of(context).colorScheme.primary,
           ),
-          SizedBox(width: context.getResponsiveValue(
-            mobile: DesignTokens.space1,
-            tablet: DesignTokens.space2,
-            desktop: DesignTokens.space2,
-          )),
+          SizedBox(width: AppSpacing.xs),
           Text(
             'Burst',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -642,30 +512,18 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: context.getResponsiveValue(
-            mobile: DesignTokens.space2,
-            tablet: DesignTokens.space3,
-            desktop: DesignTokens.space4,
-          )),
+          SizedBox(height: AppSpacing.sm),
           _buildAssetGrid(context),
         ],
         if (widget.event.customAttributes.isNotEmpty) ...[
-          SizedBox(height: context.getResponsiveValue(
-            mobile: DesignTokens.space3,
-            tablet: DesignTokens.space4,
-            desktop: DesignTokens.space5,
-          )),
+          SizedBox(height: AppSpacing.md),
           Text(
             'Details',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: context.getResponsiveValue(
-            mobile: DesignTokens.space2,
-            tablet: DesignTokens.space3,
-            desktop: DesignTokens.space4,
-          )),
+          SizedBox(height: AppSpacing.sm),
           _buildCustomAttributes(context),
         ],
       ],
@@ -677,69 +535,38 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: context.getResponsiveValue(
+        crossAxisCount: ResponsiveLayout.getValue(
+          context: context,
           mobile: 2,
           tablet: 3,
           desktop: 4,
         ),
-        crossAxisSpacing: context.getResponsiveValue(
-          mobile: DesignTokens.space1,
-          tablet: DesignTokens.space2,
-          desktop: DesignTokens.space3,
-        ),
-        mainAxisSpacing: context.getResponsiveValue(
-          mobile: DesignTokens.space1,
-          tablet: DesignTokens.space2,
-          desktop: DesignTokens.space3,
-        ),
+        crossAxisSpacing: AppSpacing.xs,
+        mainAxisSpacing: AppSpacing.xs,
         childAspectRatio: 1,
       ),
       itemCount: widget.event.assets.length,
       itemBuilder: (context, index) {
         final asset = widget.event.assets[index];
         return ClipRRect(
-          borderRadius: BorderRadius.circular(context.getResponsiveValue(
-            mobile: DesignTokens.radiusXSmall,
-            tablet: DesignTokens.radiusSmall,
-            desktop: DesignTokens.radiusMedium,
-          )),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
           child: Stack(
             fit: StackFit.expand,
             children: [
               _buildAssetPreview(asset),
               if (asset.isKeyAsset)
                 Positioned(
-                  top: context.getResponsiveValue(
-                    mobile: DesignTokens.space2,
-                    tablet: DesignTokens.space3,
-                    desktop: DesignTokens.space4,
-                  ),
-                  right: context.getResponsiveValue(
-                    mobile: DesignTokens.space2,
-                    tablet: DesignTokens.space3,
-                    desktop: DesignTokens.space4,
-                  ),
+                  top: AppSpacing.xs,
+                  right: AppSpacing.xs,
                   child: Container(
-                    padding: EdgeInsets.all(context.getResponsiveValue(
-                      mobile: DesignTokens.space1,
-                      tablet: DesignTokens.space2,
-                      desktop: DesignTokens.space2,
-                    )),
+                    padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(context.getResponsiveValue(
-                        mobile: DesignTokens.radiusSmall,
-                        tablet: DesignTokens.radiusMedium,
-                        desktop: DesignTokens.radiusLarge,
-                      )),
+                      borderRadius: BorderRadius.circular(AppRadii.sm),
                     ),
                     child: Icon(
                       Icons.star,
-                      size: context.getResponsiveValue(
-                        mobile: DesignTokens.labelSmall.fontSize ?? 11, // 11px
-                        tablet: (DesignTokens.labelSmall.fontSize ?? 11) + 2, // 13px
-                        desktop: (DesignTokens.labelSmall.fontSize ?? 11) + 4, // 15px
-                      ),
+                      size: 12,
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
@@ -753,16 +580,8 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
 
   Widget _buildCustomAttributes(BuildContext context) {
     return Wrap(
-      spacing: context.getResponsiveValue(
-        mobile: DesignTokens.space2,
-        tablet: DesignTokens.space3,
-        desktop: DesignTokens.space4,
-      ),
-      runSpacing: context.getResponsiveValue(
-        mobile: DesignTokens.space1,
-        tablet: DesignTokens.space2,
-        desktop: DesignTokens.space2,
-      ),
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: widget.event.customAttributes.entries
           .where((entry) => entry.value != null && entry.value.toString().isNotEmpty)
           .map((entry) => _buildAttributeChip(context, entry.key, entry.value))

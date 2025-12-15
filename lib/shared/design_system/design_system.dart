@@ -9,6 +9,9 @@
 // Core design tokens
 export 'design_tokens.dart';
 export 'color_palettes.dart';
+export 'app_spacing.dart';
+export 'app_radii.dart';
+export 'app_icons.dart';
 
 // Theme system
 export 'app_theme.dart';
