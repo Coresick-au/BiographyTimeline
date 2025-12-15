@@ -313,10 +313,18 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.help_outline,
-            size: 80,
-            color: Colors.white.withOpacity(0.5),
+          Image.asset(
+            'assets/images/empty_timeline.png',
+            width: 250,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback if image path is wrong
+              return Icon(
+                Icons.timeline,
+                size: 80,
+                color: Colors.white.withOpacity(0.5),
+              );
+            },
           ),
           const SizedBox(height: 24),
           Text(

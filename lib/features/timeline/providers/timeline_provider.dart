@@ -56,47 +56,62 @@ class TimelineActions {
 
   TimelineActions(this.ref);
 
+  /// Load events from the service
+  Future<void> loadEvents() async {
+    final service = ref.read(timelineServiceProvider);
+    await service.loadEvents();
+    // Force the UI to rebuild with new data
+    ref.invalidate(timelineRenderDataProvider);
+  }
+
   /// Update timeline configuration
   Future<void> updateConfig(TimelineRenderConfig config) async {
     final service = ref.read(timelineServiceProvider);
     await service.updateConfig(config);
-    ref.read(timelineConfigProvider.notifier).state = config;
+    ref.invalidate(timelineConfigProvider);
+    ref.invalidate(timelineRenderDataProvider);
   }
 
   /// Add events to timeline
   Future<void> addEvents(List<TimelineEvent> events) async {
     final service = ref.read(timelineServiceProvider);
     await service.addEvents(events);
+    ref.invalidate(timelineRenderDataProvider); // Refresh UI
   }
 
   /// Remove events from timeline
   Future<void> removeEvents(List<String> eventIds) async {
     final service = ref.read(timelineServiceProvider);
     await service.removeEvents(eventIds);
+    ref.invalidate(timelineRenderDataProvider); // Refresh UI
   }
 
   /// Update an event
   Future<void> updateEvent(TimelineEvent event) async {
     final service = ref.read(timelineServiceProvider);
     await service.updateEvent(event);
+    ref.invalidate(timelineRenderDataProvider); // Refresh UI
   }
 
   /// Add contexts
   Future<void> addContexts(List<Context> contexts) async {
     final service = ref.read(timelineServiceProvider);
     await service.addContexts(contexts);
+    ref.invalidate(timelineRenderDataProvider); // Refresh UI
   }
 
   /// Remove contexts
   Future<void> removeContexts(List<String> contextIds) async {
     final service = ref.read(timelineServiceProvider);
     await service.removeContexts(contextIds);
+    ref.invalidate(timelineRenderDataProvider); // Refresh UI
   }
 
   /// Update a context
   Future<void> updateContext(Context context) async {
     final service = ref.read(timelineServiceProvider);
     await service.updateContext(context);
+    ref.invalidate(timelineRenderDataProvider); // Refresh UI
   }
 
   /// Navigate to specific date
@@ -149,6 +164,7 @@ class TimelineActions {
   Future<void> importData(Map<String, dynamic> data) async {
     final service = ref.read(timelineServiceProvider);
     await service.importData(data);
+    ref.invalidate(timelineRenderDataProvider); // Refresh UI
   }
 }
 
