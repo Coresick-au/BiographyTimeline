@@ -193,7 +193,7 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
                       ),
                     ],
                   ),
-                  child: _getEventIcon(event),
+                  child: _getEventIcon(context, event),
                 ),
 
                 // Connecting line to next event
@@ -253,7 +253,7 @@ class CenteredVerticalTimelineRenderer extends BaseTimelineRenderer {
     );
   }
 
-  Widget? _getEventIcon(TimelineEvent event) {
+  Widget? _getEventIcon(BuildContext context, TimelineEvent event) {
     IconData? iconData;
     
     switch (event.eventType.toLowerCase()) {
