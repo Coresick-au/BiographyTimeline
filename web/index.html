@@ -17,6 +17,7 @@
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Timeline Biography">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -36,7 +37,31 @@
 <body>
   <!-- Service worker registration is now handled automatically by flutter.js -->
 
-  <script src="main.dart.js" type="application/javascript"></script>
+  <!-- SQLite Web Worker - MUST be loaded before main.dart.js -->
+  <script>
+    // Initialize sqflite for web
+    if (typeof SharedArrayBuffer === 'undefined') {
+      console.warn('SharedArrayBuffer is not available. SQLite web may not work properly.');
+      console.warn('This requires COOP/COEP headers to be set on the server.');
+    }
+  </script>
+
+  <script src="flutter.js" defer></script>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: '{{flutter_service_worker_version}}',
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>

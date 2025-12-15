@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../shared/models/timeline_event.dart';
 import '../../../shared/models/context.dart';
 import '../../../shared/models/geo_location.dart';
@@ -8,6 +9,7 @@ import '../../../shared/models/user.dart';
 import '../../../core/database/database.dart';
 import '../../../shared/error_handling/error_service.dart';
 import '../../../shared/loading/loading_service.dart';
+import 'mock_timeline_repository.dart';
 
 /// Repository for accessing and modifying timeline data.
 /// 
@@ -406,7 +408,15 @@ class TimelineRepository {
 }
 
 /// Provider for the Timeline Repository
-final timelineRepositoryProvider = FutureProvider<TimelineRepository>((ref) async {
+/// Uses MockTimelineRepository on web to bypass SQLite web issues
+final timelineRepositoryProvider = FutureProvider<dynamic>((ref) async {
+  // On web, use mock repository to bypass SQLite issues
+  if (kIsWeb) {
+    print('DEBUG: Using MockTimelineRepository for web');
+    return MockTimelineRepository();
+  }
+  
+  // On native platforms, use real database
   final database = await AppDatabase.database;
   return TimelineRepository(database, ErrorService.instance, LoadingService());
 });
