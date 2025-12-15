@@ -1,5 +1,6 @@
 import '../services/timeline_renderer_interface.dart';
 import '../renderers/vertical_timeline_renderer.dart';
+import '../renderers/centered_vertical_timeline_renderer.dart';
 import '../renderers/life_stream_timeline_renderer.dart';
 import '../renderers/grid_timeline_renderer.dart';
 import '../renderers/enhanced_vertical_timeline_renderer.dart';
@@ -15,7 +16,7 @@ class TimelineRendererFactory {
   ) {
     switch (mode) {
       case TimelineViewMode.chronological:
-        return VerticalTimelineRenderer();
+        return CenteredVerticalTimelineRenderer();
       case TimelineViewMode.lifeStream:
         return LifeStreamTimelineRenderer(
           config,
