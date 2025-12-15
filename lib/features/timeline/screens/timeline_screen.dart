@@ -105,11 +105,21 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: ModernDarkTheme.backgroundGradient,
-        ),
-        child: timelineState.when(
+      body: Consumer(
+        builder: (context, ref, child) {
+          final theme = Theme.of(context);
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.background,
+                  theme.colorScheme.surface,
+                ],
+              ),
+            ),
+            child: timelineState.when(
           data: (state) => _buildTimelineContent(context, state),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) {
@@ -193,8 +203,15 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: const BoxDecoration(
-            gradient: ModernDarkTheme.primaryGradient,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
+            ),
           ),
           child: SafeArea(
             child: Padding(
