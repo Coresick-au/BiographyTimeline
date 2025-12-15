@@ -159,39 +159,6 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.dark_mode,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: Text(
-                    'Dark Mode',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  subtitle: Text(
-                    'Theme appearance',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  trailing: Consumer(
-                    builder: (context, ref, child) {
-                      final themeMode = ref.watch(themeModeProvider);
-                      final isDark = themeMode == ThemeMode.dark;
-                      
-                      return Switch(
-                        value: isDark,
-                        onChanged: (value) {
-                          ref.read(themeModeProvider.notifier).switchThemeMode(
-                            value ? ThemeMode.dark : ThemeMode.light,
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-                Divider(
-                  height: 1,
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                ),
-                ListTile(
-                  leading: Icon(
                     Icons.language,
                     color: Theme.of(context).colorScheme.primary,
                   ),
