@@ -20,7 +20,7 @@ class TimelineRenderConfig {
   final TimelineViewMode viewMode;
   final DateTime? startDate;
   final DateTime? endDate;
-  final Context? activeContext;
+  final List<String>? filterTags;
   final Set<String> selectedEventIds;
   final bool showPrivateEvents;
   final double? zoomLevel;
@@ -30,7 +30,7 @@ class TimelineRenderConfig {
     required this.viewMode,
     this.startDate,
     this.endDate,
-    this.activeContext,
+    this.filterTags,
     this.selectedEventIds = const {},
     this.showPrivateEvents = true,
     this.zoomLevel,
@@ -41,7 +41,7 @@ class TimelineRenderConfig {
     TimelineViewMode? viewMode,
     DateTime? startDate,
     DateTime? endDate,
-    Context? activeContext,
+    List<String>? filterTags,
     Set<String>? selectedEventIds,
     bool? showPrivateEvents,
     double? zoomLevel,
@@ -51,7 +51,7 @@ class TimelineRenderConfig {
       viewMode: viewMode ?? this.viewMode,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
-      activeContext: activeContext ?? this.activeContext,
+      filterTags: filterTags ?? this.filterTags,
       selectedEventIds: selectedEventIds ?? this.selectedEventIds,
       showPrivateEvents: showPrivateEvents ?? this.showPrivateEvents,
       zoomLevel: zoomLevel ?? this.zoomLevel,
@@ -261,13 +261,15 @@ abstract class BaseTimelineRenderer implements ITimelineRenderer {
         continue;
       }
 
-      // Context filtering
-      if (_config.activeContext != null && event.contextId != _config.activeContext!.id) {
-        continue;
+      // Tag filtering
+      if (_config.filterTags != null && _config.filterTags!.isNotEmpty) {
+        if (!event.tags.any((tag) => _config.filterTags!.contains(tag))) {
+          continue;
+        }
       }
 
       // Privacy filtering
-      if (!_config.showPrivateEvents && event.privacyLevel == PrivacyLevel.private) {
+      if (!_config.showPrivateEvents && event.isPrivate) {
         continue;
       }
 

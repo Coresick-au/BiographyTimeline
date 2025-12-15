@@ -193,10 +193,9 @@ class _SearchDialogState extends State<SearchDialog> {
                       itemCount: _filteredEvents.length,
                       itemBuilder: (context, index) {
                         final event = _filteredEvents[index];
-                        final contextEntity = widget.contexts.firstWhere(
-                          (ctx) => ctx.id == event.contextId,
-                          orElse: () => widget.contexts.first,
-                        );
+                        final contextEntity = widget.contexts.isNotEmpty 
+                            ? widget.contexts.first 
+                            : null;
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
@@ -216,7 +215,7 @@ class _SearchDialogState extends State<SearchDialog> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(contextEntity.name),
+                                Text(contextEntity?.name ?? 'Family'),
                                 Text(
                                   _formatDate(event.timestamp),
                                   style: Theme.of(context).textTheme.bodySmall,

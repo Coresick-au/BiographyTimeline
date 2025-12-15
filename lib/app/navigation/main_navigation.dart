@@ -630,10 +630,7 @@ class _EnhancedNavigationState extends ConsumerState<EnhancedNavigation> {
                     // Get the context for this event
                     final asyncState = ref.read(timeline_service.timelineDataProvider);
                     final contexts = asyncState.value?.contexts ?? [];
-                    final eventContext = contexts.firstWhere(
-                      (ctx) => ctx.id == event.contextId,
-                      orElse: () => contexts.isNotEmpty ? contexts.first : throw Exception('No context found'),
-                    );
+                    final eventContext = contexts.isNotEmpty ? contexts.first : null;
                     
                     // Navigate to event details screen
                     Navigator.of(context).push(

@@ -142,14 +142,14 @@ class CollaborativeEditingService {
     // In a real implementation, this would fetch the actual event data
     final initialEventData = TimelineEvent(
       id: eventId,
-      contextId: _uuid.v4(),
+      tags: ['Family'],
       ownerId: createdBy,
       timestamp: DateTime.now(),
       eventType: 'shared_event',
       customAttributes: {},
       assets: [],
       participantIds: [createdBy],
-      privacyLevel: PrivacyLevel.private,
+      isPrivate: false, // Shared events are not private
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

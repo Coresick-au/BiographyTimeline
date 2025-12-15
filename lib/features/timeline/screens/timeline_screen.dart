@@ -113,7 +113,30 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
           data: (state) => _buildTimelineContent(context, state),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) => Center(
-            child: Text('Error loading timeline: $error'),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.white.withOpacity(0.5),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Unable to load timeline',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please try restarting the app',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -202,12 +225,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     final config = TimelineRenderConfig(
       viewMode: _currentViewMode,
       showPrivateEvents: state.showPrivateEvents,
-      activeContext: state.activeContextId != null 
-          ? state.contexts.firstWhere(
-              (ctx) => ctx.id == state.activeContextId,
-              orElse: () => state.contexts.first,
-            )
-          : null,
     );
 
     final data = TimelineRenderData(
@@ -241,8 +258,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             builder: (context) => EventDetailsScreen(
               event: event,
               context: state.contexts.isNotEmpty 
-                  ? state.contexts.firstWhere((ctx) => ctx.id == event.contextId, orElse: () => state.contexts.first)
-                  : state.contexts.first,
+                  ? state.contexts.first
+                  : null,
             ),
           ),
         );
@@ -258,7 +275,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       context: context,
       builder: (ctx) => QuickEntryDialog(
         contextType: ContextType.person,
-        contextId: 'default', // Should get from state
+        tags: ['Family'],
         ownerId: 'user-1',
         onEventCreated: (event) {
            ref.read(timelineDataProvider.notifier).addEvent(event);
@@ -272,7 +289,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
   
   void _switchToContext(Context context, WidgetRef ref) {
-     ref.read(timelineDataProvider.notifier).setActiveContext(context.id);
+    // setActiveContext removed in Family-First MVP
+    // All events are now family events with tags
   }
 
   String _getViewModeTitle(TimelineViewMode mode) {
@@ -291,7 +309,42 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(child: Text("No events found"));
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.help_outline,
+            size: 80,
+            color: Colors.white.withOpacity(0.5),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'No Timeline Data',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Start by adding your first event',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: () => _showAddEventDialog(context, ref),
+            icon: const Icon(Icons.add),
+            label: const Text('Add Event'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildErrorState(BuildContext context, String error) {

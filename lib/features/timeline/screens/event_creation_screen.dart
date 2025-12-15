@@ -32,8 +32,9 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
   
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
-  PrivacyLevel _privacyLevel = PrivacyLevel.private;
+  bool _isPrivate = true;
   String _eventType = 'photo';
+  List<String> _selectedTags = ['Family'];
   List<XFile> _selectedPhotos = [];
   GeoLocation? _location;
   bool _isLoading = false;
@@ -117,8 +118,12 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
             _buildEventTypeSelector(),
             const SizedBox(height: 16),
             
-            // Privacy selector
-            _buildPrivacySelector(),
+            // Privacy toggle
+            _buildPrivacyToggle(),
+            const SizedBox(height: 16),
+            
+            // Tag selector
+            _buildTagSelector(),
             const SizedBox(height: 16),
             
             // Location (optional)
@@ -335,7 +340,35 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
     );
   }
 
-  Widget _buildPrivacySelector() {
+  Widget _buildPrivacyToggle() {
+    return Card(
+      child: SwitchListTile(
+        title: const Text('Keep Private'),
+        subtitle: Text(
+          _isPrivate 
+              ? 'Only visible to you' 
+              : 'Syncs with family group via PowerSync',
+        ),
+        value: _isPrivate,
+        secondary: Icon(
+          _isPrivate ? Icons.lock : Icons.cloud_sync,
+          color: _isPrivate ? Colors.orange : Colors.blue,
+        ),
+        onChanged: (value) {
+          setState(() {
+            _isPrivate = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildTagSelector() {
+    final availableTags = [
+      'Family', 'Vacation', 'School', 'Work', 'Birthday',
+      'Holiday', 'Sports', 'Hobbies', 'Friends', 'Celebration',
+    ];
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -343,25 +376,41 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Privacy',
+              'Tags',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            ...PrivacyLevel.values.map((level) {
-              return RadioListTile<PrivacyLevel>(
-                title: Text(_getPrivacyLabel(level)),
-                subtitle: Text(_getPrivacyDescription(level)),
-                value: level,
-                groupValue: _privacyLevel,
-                onChanged: (value) {
-                  if (value != null) {
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: availableTags.map((tag) {
+                final isSelected = _selectedTags.contains(tag);
+                return FilterChip(
+                  selected: isSelected,
+                  label: Text(tag),
+                  onSelected: (selected) {
                     setState(() {
-                      _privacyLevel = value;
+                      if (selected) {
+                        _selectedTags.add(tag);
+                      } else {
+                        _selectedTags.remove(tag);
+                      }
                     });
-                  }
-                },
-              );
-            }).toList(),
+                  },
+                );
+              }).toList(),
+            ),
+            if (_selectedTags.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Select at least one tag',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -396,27 +445,7 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
     );
   }
 
-  String _getPrivacyLabel(PrivacyLevel level) {
-    switch (level) {
-      case PrivacyLevel.private:
-        return 'Private';
-      case PrivacyLevel.shared:
-        return 'Shared';
-      case PrivacyLevel.public:
-        return 'Public';
-    }
-  }
 
-  String _getPrivacyDescription(PrivacyLevel level) {
-    switch (level) {
-      case PrivacyLevel.private:
-        return 'Only you can see this event';
-      case PrivacyLevel.shared:
-        return 'Share with selected connections';
-      case PrivacyLevel.public:
-        return 'Anyone can see this event';
-    }
-  }
 
   Future<void> _pickPhotos() async {
     final ImagePicker picker = ImagePicker();
@@ -461,7 +490,7 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
       // Create the event
       final event = TimelineEvent.create(
         id: _uuid.v4(),
-        contextId: widget.contextId ?? 'context-1', // Use first context if not specified
+        tags: _selectedTags.isEmpty ? ['Family'] : _selectedTags,
         ownerId: 'user-1', // TODO: Get from auth provider
         timestamp: timestamp,
         eventType: _eventType,
@@ -471,7 +500,7 @@ class _EventCreationScreenState extends ConsumerState<EventCreationScreen> {
             : _descriptionController.text,
         assets: assets,
         location: _location,
-        privacyLevel: _privacyLevel,
+        isPrivate: _isPrivate,
       );
 
       // Save to database via service

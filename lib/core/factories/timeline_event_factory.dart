@@ -50,7 +50,7 @@ class TimelineEventFactory {
 
     return TimelineEvent.create(
       id: id,
-      contextId: contextId,
+      tags: ['Family'], // Default tag for factory-created events
       ownerId: ownerId,
       timestamp: timestamp,
       fuzzyDate: fuzzyDate,
@@ -61,7 +61,7 @@ class TimelineEventFactory {
       title: title,
       description: description,
       participantIds: participantIds,
-      privacyLevel: privacyLevel,
+      isPrivate: privacyLevel == PrivacyLevel.private, // Convert to boolean
     );
   }
 

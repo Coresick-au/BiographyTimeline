@@ -11,7 +11,6 @@ class GridTimelineRenderer extends BaseTimelineRenderer {
       viewMode: TimelineViewMode.bentoGrid,
       startDate: null,
       endDate: null,
-      activeContext: null,
       selectedEventIds: <String>{},
       showPrivateEvents: false,
       zoomLevel: 1.0,

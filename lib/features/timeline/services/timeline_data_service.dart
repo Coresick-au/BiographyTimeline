@@ -11,20 +11,18 @@ import 'timeline_clustering_service.dart';
 /// 
 /// Migrated to Riverpod 2.4+ AsyncNotifier pattern.
 class TimelineDataService extends AsyncNotifier<TimelineState> {
-  late final LazyTimelineRepository _repository;
+  late final TimelineRepository _repository;
   late final TimelineFilterService _filterService;
   late final TimelineClusteringService _clusteringService;
 
   @override
   FutureOr<TimelineState> build() async {
-    _repository = ref.watch(timelineRepositoryProvider);
+    // Await the repository from the FutureProvider
+    _repository = await ref.watch(timelineRepositoryProvider.future);
     _filterService = ref.watch(timelineFilterServiceProvider);
     _clusteringService = ref.watch(timelineClusteringServiceProvider);
 
-    // Initialize the repository
-    await _repository.initialize();
-
-    // Initial load
+    // Initial load (repository is already initialized via database connection)
     return _loadData();
   }
 
@@ -49,7 +47,6 @@ class TimelineDataService extends AsyncNotifier<TimelineState> {
     final filtered = _filterService.filterEvents(
       events: currentState.allEvents,
       showPrivateEvents: currentState.showPrivateEvents,
-      activeContextId: currentState.activeContextId,
       startDate: currentState.startDate,
       endDate: currentState.endDate,
       eventFilter: currentState.eventFilter,
@@ -85,7 +82,6 @@ class TimelineDataService extends AsyncNotifier<TimelineState> {
   /// Update settings and re-process state
   void updateSettings({
     bool? showPrivateEvents,
-    String? activeContextId,
     DateTime? startDate,
     DateTime? endDate,
     String? eventFilter,
@@ -95,7 +91,6 @@ class TimelineDataService extends AsyncNotifier<TimelineState> {
     final currentState = state.value!;
     final newState = currentState.copyWith(
       showPrivateEvents: showPrivateEvents ?? currentState.showPrivateEvents,
-      activeContextId: activeContextId ?? currentState.activeContextId,
       startDate: startDate ?? currentState.startDate,
       endDate: endDate ?? currentState.endDate,
       eventFilter: eventFilter ?? currentState.eventFilter,
@@ -104,9 +99,7 @@ class TimelineDataService extends AsyncNotifier<TimelineState> {
     state = AsyncValue.data(_processState(newState));
   }
   
-  void setActiveContext(String? contextId) {
-    updateSettings(activeContextId: contextId);
-  }
+  // Removed setActiveContext method - no longer needed
 
   /// Set privacy context
   void setPrivacyContext(String viewerId, String ownerId) {
@@ -124,36 +117,60 @@ class TimelineDataService extends AsyncNotifier<TimelineState> {
   // --- CRUD Operations ---
 
   Future<void> addEvent(TimelineEvent event) async {
+    // Wait for the service to be ready
+    if (!state.hasValue) {
+      await future; // Wait for initial build to complete
+    }
     state = const AsyncValue.loading();
     await _repository.addEvent(event);
     state = await AsyncValue.guard(() => _loadData());
   }
 
   Future<void> updateEvent(TimelineEvent event) async {
+    // Wait for the service to be ready
+    if (!state.hasValue) {
+      await future; // Wait for initial build to complete
+    }
     state = const AsyncValue.loading();
     await _repository.updateEvent(event);
     state = await AsyncValue.guard(() => _loadData());
   }
 
   Future<void> removeEvent(String eventId) async {
+    // Wait for the service to be ready
+    if (!state.hasValue) {
+      await future; // Wait for initial build to complete
+    }
     state = const AsyncValue.loading();
     await _repository.removeEvent(eventId);
     state = await AsyncValue.guard(() => _loadData());
   }
 
   Future<void> addContext(Context context) async {
+    // Wait for the service to be ready
+    if (!state.hasValue) {
+      await future; // Wait for initial build to complete
+    }
     state = const AsyncValue.loading();
     await _repository.addContext(context);
     state = await AsyncValue.guard(() => _loadData());
   }
 
   Future<void> updateContext(Context context) async {
+    // Wait for the service to be ready
+    if (!state.hasValue) {
+      await future; // Wait for initial build to complete
+    }
     state = const AsyncValue.loading();
     await _repository.updateContext(context);
     state = await AsyncValue.guard(() => _loadData());
   }
 
   Future<void> removeContext(String contextId) async {
+    // Wait for the service to be ready
+    if (!state.hasValue) {
+      await future; // Wait for initial build to complete
+    }
     state = const AsyncValue.loading();
     await _repository.removeContext(contextId);
     state = await AsyncValue.guard(() => _loadData());

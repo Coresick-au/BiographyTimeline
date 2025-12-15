@@ -3,14 +3,13 @@ import 'fuzzy_date.dart';
 import 'geo_location.dart';
 import 'media_asset.dart';
 import 'story.dart';
-import 'user.dart';
 
 part 'timeline_event.g.dart';
 
 @JsonSerializable()
 class TimelineEvent {
   final String id;
-  final String contextId;
+  final List<String> tags;
   final String ownerId;
   final DateTime timestamp;
   final FuzzyDate? fuzzyDate;
@@ -22,13 +21,13 @@ class TimelineEvent {
   final String? description;
   final Story? story;
   final List<String> participantIds;
-  final PrivacyLevel privacyLevel;
+  final bool isPrivate;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   const TimelineEvent({
     required this.id,
-    required this.contextId,
+    required this.tags,
     required this.ownerId,
     required this.timestamp,
     this.fuzzyDate,
@@ -40,7 +39,7 @@ class TimelineEvent {
     this.description,
     this.story,
     required this.participantIds,
-    required this.privacyLevel,
+    required this.isPrivate,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -49,10 +48,10 @@ class TimelineEvent {
       _$TimelineEventFromJson(json);
   Map<String, dynamic> toJson() => _$TimelineEventToJson(this);
 
-  /// Creates a timeline event with context-specific default attributes
+  /// Creates a timeline event with default attributes
   factory TimelineEvent.create({
     required String id,
-    required String contextId,
+    List<String>? tags,
     required String ownerId,
     required DateTime timestamp,
     FuzzyDate? fuzzyDate,
@@ -63,12 +62,12 @@ class TimelineEvent {
     String? title,
     String? description,
     List<String>? participantIds,
-    PrivacyLevel? privacyLevel,
+    bool? isPrivate,
   }) {
     final now = DateTime.now();
     return TimelineEvent(
       id: id,
-      contextId: contextId,
+      tags: tags ?? ['Family'],
       ownerId: ownerId,
       timestamp: timestamp,
       fuzzyDate: fuzzyDate,
@@ -80,7 +79,7 @@ class TimelineEvent {
       description: description,
       story: null,
       participantIds: participantIds ?? [],
-      privacyLevel: privacyLevel ?? PrivacyLevel.private,
+      isPrivate: isPrivate ?? true,
       createdAt: now,
       updatedAt: now,
     );
@@ -119,7 +118,7 @@ class TimelineEvent {
 
   TimelineEvent copyWith({
     String? id,
-    String? contextId,
+    List<String>? tags,
     String? ownerId,
     DateTime? timestamp,
     FuzzyDate? fuzzyDate,
@@ -131,13 +130,13 @@ class TimelineEvent {
     String? description,
     Story? story,
     List<String>? participantIds,
-    PrivacyLevel? privacyLevel,
+    bool? isPrivate,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return TimelineEvent(
       id: id ?? this.id,
-      contextId: contextId ?? this.contextId,
+      tags: tags ?? this.tags,
       ownerId: ownerId ?? this.ownerId,
       timestamp: timestamp ?? this.timestamp,
       fuzzyDate: fuzzyDate ?? this.fuzzyDate,
@@ -149,7 +148,7 @@ class TimelineEvent {
       description: description ?? this.description,
       story: story ?? this.story,
       participantIds: participantIds ?? this.participantIds,
-      privacyLevel: privacyLevel ?? this.privacyLevel,
+      isPrivate: isPrivate ?? this.isPrivate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -161,7 +160,7 @@ class TimelineEvent {
       other is TimelineEvent &&
           runtimeType == other.runtimeType &&
           id == other.id &&
-          contextId == other.contextId &&
+          _listEquals(tags, other.tags) &&
           ownerId == other.ownerId &&
           timestamp == other.timestamp &&
           fuzzyDate == other.fuzzyDate &&
@@ -173,14 +172,14 @@ class TimelineEvent {
           description == other.description &&
           story == other.story &&
           _listEquals(participantIds, other.participantIds) &&
-          privacyLevel == other.privacyLevel &&
+          isPrivate == other.isPrivate &&
           createdAt == other.createdAt &&
           updatedAt == other.updatedAt;
 
   @override
   int get hashCode =>
       id.hashCode ^
-      contextId.hashCode ^
+      tags.hashCode ^
       ownerId.hashCode ^
       timestamp.hashCode ^
       fuzzyDate.hashCode ^
@@ -192,7 +191,7 @@ class TimelineEvent {
       description.hashCode ^
       story.hashCode ^
       participantIds.hashCode ^
-      privacyLevel.hashCode ^
+      isPrivate.hashCode ^
       createdAt.hashCode ^
       updatedAt.hashCode;
 

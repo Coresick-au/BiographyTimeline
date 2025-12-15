@@ -4,7 +4,7 @@ import '../../shared/models/context.dart';
 import '../../shared/models/timeline_theme.dart';
 import '../../shared/models/timeline_event.dart';
 import '../../shared/models/user.dart';
-import '../../core/factories/context_factory.dart';
+// import '../../core/factories/context_factory.dart'; // Removed in Family-First MVP
 import '../../core/factories/timeline_event_factory.dart';
 import '../timeline/widgets/quick_entry_button.dart';
 import '../timeline/widgets/timeline_view.dart';
@@ -33,33 +33,49 @@ class _DemoPageState extends ConsumerState<DemoPage> {
   void _initializeDemoData() {
     // Create demo contexts for each type
     demoContexts = [
-      ContextFactory.createContext(
+      Context(
         id: 'personal-context',
         ownerId: 'demo-user',
         type: ContextType.person,
         name: 'My Life Journey',
         description: 'Personal memories and milestones',
+        moduleConfiguration: {},
+        themeId: 'personal_theme',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       ),
-      ContextFactory.createContext(
+      Context(
         id: 'pet-context',
         ownerId: 'demo-user',
         type: ContextType.pet,
         name: 'Buddy\'s Adventures',
         description: 'My dog\'s growth and memories',
+        moduleConfiguration: {},
+        themeId: 'pet_theme',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       ),
-      ContextFactory.createContext(
+      Context(
         id: 'project-context',
         ownerId: 'demo-user',
         type: ContextType.project,
         name: 'Kitchen Renovation',
         description: 'Complete kitchen makeover project',
+        moduleConfiguration: {},
+        themeId: 'renovation_theme',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       ),
-      ContextFactory.createContext(
+      Context(
         id: 'business-context',
         ownerId: 'demo-user',
         type: ContextType.business,
         name: 'Startup Journey',
         description: 'Building my tech startup',
+        moduleConfiguration: {},
+        themeId: 'business_theme',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       ),
     ];
 

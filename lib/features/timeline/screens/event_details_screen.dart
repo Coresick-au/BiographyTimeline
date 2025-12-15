@@ -13,12 +13,12 @@ import '../widgets/event_attributes_display.dart';
 /// Screen for displaying detailed information about a timeline event
 class EventDetailsScreen extends ConsumerWidget {
   final TimelineEvent event;
-  final Context context;
+  final Context? context;
 
   const EventDetailsScreen({
     super.key,
     required this.event,
-    required this.context,
+    this.context,
   });
 
   @override
@@ -303,7 +303,7 @@ class EventDetailsScreen extends ConsumerWidget {
             EventAttributesDisplay(
               attributes: event.customAttributes,
               eventType: event.eventType,
-              contextType: this.context.type,
+              contextType: this.context?.type ?? ContextType.person,
             ),
           ],
         ),
@@ -375,7 +375,7 @@ class EventDetailsScreen extends ConsumerWidget {
       MaterialPageRoute(
         builder: (context) => StoryEditorScreen(
           eventId: event.id,
-          contextId: this.context.id,
+          contextId: this.context?.id ?? 'family-context',
         ),
       ),
     );

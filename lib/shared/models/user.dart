@@ -89,13 +89,13 @@ class PrivacySettings {
   final bool allowTimelineMerging;
   final bool allowLocationSharing;
   final bool allowFaceDetection;
-  final PrivacyLevel defaultEventPrivacy;
+  final bool defaultEventIsPrivate;
 
   const PrivacySettings({
     required this.allowTimelineMerging,
     required this.allowLocationSharing,
     required this.allowFaceDetection,
-    required this.defaultEventPrivacy,
+    required this.defaultEventIsPrivate,
   });
 
   factory PrivacySettings.fromJson(Map<String, dynamic> json) =>
@@ -106,13 +106,13 @@ class PrivacySettings {
     bool? allowTimelineMerging,
     bool? allowLocationSharing,
     bool? allowFaceDetection,
-    PrivacyLevel? defaultEventPrivacy,
+    bool? defaultEventIsPrivate,
   }) {
     return PrivacySettings(
       allowTimelineMerging: allowTimelineMerging ?? this.allowTimelineMerging,
       allowLocationSharing: allowLocationSharing ?? this.allowLocationSharing,
       allowFaceDetection: allowFaceDetection ?? this.allowFaceDetection,
-      defaultEventPrivacy: defaultEventPrivacy ?? this.defaultEventPrivacy,
+      defaultEventIsPrivate: defaultEventIsPrivate ?? this.defaultEventIsPrivate,
     );
   }
 
@@ -124,16 +124,18 @@ class PrivacySettings {
           allowTimelineMerging == other.allowTimelineMerging &&
           allowLocationSharing == other.allowLocationSharing &&
           allowFaceDetection == other.allowFaceDetection &&
-          defaultEventPrivacy == other.defaultEventPrivacy;
+          defaultEventIsPrivate == other.defaultEventIsPrivate;
 
   @override
   int get hashCode =>
       allowTimelineMerging.hashCode ^
       allowLocationSharing.hashCode ^
       allowFaceDetection.hashCode ^
-      defaultEventPrivacy.hashCode;
+      defaultEventIsPrivate.hashCode;
 }
 
+/// Legacy privacy level enum - kept temporarily for migration
+/// Will be removed once all references are updated
 enum PrivacyLevel {
   @JsonValue('private')
   private,

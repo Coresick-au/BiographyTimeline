@@ -1,11 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 import 'migration_001_initial_schema.dart';
 import 'migration_002_custom_templates.dart';
+import 'migration_003_family_first_simplification.dart';
 
 class MigrationRunner {
   static final List<Migration> _migrations = [
     Migration001InitialSchema(),
     Migration002CustomTemplates(),
+    Migration003FamilyFirstSimplification(),
   ];
 
   static Future<void> runMigrations(Database db, int fromVersion, int toVersion) async {

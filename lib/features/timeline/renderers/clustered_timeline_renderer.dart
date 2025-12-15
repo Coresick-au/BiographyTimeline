@@ -323,19 +323,20 @@ class ClusteredTimelineRenderer extends BaseTimelineRenderer {
     TimelineEventCallback? onEventLongPress,
     TimelineContextCallback? onContextTap,
   }) {
-    final context = data.contexts.firstWhere(
-      (ctx) => ctx.id == event.contextId,
-      orElse: () => Context(
-        id: 'default',
-        ownerId: event.ownerId,
-        type: ContextType.person,
-        name: 'Default',
-        moduleConfiguration: {},
-        themeId: 'default',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-    );
+    // Events are associated with contexts through tags
+    // For now, use the first available context or a default
+    final context = data.contexts.isNotEmpty
+        ? data.contexts.first
+        : Context(
+            id: 'default',
+            ownerId: event.ownerId,
+            type: ContextType.person,
+            name: 'Default',
+            moduleConfiguration: {},
+            themeId: 'default',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
 
     return Container(
       padding: const EdgeInsets.all(12),

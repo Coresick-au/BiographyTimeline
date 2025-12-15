@@ -25,7 +25,7 @@ class UsersTimelineApp extends ConsumerWidget {
   Widget _buildApp(BuildContext context, WidgetRef ref) {
     // Watch the new design system theme
     final themeData = ref.watch(appThemeDataProvider);
-    final themeMode = ref.watch(themeModeProvider);
+    final themeMode = ThemeMode.dark; // Use dark mode for Family-First MVP
     
     // Create proper dark theme
     final darkThemeData = AppThemes.dark.toThemeData();

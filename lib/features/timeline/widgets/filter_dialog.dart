@@ -284,10 +284,7 @@ class FilterCriteria {
       return false;
     }
 
-    // Check context filter
-    if (contextId != null && event.contextId != contextId) {
-      return false;
-    }
+    // Context filter removed in Family-First MVP - all events are family events
 
     // Check date range filter
     if (dateRange != null) {

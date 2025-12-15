@@ -14,7 +14,7 @@ class TimelineFilterService {
   List<TimelineEvent> filterEvents({
     required List<TimelineEvent> events,
     required bool showPrivateEvents,
-    String? activeContextId,
+    List<String>? filterTags,
     DateTime? startDate,
     DateTime? endDate,
     String? eventFilter,
@@ -33,13 +33,13 @@ class TimelineFilterService {
     // Filter by private events setting
     if (!showPrivateEvents) {
       filteredEvents = filteredEvents.where((event) => 
-        event.privacyLevel != PrivacyLevel.private).toList();
+        !event.isPrivate).toList();
     }
 
-    // Filter by active context
-    if (activeContextId != null) {
+    // Filter by tags
+    if (filterTags != null && filterTags.isNotEmpty) {
       filteredEvents = filteredEvents.where((event) => 
-        event.contextId == activeContextId).toList();
+        event.tags.any((tag) => filterTags.contains(tag))).toList();
     }
 
     // Filter by date range

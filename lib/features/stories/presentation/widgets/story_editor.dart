@@ -84,18 +84,10 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(16),
-              child: QuillEditor.basic(
+              child: QuillEditor(
                 controller: _controller,
-                configurations: QuillEditorConfigurations(
-                  placeholder: 'Tell your story...',
-                  padding: const EdgeInsets.all(16),
-                  autoFocus: true,
-                  expands: true,
-                  scrollable: true,
-                  customStyles: _buildCustomStyles(),
-                ),
-                focusNode: _focusNode,
                 scrollController: _scrollController,
+                focusNode: _focusNode,
               ),
             ),
           ),
@@ -119,78 +111,7 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
         ),
       ),
       child: QuillSimpleToolbar(
-        configurations: QuillSimpleToolbarConfigurations(
-          controller: _controller,
-          showBoldButton: true,
-          showItalicButton: true,
-          showUnderLineButton: true,
-          showStrikeThrough: true,
-          showColorButton: true,
-          showBackgroundColorButton: true,
-          showHeaderStyle: true,
-          showListNumbers: true,
-          showListBullets: true,
-          showQuote: true,
-          showLink: true,
-          showUndo: true,
-          showRedo: true,
-          showDirection: false,
-          showSearchButton: false,
-          customButtons: [
-            QuillToolbarCustomButtonOptions(
-              icon: Icon(Icons.photo),
-              onPressed: _showMediaPicker,
-              tooltip: 'Insert Photo',
-            ),
-            QuillToolbarCustomButtonOptions(
-              icon: Icon(Icons.videocam),
-              onPressed: () => _showMediaPicker(mediaType: 'video'),
-              tooltip: 'Insert Video',
-            ),
-            QuillToolbarCustomButtonOptions(
-              icon: Icon(Icons.audiotrack),
-              onPressed: () => _showMediaPicker(mediaType: 'audio'),
-              tooltip: 'Insert Audio',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Build custom text styles for mobile reading
-  DefaultStyles _buildCustomStyles() {
-    final theme = Theme.of(context);
-    return DefaultStyles(
-      h1: DefaultTextBlockStyle(
-        theme.textTheme.headlineMedium!.copyWith(
-          fontWeight: FontWeight.bold,
-          height: 1.3,
-        ),
-        const VerticalSpacing(16, 8),
-        const VerticalSpacing(0, 0),
-        null,
-        const TextStyle(color: Colors.black),
-      ),
-      h2: DefaultTextBlockStyle(
-        theme.textTheme.headlineSmall!.copyWith(
-          fontWeight: FontWeight.bold,
-          height: 1.3,
-        ),
-        const VerticalSpacing(12, 6),
-        const VerticalSpacing(0, 0),
-        null,
-        const TextStyle(color: Colors.black),
-      ),
-      paragraph: DefaultTextBlockStyle(
-        theme.textTheme.bodyLarge!.copyWith(
-          height: 1.6, // Optimized line height for mobile reading
-          fontSize: 16,
-        ),
-        const VerticalSpacing(8, 8),
-        const VerticalSpacing(0, 0),
-        null,
-        const TextStyle(color: Colors.black),
+        controller: _controller,
       ),
     );
   }

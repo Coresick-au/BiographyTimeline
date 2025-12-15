@@ -575,7 +575,7 @@ class _ConsentManagementScreenState extends ConsumerState<ConsentManagementScree
     
     try {
       final consentService = ref.read(consentServiceProvider);
-      final updatedPreferences = _userPreferences!.copyWith();
+      var updatedPreferences = _userPreferences!.copyWith();
       
       switch (key) {
         case 'requireExplicitConsent':

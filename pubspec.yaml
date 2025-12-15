@@ -40,6 +40,7 @@ dependencies:
   
   # Semantic Search
   sqlite3_flutter_libs: ^0.5.15
+  sqflite_common_ffi_web: ^0.4.2+2
   
   # Data Export
   flutter_quill_to_pdf: ^2.3.9
@@ -64,6 +65,9 @@ dependencies:
   
   # UI Components
   flutter_staggered_grid_view: ^0.7.0
+  
+  # Data Sync (Family-First MVP)
+  powersync: ^1.5.0
 
 dev_dependencies:
   flutter_test:

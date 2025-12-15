@@ -25,6 +25,9 @@ class TimelineRepository {
   Future<List<TimelineEvent>> getEvents() async {
     try {
       final maps = await _database.query('timeline_events');
+      if (maps.isEmpty) {
+        return []; // Return empty list instead of trying to map nothing
+      }
       return maps.map(_mapToTimelineEvent).toList();
     } catch (e, stackTrace) {
       await _errorService.logError(
@@ -33,7 +36,8 @@ class TimelineRepository {
         context: 'Failed to get timeline events',
         metadata: {'operation': 'getEvents'},
       );
-      rethrow;
+      // Return empty list instead of rethrowing to allow app to show empty state
+      return [];
     }
   }
 
@@ -41,6 +45,9 @@ class TimelineRepository {
   Future<List<Context>> getContexts() async {
     try {
       final maps = await _database.query('contexts');
+      if (maps.isEmpty) {
+        return []; // Return empty list instead of trying to map nothing
+      }
       return maps.map(_mapToContext).toList();
     } catch (e, stackTrace) {
       await _errorService.logError(
@@ -49,7 +56,8 @@ class TimelineRepository {
         context: 'Failed to get contexts',
         metadata: {'operation': 'getContexts'},
       );
-      rethrow;
+      // Return empty list instead of rethrowing to allow app to show empty state
+      return [];
     }
   }
 
@@ -95,7 +103,7 @@ class TimelineRepository {
         metadata: {
           'operation': 'addEvent',
           'eventId': event.id,
-          'contextId': event.contextId,
+          'tags': event.tags.join(', '),
         },
         showToUser: true,
       );
@@ -301,31 +309,44 @@ class TimelineRepository {
 
   /// Maps a database row to a TimelineEvent
   TimelineEvent _mapToTimelineEvent(Map<String, dynamic> map) {
-    return TimelineEvent(
-      id: map['id'] as String,
-      contextId: map['context_id'] as String,
-      ownerId: map['owner_id'] as String,
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
-      eventType: map['event_type'] as String,
-      title: map['title'] as String?,
-      description: map['description'] as String?,
-      customAttributes: DatabaseJsonHelper.jsonToMap(map['custom_attributes'] as String),
-      location: map['location'] != null
-          ? GeoLocation.fromJson(DatabaseJsonHelper.jsonToMap(map['location'] as String))
-          : null,
-      participantIds: DatabaseJsonHelper.jsonToStringList(map['participant_ids'] as String),
-      privacyLevel: _parsePrivacyLevel(map['privacy_level'] as String),
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
-      assets: [], // TODO: Load assets from media_assets table when needed
-    );
+    try {
+      return TimelineEvent(
+        id: map['id'] as String,
+        tags: map['tags'] != null 
+            ? DatabaseJsonHelper.jsonToStringList(map['tags'] as String)
+            : ['Family'],
+        ownerId: map['owner_id'] as String,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+        eventType: map['event_type'] as String,
+        title: map['title'] as String?,
+        description: map['description'] as String?,
+        customAttributes: map['custom_attributes'] != null
+            ? DatabaseJsonHelper.jsonToMap(map['custom_attributes'] as String)
+            : {},
+        location: map['location'] != null
+            ? GeoLocation.fromJson(DatabaseJsonHelper.jsonToMap(map['location'] as String))
+            : null,
+        participantIds: map['participant_ids'] != null
+            ? DatabaseJsonHelper.jsonToStringList(map['participant_ids'] as String)
+            : [],
+        isPrivate: map['is_private'] == 1,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
+        assets: [], // TODO: Load assets from media_assets table when needed
+      );
+    } catch (e) {
+      // Log the error but don't crash - return a minimal valid event
+      print('Error mapping timeline event: $e');
+      print('Map data: $map');
+      rethrow; // Rethrow to be caught by the calling function
+    }
   }
 
   /// Maps a TimelineEvent to a database row
   Map<String, dynamic> _timelineEventToMap(TimelineEvent event) {
     return {
       'id': event.id,
-      'context_id': event.contextId,
+      'tags': DatabaseJsonHelper.stringListToJson(event.tags),
       'owner_id': event.ownerId,
       'timestamp': event.timestamp.millisecondsSinceEpoch,
       'event_type': event.eventType,
@@ -336,7 +357,7 @@ class TimelineRepository {
           ? DatabaseJsonHelper.mapToJson(event.location!.toJson())
           : null,
       'participant_ids': DatabaseJsonHelper.stringListToJson(event.participantIds),
-      'privacy_level': event.privacyLevel.name,
+      'is_private': event.isPrivate ? 1 : 0,
       'created_at': event.createdAt.millisecondsSinceEpoch,
       'updated_at': event.updatedAt.millisecondsSinceEpoch,
     };
@@ -344,20 +365,28 @@ class TimelineRepository {
 
   /// Maps a database row to a Context
   Context _mapToContext(Map<String, dynamic> map) {
-    return Context(
-      id: map['id'] as String,
-      ownerId: map['owner_id'] as String,
-      type: ContextType.values.firstWhere(
-        (type) => type.name == map['type'] as String,
-        orElse: () => ContextType.person,
-      ),
-      name: map['name'] as String,
-      description: map['description'] as String?,
-      moduleConfiguration: DatabaseJsonHelper.jsonToMap(map['module_configuration'] as String),
-      themeId: map['theme_id'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
-    );
+    try {
+      return Context(
+        id: map['id'] as String,
+        ownerId: map['owner_id'] as String,
+        type: ContextType.values.firstWhere(
+          (e) => e.toString() == 'ContextType.${map['type']}',
+          orElse: () => ContextType.person,
+        ),
+        name: map['name'] as String,
+        description: map['description'] as String?,
+        moduleConfiguration: map['module_configuration'] != null
+            ? DatabaseJsonHelper.jsonToMap(map['module_configuration'] as String)
+            : {},
+        themeId: map['theme_id'] as String,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
+      );
+    } catch (e) {
+      print('Error mapping context: $e');
+      print('Map data: $map');
+      rethrow;
+    }
   }
 
   /// Maps a Context to a database row
@@ -365,7 +394,7 @@ class TimelineRepository {
     return {
       'id': context.id,
       'owner_id': context.ownerId,
-      'type': context.type.name,
+      'type': context.type.toString().split('.').last,
       'name': context.name,
       'description': context.description,
       'module_configuration': DatabaseJsonHelper.mapToJson(context.moduleConfiguration),
@@ -374,99 +403,11 @@ class TimelineRepository {
       'updated_at': context.updatedAt.millisecondsSinceEpoch,
     };
   }
-
-  /// Parse privacy level from string
-  PrivacyLevel _parsePrivacyLevel(String value) {
-    return PrivacyLevel.values.firstWhere(
-      (level) => level.name == value,
-      orElse: () => PrivacyLevel.public,
-    );
-  }
 }
 
 /// Provider for the Timeline Repository
-final timelineRepositoryProvider = Provider((ref) {
-  // Use a lazy async pattern
-  return LazyTimelineRepository();
+final timelineRepositoryProvider = FutureProvider<TimelineRepository>((ref) async {
+  final database = await AppDatabase.database;
+  return TimelineRepository(database, ErrorService.instance, LoadingService());
 });
 
-/// Lazy initialization wrapper for TimelineRepository
-class LazyTimelineRepository {
-  TimelineRepository? _inner;
-  
-  TimelineRepository get _repo {
-    return _inner ??= throw Exception('Repository not initialized - call initialize() first');
-  }
-
-  Future<void> initialize() async {
-    if (_inner == null) {
-      final database = await AppDatabase.database;
-      _inner = TimelineRepository(database, ErrorService.instance, LoadingService());
-    }
-  }
-
-  Future<List<TimelineEvent>> getEvents() async {
-    await initialize();
-    return _repo.getEvents();
-  }
-
-  Future<List<Context>> getContexts() async {
-    await initialize();
-    return _repo.getContexts();
-  }
-
-  Future<List<TimelineEvent>> getEventsForContext(String contextId) async {
-    await initialize();
-    return _repo.getEventsForContext(contextId);
-  }
-
-  Future<List<TimelineEvent>> getEventsInRange(DateTime start, DateTime end) async {
-    await initialize();
-    return _repo.getEventsInRange(start, end);
-  }
-
-  Future<void> addEvent(TimelineEvent event) async {
-    await initialize();
-    return _repo.addEvent(event);
-  }
-
-  Future<void> updateEvent(TimelineEvent event) async {
-    await initialize();
-    return _repo.updateEvent(event);
-  }
-
-  Future<void> removeEvent(String eventId) async {
-    await initialize();
-    return _repo.removeEvent(eventId);
-  }
-
-  Future<void> addContext(Context context) async {
-    await initialize();
-    return _repo.addContext(context);
-  }
-
-  Future<void> updateContext(Context context) async {
-    await initialize();
-    return _repo.updateContext(context);
-  }
-
-  Future<void> removeContext(String contextId) async {
-    await initialize();
-    return _repo.removeContext(contextId);
-  }
-
-  Future<List<TimelineEvent>> searchEvents(String query) async {
-    await initialize();
-    return _repo.searchEvents(query);
-  }
-
-  Future<Map<String, int>> getEventCountPerContext() async {
-    await initialize();
-    return _repo.getEventCountPerContext();
-  }
-
-  Future<Map<String, dynamic>> getStatistics() async {
-    await initialize();
-    return _repo.getStatistics();
-  }
-}

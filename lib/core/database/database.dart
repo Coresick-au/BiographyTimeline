@@ -1,22 +1,43 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'migrations/migration_runner.dart';
 
 class AppDatabase {
   static Database? _database;
   static const String _databaseName = 'users_timeline.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
+  static bool _initialized = false;
+
+  /// Initialize database factory for web platform
+  static Future<void> _initializeDatabaseFactory() async {
+    if (_initialized) return;
+    
+    if (kIsWeb) {
+      // Initialize database factory for web
+      databaseFactory = databaseFactoryFfiWeb;
+    }
+    _initialized = true;
+  }
 
   static Future<Database> get database async {
+    await _initializeDatabaseFactory();
     _database ??= await _initDatabase();
     return _database!;
   }
 
   static Future<Database> _initDatabase() async {
-    final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, _databaseName);
+    // On web, getDatabasesPath() returns null, so we use just the database name
+    final String path;
+    if (kIsWeb) {
+      path = _databaseName;
+    } else {
+      final databasesPath = await getDatabasesPath();
+      path = join(databasesPath, _databaseName);
+    }
 
     return await openDatabase(
       path,

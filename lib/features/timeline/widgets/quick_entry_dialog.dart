@@ -8,14 +8,14 @@ import '../../media/widgets/fuzzy_date_picker.dart';
 /// Dialog for creating quick text-only timeline entries
 class QuickEntryDialog extends StatefulWidget {
   final ContextType contextType;
-  final String contextId;
+  final List<String> tags;
   final String ownerId;
   final Function(TimelineEvent) onEventCreated;
 
   const QuickEntryDialog({
     super.key,
     required this.contextType,
-    required this.contextId,
+    required this.tags,
     required this.ownerId,
     required this.onEventCreated,
   });
@@ -275,9 +275,6 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
           // Quill toolbar
           QuillSimpleToolbar(
             controller: _quillController,
-            configurations: const QuillSimpleToolbarConfigurations(
-              locale: Locale('en'),
-            ),
           ),
           
           const SizedBox(height: 8),
@@ -289,12 +286,10 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
                 border: Border.all(color: Theme.of(context).colorScheme.outline),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: QuillEditor.basic(
+              child: QuillEditor(
                 controller: _quillController,
-                configurations: const QuillEditorConfigurations(
-                  placeholder: 'Write your story here...',
-                  locale: Locale('en'),
-                ),
+                scrollController: ScrollController(),
+                focusNode: FocusNode(),
               ),
             ),
           ),
@@ -360,7 +355,7 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
       // Create the timeline event
       final event = TimelineEvent.create(
         id: 'quick_${DateTime.now().millisecondsSinceEpoch}',
-        contextId: widget.contextId,
+        tags: widget.tags,
         ownerId: widget.ownerId,
         timestamp: timestamp,
         fuzzyDate: _usePreciseDate ? null : _selectedFuzzyDate,

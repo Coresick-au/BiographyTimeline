@@ -232,19 +232,20 @@ class StoryTimelineRenderer extends BaseTimelineRenderer {
     TimelineEvent event,
     TimelineEventCallback? onEventTap,
   ) {
-    final context = data.contexts.firstWhere(
-      (ctx) => ctx.id == event.contextId,
-      orElse: () => Context(
-        id: 'default',
-        ownerId: event.ownerId,
-        type: ContextType.person,
-        name: 'Default',
-        moduleConfiguration: {},
-        themeId: 'default',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-    );
+    // Events are associated with contexts through tags
+    // For now, use a default context or find by matching tag
+    final context = data.contexts.isNotEmpty
+        ? data.contexts.first
+        : Context(
+            id: 'default',
+            ownerId: event.ownerId,
+            type: ContextType.person,
+            name: 'Default',
+            moduleConfiguration: {},
+            themeId: 'default',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
 
     final theme = TimelineTheme(
       id: 'story',
