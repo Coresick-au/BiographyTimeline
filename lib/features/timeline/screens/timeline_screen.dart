@@ -162,6 +162,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             );
           },
         ),
+            ),
+          );
+        },
       ),
     );
   }
