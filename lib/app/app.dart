@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'navigation/main_navigation.dart';
-import '../shared/providers/design_system_provider.dart';
 import '../shared/providers/theme_provider.dart';
-import '../shared/design_system/theme_engine.dart';
-import '../shared/design_system/app_theme.dart';
 import '../shared/widgets/loading_widgets.dart';
 
 class UsersTimelineApp extends ConsumerWidget {
@@ -12,29 +9,18 @@ class UsersTimelineApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Initialize the design system theme manager
-    final themeInitialization = ref.watch(themeInitializationProvider);
-    
-    return themeInitialization.when(
-      data: (_) => _buildApp(context, ref),
-      loading: () => _buildLoadingApp(),
-      error: (error, stack) => _buildErrorApp(error),
-    );
+    return _buildApp(context, ref);
   }
 
   Widget _buildApp(BuildContext context, WidgetRef ref) {
-    // Watch the new design system theme
-    final themeData = ref.watch(appThemeDataProvider);
-    final themeMode = ThemeMode.dark; // Use dark mode for Family-First MVP
-    
-    // Create proper dark theme
-    final darkThemeData = AppThemes.dark.toThemeData();
+    // Watch the current theme from our new theme system
+    final themeData = ref.watch(themeDataProvider);
     
     return MaterialApp(
-      title: 'Users Timeline',
+      title: 'Timeline Biography',
       theme: themeData,
-      darkTheme: darkThemeData,
-      themeMode: themeMode,
+      darkTheme: themeData, // Use same theme for both modes (theme handles its own brightness)
+      themeMode: ThemeMode.dark, // Let the theme control its appearance
       home: LoadingOverlay(
         child: const EnhancedNavigation(),
       ),
