@@ -15,9 +15,13 @@ class ConflictResolutionService {
   final OfflineDatabaseService _databaseService;
   final Uuid _uuid = const Uuid();
 
+  final Future<Map<String, dynamic>?> Function(String tableName, String recordId)? _baseRecordFetcher;
+
   ConflictResolutionService({
     required OfflineDatabaseService databaseService,
-  }) : _databaseService = databaseService;
+    Future<Map<String, dynamic>?> Function(String tableName, String recordId)? baseRecordFetcher,
+  }) : _databaseService = databaseService,
+       _baseRecordFetcher = baseRecordFetcher;
 
   /// Detect conflicts between local and remote data
   Future<List<SyncConflict>> detectConflicts(
@@ -145,6 +149,9 @@ class ConflictResolutionService {
 
   /// Get base record for 3-way merge
   Future<Map<String, dynamic>?> _getBaseRecord(String tableName, String recordId) async {
+    if (_baseRecordFetcher != null) {
+      return _baseRecordFetcher!(tableName, recordId);
+    }
     // In a real implementation, this would fetch the last common ancestor
     // For now, we'll return null (base case)
     return null;

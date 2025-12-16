@@ -19,12 +19,12 @@ void initializeTestDatabase() {
 
 class FakePathProviderPlatform extends Fake with MockPlatformInterfaceMixin implements PathProviderPlatform {
   @override
-  Future<String?> getApplicationDocumentsDirectory() async {
+  Future<String?> getApplicationDocumentsPath() async {
     return Directory.systemTemp.path;
   }
   
   @override
-  Future<String?> getTemporaryDirectory() async {
+  Future<String?> getTemporaryPath() async {
     return Directory.systemTemp.path;
   }
 }

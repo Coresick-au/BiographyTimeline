@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:legacy_flow/features/timeline/services/timeline_renderer_interface.dart';
+import 'package:legacy_flow/features/timeline/services/timeline_renderer_interface.dart' hide ClusterType;
 import 'package:legacy_flow/features/timeline/services/timeline_renderer_factory.dart';
 import 'package:legacy_flow/features/timeline/renderers/chronological_timeline_renderer.dart';
 import 'package:legacy_flow/features/timeline/renderers/clustered_timeline_renderer.dart';

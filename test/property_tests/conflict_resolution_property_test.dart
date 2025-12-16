@@ -25,10 +25,16 @@ void main() {
     late ConflictResolutionService conflictService;
     const uuid = Uuid();
 
+    final mockBaseRecords = <String, Map<String, dynamic>>{};
+
     setUp(() {
+      mockBaseRecords.clear();
       final databaseService = OfflineDatabaseService();
       conflictService = ConflictResolutionService(
         databaseService: databaseService,
+        baseRecordFetcher: (tableName, recordId) async {
+          return mockBaseRecords[recordId];
+        },
       );
     });
 
@@ -52,6 +58,7 @@ void main() {
         },
       ];
       
+
       final remoteRecords = [
         {
           'id': 'event1',
@@ -60,6 +67,14 @@ void main() {
           'version': 3,
         },
       ];
+
+      // Set base record (v1)
+      mockBaseRecords['event1'] = {
+        'id': 'event1',
+        'title': 'Original Title',
+        'description': 'Local Description',
+        'version': 1,
+      };
 
       // Act
       final conflicts = await conflictService.detectConflicts(
@@ -89,6 +104,7 @@ void main() {
         },
       ];
       
+
       final remoteRecords = [
         {
           'id': 'event1',
@@ -97,6 +113,14 @@ void main() {
           'version': 1,
         },
       ];
+
+      // Set base record (v1 - same as remote)
+      mockBaseRecords['event1'] = {
+        'id': 'event1',
+        'title': 'Same Title',
+        'description': 'Original Description',
+        'version': 1,
+      };
 
       // Act
       final conflicts = await conflictService.detectConflicts(
