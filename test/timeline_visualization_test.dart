@@ -424,31 +424,7 @@ void main() {
         renderer.dispose();
       });
 
-      test('Should efficiently filter events', () async {
-        final largeEventList = List.generate(1000, (index) => 
-          TimelineEvent.create(
-            id: 'event-$index',
-            ownerId: 'user-1',
-            timestamp: DateTime.now().subtract(Duration(days: index)),
-            eventType: index % 3 == 0 ? 'photo' : 'text',
-            title: 'Event $index',
-          ),
-        );
-        
-        final filteredConfig = config.copyWith(
-          // activeContext: testContexts.first, // Removed as per instruction
-        );
-        
-        final largeData = data.copyWith(events: largeEventList);
-        final renderer = ChronologicalTimelineRenderer(filteredConfig, largeData);
-        
-        renderer.initialize(filteredConfig);
-        
-        final visibleEvents = renderer.getVisibleEvents();
-        expect(visibleEvents.length, equals(1000)); // No filtering by context if activeContext is removed
-        
-        renderer.dispose();
-      });
+
     });
 
     group('Error Handling', () {

@@ -18,8 +18,8 @@ class SemanticSearchService {
   
   SemanticSearchService._();
 
-  Database? _searchDb;
-  bool _isInitialized = false;
+  Database? searchDb;
+  bool isInitialized = false;
 
   // Semantic expansion mappings
   static const Map<String, List<String>> _semanticMap = {
@@ -52,21 +52,21 @@ class SemanticSearchService {
   // =========================================================================
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (isInitialized) return;
 
     try {
       final dbPath = await getDatabasesPath();
       final path = join(dbPath, 'semantic_search.db');
 
       // Initialize with FTS5 support
-      _searchDb = await openDatabase(
+      searchDb = await openDatabase(
         path,
         version: 1,
         onCreate: _createSearchTables,
         onConfigure: _configureDatabase,
       );
 
-      _isInitialized = true;
+      isInitialized = true;
     } catch (e) {
       throw SemanticSearchException('Failed to initialize semantic search: $e');
     }
@@ -172,7 +172,7 @@ class SemanticSearchService {
       peopleNames: peopleNames,
     );
 
-    await _searchDb!.insert(
+    await searchDb!.insert(
       'content_search',
       {
         'id': asset.id,
@@ -202,13 +202,13 @@ class SemanticSearchService {
       description: event.description,
       caption: null,
       tags: event.tags,
-      locationName: event.location?.name,
-      eventType: event.type.toString(),
-      dateText: _formatDateForSearch(event.startDate),
+      locationName: event.location?.locationName,
+      eventType: event.eventType,
+      dateText: _formatDateForSearch(event.timestamp),
       peopleNames: peopleNames,
     );
 
-    await _searchDb!.insert(
+    await searchDb!.insert(
       'content_search',
       {
         'id': event.id,
@@ -217,9 +217,9 @@ class SemanticSearchService {
         'description': event.description ?? '',
         'caption': '',
         'tags': event.tags.join(' '),
-        'location_name': event.location?.name ?? '',
-        'event_type': event.type.toString(),
-        'date_text': _formatDateForSearch(event.startDate),
+        'location_name': event.location?.locationName ?? '',
+        'event_type': event.eventType,
+        'date_text': _formatDateForSearch(event.timestamp),
         'people_names': peopleNames?.join(' ') ?? '',
         'content': content,
       },
@@ -231,7 +231,7 @@ class SemanticSearchService {
   Future<void> indexBatch(List<SearchIndexItem> items) async {
     await ensureInitialized();
 
-    final batch = _searchDb!.batch();
+    final batch = searchDb!.batch();
     
     for (final item in items) {
       final content = _buildSearchContent(
@@ -286,7 +286,7 @@ class SemanticSearchService {
     final ftsQuery = _buildFTSQuery(expandedQuery, filters);
     
     // Execute search
-    final results = await _searchDb!.rawQuery('''
+    final results = await searchDb!.rawQuery('''
       SELECT 
         id,
         type,
@@ -337,7 +337,7 @@ class SemanticSearchService {
 
     if (partialQuery.length < 2) return [];
 
-    final results = await _searchDb!.rawQuery('''
+    final results = await searchDb!.rawQuery('''
       SELECT DISTINCT title 
       FROM content_search 
       WHERE title MATCH ?*
@@ -351,7 +351,7 @@ class SemanticSearchService {
   Future<List<String>> getTrendingSearches({int limit = 10}) async {
     await ensureInitialized();
 
-    final results = await _searchDb!.rawQuery('''
+    final results = await searchDb!.rawQuery('''
       SELECT query, COUNT(*) as count
       FROM search_history
       WHERE timestamp > ?
@@ -375,7 +375,7 @@ class SemanticSearchService {
       expandedWords.add(word);
       
       // Get semantic expansions
-      final expansions = await _searchDb!.query(
+      final expansions = await searchDb!.query(
         'semantic_expansions',
         where: 'term = ?',
         whereArgs: [word],
@@ -485,7 +485,7 @@ class SemanticSearchService {
   }
 
   Future<void> _saveSearchHistory(String query, int resultsCount) async {
-    await _searchDb!.insert('search_history', {
+    await searchDb!.insert('search_history', {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'query': query,
       'results_count': resultsCount,
@@ -494,7 +494,7 @@ class SemanticSearchService {
   }
 
   Future<void> ensureInitialized() async {
-    if (!_isInitialized) {
+    if (!isInitialized) {
       await initialize();
     }
   }
@@ -508,27 +508,27 @@ class SemanticSearchService {
     await ensureInitialized();
     
     // Drop and recreate tables
-    await _searchDb!.execute('DROP TABLE IF EXISTS content_search');
-    await _createSearchTables(_searchDb!, 1);
+    await searchDb!.execute('DROP TABLE IF EXISTS content_search');
+    await _createSearchTables(searchDb!, 1);
   }
 
   /// Clear search history
   Future<void> clearHistory() async {
     await ensureInitialized();
-    await _searchDb!.delete('search_history');
+    await searchDb!.delete('search_history');
   }
 
   /// Optimize search database
   Future<void> optimize() async {
     await ensureInitialized();
-    await _searchDb!.execute('INSERT INTO content_search(content_search) VALUES(\'optimize\')');
+    await searchDb!.execute('INSERT INTO content_search(content_search) VALUES(\'optimize\')');
   }
 
   Future<void> close() async {
-    final db = _searchDb;
+    final db = searchDb;
     if (db != null) {
       await db.close();
-      _searchDb = null;
+      searchDb = null;
     }
   }
 }

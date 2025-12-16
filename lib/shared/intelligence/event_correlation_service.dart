@@ -7,6 +7,8 @@ import 'package:uuid/uuid.dart';
 import '../database/database_service.dart';
 import '../models/media_asset.dart';
 import '../models/timeline_event.dart';
+import '../models/exif_data.dart';
+import '../models/geo_location.dart';
 import '../intelligence/face_detection_service.dart';
 
 /// Service for correlating photos into meaningful events
@@ -16,10 +18,10 @@ class EventCorrelationService {
   final _uuid = const Uuid();
 
   // Weight configuration for correlation factors
-  static const double _timeWeight = 0.5;
-  static const double _locationWeight = 0.3;
-  static const double _peopleWeight = 0.15;
-  static const double _densityWeight = 0.05;
+  static const double timeWeight = 0.5;
+  static const double locationWeight = 0.3;
+  static const double peopleWeight = 0.15;
+  static const double densityWeight = 0.05;
 
   // Thresholds
   static const Duration _maxTimeGap = Duration(hours: 6);
@@ -131,7 +133,7 @@ class EventCorrelationService {
         // Check if photo belongs to current group
         final lastPhoto = currentGroup.photos.last;
         final timeGap = photo.createdAt.difference(lastPhoto.createdAt);
-        final locationDistance = _calculateDistance(lastPhoto, photo);
+        final locationDistance = calculateDistance(lastPhoto, photo);
 
         if (timeGap <= _maxTimeGap && 
             locationDistance <= _maxLocationDistance) {
@@ -157,7 +159,7 @@ class EventCorrelationService {
     return await _mergeGroupsByPeople(groups);
   }
 
-  double _calculateDistance(MediaAsset photo1, MediaAsset photo2) {
+  double calculateDistance(MediaAsset photo1, MediaAsset photo2) {
     if (photo1.location == null || photo2.location == null) {
       return double.infinity;
     }
@@ -165,8 +167,8 @@ class EventCorrelationService {
     final p1 = LatLng(photo1.location!.latitude, photo1.location!.longitude);
     final p2 = LatLng(photo2.location!.latitude, photo2.location!.longitude);
     
-    final DistanceCalculator calculator = const DistanceCalculator();
-    return calculator.distance(p1, p2);
+    const Distance distance = Distance();
+    return distance.as(LengthUnit.Meter, p1, p2);
   }
 
   Future<List<PhotoGroup>> _mergeGroupsByPeople(List<PhotoGroup> groups) async {
@@ -280,7 +282,7 @@ class EventCorrelationService {
     );
   }
 
-  Duration _calculateTimeSpan(List<MediaModel> photos) {
+  Duration _calculateTimeSpan(List<MediaAsset> photos) {
     if (photos.length < 2) return Duration.zero;
     
     final start = photos.first.createdAt;
@@ -288,7 +290,7 @@ class EventCorrelationService {
     return end.difference(start);
   }
 
-  LocationData? _calculateRepresentativeLocation(List<MediaModel> photos) {
+  LocationData? _calculateRepresentativeLocation(List<MediaAsset> photos) {
     final locations = photos
         .map((p) => p.location)
         .where((l) => l != null)
@@ -313,7 +315,7 @@ class EventCorrelationService {
     );
   }
 
-  double _calculatePhotoDensity(List<MediaModel> photos) {
+  double _calculatePhotoDensity(List<MediaAsset> photos) {
     if (photos.length < 2) return 0.0;
     
     final timeSpan = _calculateTimeSpan(photos);
@@ -323,7 +325,7 @@ class EventCorrelationService {
   }
 
   EventType _determineEventType(
-    List<MediaModel> photos,
+    List<MediaAsset> photos,
     Duration timeSpan,
     Set<String> people,
   ) {
@@ -370,19 +372,19 @@ class EventCorrelationService {
     return false;
   }
 
-  bool _isWeekendEvent(List<MediaModel> photos) {
+  bool _isWeekendEvent(List<MediaAsset> photos) {
     return photos.every((p) => 
         p.createdAt.weekday == DateTime.saturday || 
         p.createdAt.weekday == DateTime.sunday);
   }
 
-  bool _isCelebration(List<MediaModel> photos, Set<String> people) {
+  bool _isCelebration(List<MediaAsset> photos, Set<String> people) {
     // High photo density indicates celebration
     final density = _calculatePhotoDensity(photos);
     return density > 20.0; // More than 20 photos per hour
   }
 
-  bool _isTravelEvent(List<MediaModel> photos, Duration timeSpan) {
+  bool _isTravelEvent(List<MediaAsset> photos, Duration timeSpan) {
     if (timeSpan.inDays < 2) return false;
     
     // Check for location changes
@@ -397,9 +399,9 @@ class EventCorrelationService {
     // Calculate total distance traveled
     double totalDistance = 0.0;
     for (int i = 1; i < locations.length; i++) {
-      totalDistance += _calculateDistance(
-        MediaModel(id: '', createdAt: DateTime.now(), location: locations[i-1]),
-        MediaModel(id: '', createdAt: DateTime.now(), location: locations[i]),
+      totalDistance += calculateDistance(
+        MediaAsset(id: '', eventId: '', type: AssetType.photo, localPath: '', isKeyAsset: false, createdAt: DateTime.now(), exifData: ExifData(gpsLocation: GeoLocation(latitude: locations[i-1].latitude, longitude: locations[i-1].longitude))),
+        MediaAsset(id: '', eventId: '', type: AssetType.photo, localPath: '', isKeyAsset: false, createdAt: DateTime.now(), exifData: ExifData(gpsLocation: GeoLocation(latitude: locations[i].latitude, longitude: locations[i].longitude))),
       );
     }
     
@@ -408,7 +410,7 @@ class EventCorrelationService {
 
   String _generateEventTitle(
     EventType type,
-    List<MediaModel> photos,
+    List<MediaAsset> photos,
     LocationData? location,
   ) {
     switch (type) {
@@ -458,19 +460,19 @@ class EventCorrelationService {
     
     // Time score (shorter time span is better)
     final timeScore = max(0.0, 1.0 - (timeSpan.inHours / 24.0));
-    score += timeScore * _timeWeight;
+    score += timeScore * timeWeight;
     
     // Location score (specific location is better)
     final locationScore = location != null ? 1.0 : 0.5;
-    score += locationScore * _locationWeight;
+    score += locationScore * locationWeight;
     
     // People score (more people is better up to a point)
     final peopleScore = min(1.0, people.length / 10.0);
-    score += peopleScore * _peopleWeight;
+    score += peopleScore * peopleWeight;
     
     // Density score (higher density is better)
     final densityScore = min(1.0, density / 30.0);
-    score += densityScore * _densityWeight;
+    score += densityScore * densityWeight;
     
     // Photo count bonus
     if (photoCount >= 10) score += 0.1;
@@ -514,10 +516,10 @@ class EventCorrelationService {
     // Simple weight adjustment
     final adjustment = accepted ? 0.01 : -0.01;
     
-    _userWeights['time'] = (_userWeights['time'] ?? _timeWeight) + adjustment;
-    _userWeights['location'] = (_userWeights['location'] ?? _locationWeight) + adjustment;
-    _userWeights['people'] = (_userWeights['people'] ?? _peopleWeight) + adjustment;
-    _userWeights['density'] = (_userWeights['density'] ?? _densityWeight) + adjustment;
+    _userWeights['time'] = (_userWeights['time'] ?? timeWeight) + adjustment;
+    _userWeights['location'] = (_userWeights['location'] ?? locationWeight) + adjustment;
+    _userWeights['people'] = (_userWeights['people'] ?? peopleWeight) + adjustment;
+    _userWeights['density'] = (_userWeights['density'] ?? densityWeight) + adjustment;
     
     // Normalize weights
     _normalizeWeights();
@@ -572,7 +574,7 @@ class EventCorrelationService {
     return allSuggestions;
   }
 
-  Future<List<MediaModel>> _getAllPhotos() async {
+  Future<List<MediaAsset>> _getAllPhotos() async {
     // Implementation would get all photos from database
     return [];
   }
@@ -670,4 +672,16 @@ final eventCorrelationServiceProvider = Provider<EventCorrelationService>((ref) 
   final dbService = ref.watch(databaseServiceProvider);
   return EventCorrelationService(dbService);
 });
+
+extension MediaAssetLocation on MediaAsset {
+  LocationData? get location {
+    final gps = exifData?.gpsLocation;
+    if (gps == null) return null;
+    return LocationData(
+      latitude: gps.latitude,
+      longitude: gps.longitude,
+      accuracy: gps.accuracy,
+    );
+  }
+}
 

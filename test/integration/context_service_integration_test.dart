@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import '../../lib/shared/models/context.dart';
-import '../../lib/features/context/services/context_management_service.dart';
+import '../helpers/mock_context_service.dart';
 
 /// Integration test for ContextManagementService
 /// This verifies the service works correctly with the Context model

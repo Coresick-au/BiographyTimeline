@@ -306,9 +306,9 @@ class DataExportService {
         font: PdfFont.helvetica(),
       );
       
-      if (event.startDate != null) {
+      if (event.timestamp != null) {
         page.drawText(
-          '   ${_formatDate(event.startDate!)}',
+          '   ${_formatDate(event.timestamp!)}',
           x: 50,
           y: yPosition + 15,
           fontSize: 12,
@@ -343,9 +343,9 @@ class DataExportService {
     yPosition += 30;
     
     // Add date
-    if (event.startDate != null) {
+    if (event.timestamp != null) {
       page.drawText(
-        _formatDate(event.startDate!),
+        _formatDate(event.timestamp!),
         x: 50,
         y: yPosition,
         fontSize: 14,
@@ -357,7 +357,7 @@ class DataExportService {
     // Add location
     if (event.location != null) {
       page.drawText(
-        '📍 ${event.location!.name}',
+        '📍 ${event.location!.locationName ?? ""}',
         x: 50,
         y: yPosition,
         fontSize: 12,

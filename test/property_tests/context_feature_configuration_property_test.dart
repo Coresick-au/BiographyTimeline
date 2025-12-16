@@ -3,7 +3,7 @@ import 'package:faker/faker.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import '../helpers/db_test_helper.dart';
 import '../../lib/shared/models/context.dart';
-import '../../lib/features/context/services/context_management_service.dart';
+import '../helpers/mock_context_service.dart';
 
 /// **Feature: users-timeline, Property 16: Context-Based Feature Configuration**
 /// **Validates: Requirements 9.2**
@@ -272,7 +272,6 @@ void main() {
 
 /// In-memory implementation of ContextManagementService used for property tests
 class TestContextManagementService extends ContextManagementService {
-  TestContextManagementService() : super(_StubDatabase());
 
   final Map<String, Context> _contexts = {};
 

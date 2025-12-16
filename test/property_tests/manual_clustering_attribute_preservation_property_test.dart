@@ -382,7 +382,7 @@ TimelineEvent _createEventWithRichCustomAttributes(Faker faker) {
   
   return TimelineEvent.create(
     id: 'rich_event_${DateTime.now().millisecondsSinceEpoch}',
-    contextId: 'test_context',
+
     ownerId: 'test_owner',
     timestamp: faker.date.dateTimeBetween(DateTime(2023, 1, 1), DateTime(2024, 12, 31)),
     eventType: 'renovation_progress',
@@ -411,7 +411,7 @@ List<TimelineEvent> _createMultipleEventsWithCustomAttributes(Faker faker, int c
     
     final event = TimelineEvent.create(
       id: 'multi_event_${i}_${DateTime.now().millisecondsSinceEpoch}',
-      contextId: 'test_context',
+
       ownerId: 'test_owner',
       timestamp: faker.date.dateTimeBetween(DateTime(2023, 1, 1), DateTime(2024, 12, 31)),
       eventType: faker.randomGenerator.element(['renovation_progress', 'pet_milestone', 'business_milestone']),
@@ -467,7 +467,7 @@ TimelineEvent _createEventWithComplexCustomAttributes(Faker faker) {
   
   return TimelineEvent.create(
     id: 'complex_event_${DateTime.now().millisecondsSinceEpoch}',
-    contextId: 'test_context',
+
     ownerId: 'test_owner',
     timestamp: faker.date.dateTimeBetween(DateTime(2023, 1, 1), DateTime(2024, 12, 31)),
     eventType: 'renovation_progress',

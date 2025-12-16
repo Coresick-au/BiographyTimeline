@@ -197,7 +197,7 @@ class MockTimelineRepository {
         timestamp: DateTime(1999, 8, 10),
         eventType: 'text',
         title: 'First Part-Time Job',
-        description: 'Got a job at the local servo pumping petrol. $6.50 an hour felt like being rich!',
+        description: 'Got a job at the local servo pumping petrol. \$6.50 an hour felt like being rich!',
         isPrivate: false,
       ),
       
@@ -352,7 +352,7 @@ class MockTimelineRepository {
         timestamp: DateTime(2004, 2, 20),
         eventType: 'photo',
         title: 'First Car - 1995 VR Commodore',
-        description: 'Bought my first car for $3,500. White VR Commodore with 250,000 kms. She was a beast!',
+        description: 'Bought my first car for \$3,500. White VR Commodore with 250,000 kms. She was a beast!',
         assets: [
           MediaAsset.photo(
             id: _uuid.v4(),
@@ -528,7 +528,7 @@ class MockTimelineRepository {
         timestamp: DateTime(2010, 9, 22),
         eventType: 'milestone',
         title: 'Bought First House - Cessnock',
-        description: 'First home! 3-bedroom house in Cessnock for $285,000. First home buyer grant helped heaps.',
+        description: 'First home! 3-bedroom house in Cessnock for \$285,000. First home buyer grant helped heaps.',
         isPrivate: false,
       ),
       
@@ -586,7 +586,7 @@ class MockTimelineRepository {
         timestamp: DateTime(2012, 4, 12),
         eventType: 'milestone',
         title: 'Bought Second Property - Kurri Kurri',
-        description: 'Investment property in Kurri Kurri. 3-bed weatherboard for $195,000. Rented out straight away.',
+        description: 'Investment property in Kurri Kurri. 3-bed weatherboard for \$195,000. Rented out straight away.',
         isPrivate: false,
       ),
       
@@ -629,7 +629,7 @@ class MockTimelineRepository {
         timestamp: DateTime(2013, 7, 28),
         eventType: 'milestone',
         title: 'Bought Third Property - Maitland',
-        description: 'Another investment - older cottage in Maitland for $240,000. Needed work but good bones.',
+        description: 'Another investment - older cottage in Maitland for \$240,000. Needed work but good bones.',
         isPrivate: false,
       ),
       
@@ -694,7 +694,7 @@ class MockTimelineRepository {
         timestamp: DateTime(2015, 3, 18),
         eventType: 'milestone',
         title: 'Bought Fourth Property - Singleton',
-        description: 'Mining town investment. 4-bed brick for $320,000. Rented to FIFO workers.',
+        description: 'Mining town investment. 4-bed brick for \$320,000. Rented to FIFO workers.',
         isPrivate: false,
       ),
       

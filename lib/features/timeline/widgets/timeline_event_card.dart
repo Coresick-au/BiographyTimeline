@@ -101,6 +101,7 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
         Flexible(
           fit: FlexFit.loose,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (widget.event.title != null)
@@ -503,6 +504,7 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
 
   Widget _buildExpandedContent(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.event.assets.length > 1) ...[

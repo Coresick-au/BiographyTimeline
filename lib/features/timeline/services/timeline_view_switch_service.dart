@@ -77,7 +77,6 @@ class TimelineViewSwitchService {
         viewMode: viewMode,
         startDate: _timelineService.currentConfig.startDate,
         endDate: _timelineService.currentConfig.endDate,
-        // activeContext: _timelineService.currentConfig.activeContext, // Removed property
         selectedEventIds: _timelineService.currentConfig.selectedEventIds,
         showPrivateEvents: _timelineService.currentConfig.showPrivateEvents,
         zoomLevel: _timelineService.currentConfig.zoomLevel,
@@ -118,7 +117,6 @@ class TimelineViewSwitchService {
   Future<bool> updateViewConfig({
     DateTime? startDate,
     DateTime? endDate,
-    String? activeContext,
     Set<String>? selectedEventIds,
     bool? showPrivateEvents,
     double? zoomLevel,
@@ -132,7 +130,6 @@ class TimelineViewSwitchService {
         viewMode: _currentViewMode,
         startDate: startDate ?? _timelineService.currentConfig.startDate,
         endDate: endDate ?? _timelineService.currentConfig.endDate,
-        // activeContext: activeContext ?? _timelineService.currentConfig.activeContext,
         selectedEventIds: selectedEventIds ?? _timelineService.currentConfig.selectedEventIds,
         showPrivateEvents: showPrivateEvents ?? _timelineService.currentConfig.showPrivateEvents,
         zoomLevel: zoomLevel ?? _timelineService.currentConfig.zoomLevel,
@@ -174,7 +171,6 @@ class TimelineViewSwitchService {
     await updateViewConfig(
       startDate: null,
       endDate: null,
-      activeContext: null,
       selectedEventIds: <String>{},
       showPrivateEvents: false,
       zoomLevel: 1.0,

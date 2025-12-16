@@ -7,14 +7,38 @@ class TimelineRenderConfig {
   final TimelineTheme theme;
   final TimelineViewMode viewMode;
   final bool showPrivateEvents;
-  final String? activeContext;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final Set<String>? filterTags;
+  final Set<String> selectedEventIds;
+  final double zoomLevel;
+  final Map<String, dynamic> customSettings;
 
   const TimelineRenderConfig({
     required this.theme,
     required this.viewMode,
     required this.showPrivateEvents,
-    this.activeContext,
+    this.startDate,
+    this.endDate,
+    this.filterTags,
+    this.selectedEventIds = const {},
+    this.zoomLevel = 1.0,
+    this.customSettings = const {},
   });
+
+  factory TimelineRenderConfig.defaults() {
+    return const TimelineRenderConfig(
+      theme: TimelineTheme.defaultTheme, // Assuming a default theme is needed
+      viewMode: TimelineViewMode.chronological,
+      startDate: null,
+      endDate: null,
+      filterTags: null,
+      selectedEventIds: {},
+      showPrivateEvents: false,
+      zoomLevel: 1.0,
+      customSettings: {},
+    );
+  }
 }
 
 /// Timeline view modes

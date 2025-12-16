@@ -4,7 +4,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import '../helpers/db_test_helper.dart';
 import '../../lib/shared/models/context.dart';
 import '../../lib/shared/models/user.dart';
-import '../../lib/features/context/services/context_management_service.dart';
+import '../helpers/mock_context_service.dart';
 
 /// **Feature: users-timeline, Property 15: Context Type Selection Availability**
 /// **Validates: Requirements 9.1**

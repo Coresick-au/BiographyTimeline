@@ -50,23 +50,30 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 24),
-            _buildTitleField(),
-            const SizedBox(height: 16),
-            _buildDateSelector(),
-            const SizedBox(height: 16),
-            _buildStoryEditor(),
-            const SizedBox(height: 24),
-            _buildActions(context),
-          ],
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: IntrinsicHeight(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 24),
+                _buildTitleField(),
+                const SizedBox(height: 16),
+                _buildDateSelector(),
+                const SizedBox(height: 16),
+                _buildStoryEditor(),
+                const SizedBox(height: 24),
+                _buildActions(context),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -113,6 +120,7 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -180,6 +188,7 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
 
   Widget _buildPreciseDatePicker() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Date picker
         ListTile(
@@ -262,6 +271,7 @@ class _QuickEntryDialogState extends State<QuickEntryDialog> {
   Widget _buildStoryEditor() {
     return Expanded(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(

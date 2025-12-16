@@ -184,7 +184,6 @@ void main() {
 
 class ContextAttributeScenario {
   final String eventId;
-  final String contextId;
   final String ownerId;
   final DateTime timestamp;
   final String eventType;
@@ -192,7 +191,6 @@ class ContextAttributeScenario {
 
   ContextAttributeScenario({
     required this.eventId,
-    required this.contextId,
     required this.ownerId,
     required this.timestamp,
     required this.eventType,
@@ -242,7 +240,7 @@ ContextAttributeScenario _generateContextAttributeScenario(Faker faker) {
   
   return ContextAttributeScenario(
     eventId: 'event_${timestamp.millisecondsSinceEpoch}',
-    contextId: 'context_${faker.guid.guid()}',
+
     ownerId: 'owner_${faker.guid.guid()}',
     timestamp: timestamp,
     eventType: eventType,

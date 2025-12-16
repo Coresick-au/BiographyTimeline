@@ -15,12 +15,12 @@ class SmartEventSuggestionsService {
   final _uuid = const Uuid();
 
   // Suggestion cache
-  final Map<String, List<EventSuggestion>> _suggestionCache = {};
-  final Map<String, DateTime> _cacheTimestamps = {};
-  static const Duration _cacheTimeout = Duration(hours: 1);
+  final Map<String, List<EventSuggestion>> suggestionCache = {};
+  final Map<String, DateTime> cacheTimestamps = {};
+  static const Duration cacheTimeout = Duration(hours: 1);
 
   // User preference tracking
-  final Map<String, UserPreference> _userPreferences = {};
+  final Map<String, UserPreference> userPreferences = {};
 
   /// Constructor with dependency injection
   SmartEventSuggestionsService(this._eventCorrelation, this._dbService);
@@ -36,29 +36,29 @@ class SmartEventSuggestionsService {
     String? albumId,
     bool forceRefresh = false,
   }) async {
-    final cacheKey = _generateCacheKey(startDate, endDate, albumId);
+    final cacheKey = generateCacheKey(startDate, endDate, albumId);
     
     // Check cache first
-    if (!forceRefresh && _isCacheValid(cacheKey)) {
-      return _suggestionCache[cacheKey] ?? [];
+    if (!forceRefresh && isCacheValid(cacheKey)) {
+      return suggestionCache[cacheKey] ?? [];
     }
 
     // Generate new suggestions
-    final suggestions = await _generateSmartSuggestions(
+    final suggestions = await generateSmartSuggestions(
       startDate,
       endDate,
       albumId,
     );
 
     // Cache results
-    _suggestionCache[cacheKey] = suggestions;
-    _cacheTimestamps[cacheKey] = DateTime.now();
+    suggestionCache[cacheKey] = suggestions;
+    cacheTimestamps[cacheKey] = DateTime.now();
 
     return suggestions;
   }
 
   /// Generate smart suggestions with personalization
-  Future<List<EventSuggestion>> _generateSmartSuggestions(
+  Future<List<EventSuggestion>> generateSmartSuggestions(
     DateTime? startDate,
     DateTime? endDate,
     String? albumId,
@@ -71,13 +71,13 @@ class SmartEventSuggestionsService {
     );
 
     // Apply user preferences and personalization
-    final personalizedSuggestions = await _applyPersonalization(baseSuggestions);
+    final personalizedSuggestions = await applyPersonalization(baseSuggestions);
 
     // Filter and rank based on user patterns
-    final filteredSuggestions = _filterByUserPatterns(personalizedSuggestions);
+    final filteredSuggestions = filterByUserPatterns(personalizedSuggestions);
 
     // Add contextual suggestions
-    final contextualSuggestions = await _addContextualSuggestions(
+    final contextualSuggestions = await addContextualSuggestions(
       filteredSuggestions,
       startDate,
       endDate,
@@ -87,7 +87,7 @@ class SmartEventSuggestionsService {
   }
 
   /// Apply user preferences to suggestions
-  Future<List<EventSuggestion>> _applyPersonalization(
+  Future<List<EventSuggestion>> applyPersonalization(
     List<EventSuggestion> suggestions,
   ) async {
     final personalized = <EventSuggestion>[];
@@ -97,20 +97,20 @@ class SmartEventSuggestionsService {
       var adjustedConfidence = suggestion.confidence;
       
       // Check user preference for event type
-      final typePreference = _userPreferences[suggestion.type.name];
+      final typePreference = userPreferences[suggestion.type.name];
       if (typePreference != null) {
         adjustedConfidence *= typePreference.weight;
       }
 
       // Check location preference
       if (suggestion.location != null) {
-        final locationPreference = _getLocationPreference(suggestion.location!);
+        final locationPreference = getLocationPreference(suggestion.location!);
         adjustedConfidence *= locationPreference;
       }
 
       // Check people preference
       if (suggestion.peopleIds.isNotEmpty) {
-        final peoplePreference = await _getPeoplePreference(suggestion.peopleIds);
+        final peoplePreference = await getPeoplePreference(suggestion.peopleIds);
         adjustedConfidence *= peoplePreference;
       }
 
@@ -124,13 +124,13 @@ class SmartEventSuggestionsService {
   }
 
   /// Filter suggestions based on user patterns
-  List<EventSuggestion> _filterByUserPatterns(List<EventSuggestion> suggestions) {
+  List<EventSuggestion> filterByUserPatterns(List<EventSuggestion> suggestions) {
     // Remove suggestions that don't match user patterns
     final filtered = <EventSuggestion>[];
 
     for (final suggestion in suggestions) {
       // Check if user typically creates events of this type
-      if (_shouldSuggestEventType(suggestion.type)) {
+      if (shouldSuggestEventType(suggestion.type)) {
         filtered.add(suggestion);
       }
     }
@@ -142,7 +142,7 @@ class SmartEventSuggestionsService {
   }
 
   /// Add contextual suggestions based on current date/time
-  Future<List<EventSuggestion>> _addContextualSuggestions(
+  Future<List<EventSuggestion>> addContextualSuggestions(
     List<EventSuggestion> existing,
     DateTime? startDate,
     DateTime? endDate,
@@ -150,28 +150,28 @@ class SmartEventSuggestionsService {
     final contextual = <EventSuggestion>[];
 
     // Check for upcoming events
-    final upcoming = await _suggestUpcomingEvents();
+    final upcoming = await suggestUpcomingEvents();
     contextual.addAll(upcoming);
 
     // Check for anniversary events
-    final anniversaries = await _suggestAnniversaryEvents();
+    final anniversaries = await suggestAnniversaryEvents();
     contextual.addAll(anniversaries);
 
     // Check for seasonal events
-    final seasonal = await _suggestSeasonalEvents();
+    final seasonal = await suggestSeasonalEvents();
     contextual.addAll(seasonal);
 
     // Combine with existing suggestions
     final all = [...existing, ...contextual];
     
     // Remove duplicates and sort
-    final unique = _removeDuplicateSuggestions(all);
+    final unique = removeDuplicateSuggestions(all);
     unique.sort((a, b) => b.confidence.compareTo(a.confidence));
 
     return unique;
   }
 
-  Future<List<EventSuggestion>> _suggestUpcomingEvents() async {
+  Future<List<EventSuggestion>> suggestUpcomingEvents() async {
     final suggestions = <EventSuggestion>[];
     final now = DateTime.now();
 
@@ -203,7 +203,7 @@ class SmartEventSuggestionsService {
     return suggestions;
   }
 
-  Future<List<EventSuggestion>> _suggestAnniversaryEvents() async {
+  Future<List<EventSuggestion>> suggestAnniversaryEvents() async {
     final suggestions = <EventSuggestion>[];
     final now = DateTime.now();
 
@@ -211,14 +211,14 @@ class SmartEventSuggestionsService {
     final pastEvents = await _getPastEventsInMonth(now.month);
     
     for (final event in pastEvents) {
-      final yearsSince = now.year - event.startDate.year;
+      final yearsSince = now.year - event.timestamp.year;
       if (yearsSince > 0) {
         suggestions.add(EventSuggestion(
           id: _uuid.v4(),
           title: '${event.title} - ${yearsSince} Year${yearsSince > 1 ? 's' : ''} Anniversary',
-          type: event.type,
-          startDate: DateTime(now.year, event.startDate.month, event.startDate.day),
-          endDate: DateTime(now.year, event.endDate.month, event.endDate.day),
+          type: _parseEventType(event.eventType),
+          startDate: DateTime(now.year, event.timestamp.month, event.timestamp.day),
+          endDate: DateTime(now.year, event.timestamp.month, event.timestamp.day + 1),
           photoIds: [],
           peopleIds: [],
           confidence: 0.6,
@@ -234,7 +234,7 @@ class SmartEventSuggestionsService {
     return suggestions;
   }
 
-  Future<List<EventSuggestion>> _suggestSeasonalEvents() async {
+  Future<List<EventSuggestion>> suggestSeasonalEvents() async {
     final suggestions = <EventSuggestion>[];
     final now = DateTime.now();
     final season = _getSeason(now);
@@ -280,7 +280,7 @@ class SmartEventSuggestionsService {
     await _eventCorrelation.recordAcceptance(suggestionId);
 
     // Clear cache to force refresh
-    _clearCache();
+    clearCache();
   }
 
   /// User rejected a suggestion
@@ -292,7 +292,7 @@ class SmartEventSuggestionsService {
     await _eventCorrelation.recordRejection(suggestionId);
 
     // Clear cache to force refresh
-    _clearCache();
+    clearCache();
   }
 
   /// User edited a suggestion
@@ -307,7 +307,7 @@ class SmartEventSuggestionsService {
     await _eventCorrelation.recordEdit(suggestionId, edited);
 
     // Clear cache to force refresh
-    _clearCache();
+    clearCache();
   }
 
   Future<void> _updatePreferencesFromAcceptance(String suggestionId) async {
@@ -384,14 +384,14 @@ class SmartEventSuggestionsService {
            '${albumId ?? 'all'}';
   }
 
-  bool _isCacheValid(String key) {
+  bool isCacheValid(String key) {
     final timestamp = _cacheTimestamps[key];
     if (timestamp == null) return false;
     
     return DateTime.now().difference(timestamp) < _cacheTimeout;
   }
 
-  void _clearCache() {
+  void clearCache() {
     _suggestionCache.clear();
     _cacheTimestamps.clear();
   }
@@ -407,7 +407,7 @@ class SmartEventSuggestionsService {
     return null;
   }
 
-  List<EventSuggestion> _removeDuplicateSuggestions(List<EventSuggestion> suggestions) {
+  List<EventSuggestion> removeDuplicateSuggestions(List<EventSuggestion> suggestions) {
     final seen = <String>{};
     final unique = <EventSuggestion>[];
 
@@ -422,7 +422,7 @@ class SmartEventSuggestionsService {
     return unique;
   }
 
-  bool _shouldSuggestEventType(EventType type) {
+  bool shouldSuggestEventType(EventType type) {
     final preference = _userPreferences[type.name];
     if (preference == null) return true;
     
@@ -434,18 +434,18 @@ class SmartEventSuggestionsService {
     return true;
   }
 
-  double _getLocationPreference(LocationData location) {
+  double getLocationPreference(LocationData location) {
     // Simple location preference based on past events
     // In a real implementation, would use geohashing or clustering
     return 1.0;
   }
 
-  Future<double> _getPeoplePreference(List<String> peopleIds) async {
+  Future<double> getPeoplePreference(List<String> peopleIds) async {
     // Calculate preference based on how often user creates events with these people
     return 1.0;
   }
 
-  void _updateLocationPreference(LocationData location, {required bool increase}) {
+  void updateLocationPreference(LocationData location, {required bool increase}) {
     // Update location preference score
     // Implementation would use geohashing for efficiency
   }
@@ -473,6 +473,17 @@ class SmartEventSuggestionsService {
     DateTime? endDate,
     String? albumId,
   ) async => [];
+
+  EventType _parseEventType(String type) {
+    try {
+      return EventType.values.firstWhere(
+        (e) => e.toString() == 'EventType.$type' || e.name == type,
+        orElse: () => EventType.general,
+      );
+    } catch (_) {
+      return EventType.general;
+    }
+  }
 }
 
 // =========================================================================

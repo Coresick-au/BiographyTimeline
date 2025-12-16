@@ -50,7 +50,7 @@ void main() {
         expect(event.description, equals(description));
         expect(event.assets, isEmpty);
         expect(event.fuzzyDate, isNull); // Precise date should not have fuzzy date
-        expect(event.privacyLevel, equals(PrivacyLevel.private)); // Default privacy
+        expect(event.isPrivate, equals(isPrivate.private)); // Default privacy
         
         // Verify it integrates with timeline (has required fields)
         expect(event.createdAt, isNotNull);
@@ -147,7 +147,7 @@ void main() {
           expect(event.updatedAt, isNotNull);
           expect(event.participantIds, isNotNull);
           expect(event.customAttributes, isNotNull);
-          expect(event.privacyLevel, isNotNull);
+          expect(event.isPrivate, isNotNull);
         }
       }
     });
@@ -197,7 +197,7 @@ void main() {
         // Create quick entries in different contexts
         final event1 = TimelineEvent.create(
           id: 'privacy1_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId1,
+
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -207,7 +207,7 @@ void main() {
 
         final event2 = TimelineEvent.create(
           id: 'privacy2_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId2,
+
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -218,8 +218,8 @@ void main() {
         // Verify context isolation
         
         // Verify both have default privacy settings
-        expect(event1.privacyLevel, equals(PrivacyLevel.private));
-        expect(event2.privacyLevel, equals(PrivacyLevel.private));
+        expect(event1.isPrivate, equals(isPrivate.private));
+        expect(event2.isPrivate, equals(isPrivate.private));
         
         // Verify they are separate events
         expect(event1.id, isNot(equals(event2.id)));

@@ -25,6 +25,7 @@ dependencies:
   exif: ^3.3.0
   video_player: ^2.8.2
   audioplayers: ^5.2.1
+  image: ^4.0.17
   
   # Rich Text Editor
   flutter_quill: ^9.0.0

@@ -302,7 +302,6 @@ TimelineEvent _createClusteredTimelineEvent(ClusterDisplayScenario scenario, Fak
   
   return TimelineEvent.create(
     id: eventId,
-    contextId: 'test_context',
     ownerId: 'test_owner',
     timestamp: baseTime,
     eventType: eventType,
@@ -369,7 +368,6 @@ TimelineEvent _createClusteredTimelineEventWithEdgeCases(ClusterDisplayScenario 
   
   return TimelineEvent.create(
     id: eventId,
-    contextId: 'test_context',
     ownerId: 'test_owner',
     timestamp: baseTime,
     eventType: 'photo',
@@ -432,7 +430,7 @@ void _verifyDisplayMetadataConsistency(TimelineEvent event) {
   }
   
   // Privacy level should be set
-  expect(event.privacyLevel, isNotNull,
+  expect(event.isPrivate, isNotNull,
     reason: 'Event should have a privacy level for display');
 }
 

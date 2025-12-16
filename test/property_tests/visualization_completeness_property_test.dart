@@ -88,7 +88,6 @@ void main() {
         expect(copiedConfig.viewMode, equals(newViewMode));
         expect(copiedConfig.startDate, equals(startDate));
         expect(copiedConfig.endDate, equals(endDate));
-        expect(copiedConfig.activeContext, equals(context));
         expect(copiedConfig.selectedEventIds, equals(selectedEventIds));
         expect(copiedConfig.showPrivateEvents, equals(showPrivateEvents));
         expect(copiedConfig.zoomLevel, equals(zoomLevel));
@@ -278,6 +277,7 @@ class _MockTimelineRenderer extends BaseTimelineRenderer {
 
   @override
   Widget build({
+    BuildContext? context,
     TimelineEventCallback? onEventTap,
     TimelineEventCallback? onEventLongPress,
     TimelineDateCallback? onDateTap,

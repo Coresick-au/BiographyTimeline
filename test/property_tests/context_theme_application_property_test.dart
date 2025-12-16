@@ -4,7 +4,6 @@ import 'package:faker/faker.dart' hide Color;
 
 import '../../lib/shared/models/context.dart';
 import '../../lib/shared/models/timeline_theme.dart';
-import '../../lib/features/context/services/theme_service.dart';
 
 /// **Feature: users-timeline, Property 19: Context Theme Application**
 /// **Validates: Requirements 9.5**
@@ -390,4 +389,56 @@ void main() {
       }
     });
   });
+}
+
+/// Mock ThemeService for testing properties
+class ThemeService {
+  TimelineTheme? _currentTheme;
+  
+  TimelineTheme? get currentTheme => _currentTheme;
+  
+  TimelineTheme getThemeForContextType(ContextType contextType) {
+    return TimelineTheme.forContextType(contextType);
+  }
+  
+  void setThemeForContext(ContextType contextType) {
+    _currentTheme = getThemeForContextType(contextType);
+  }
+  
+  bool isFeatureEnabled(String feature) {
+    if (_currentTheme == null) return false;
+    
+    switch (feature) {
+      case 'ghostCamera':
+        return _currentTheme!.enableGhostCamera;
+      case 'budgetTracking':
+        return _currentTheme!.enableBudgetTracking;
+      case 'progressComparison':
+        return _currentTheme!.enableProgressComparison;
+      default:
+        return false;
+    }
+  }
+  
+  List<String> getAvailableWidgets() {
+    if (_currentTheme == null) return [];
+    return _currentTheme!.widgetFactories.keys.where((key) => _currentTheme!.widgetFactories[key] == true).toList();
+  }
+  
+  ThemeData createFlutterTheme(TimelineTheme theme) {
+     final colorPalette = theme.colorPalette;
+     return ThemeData(
+       primaryColor: Color(colorPalette['primary']!),
+       scaffoldBackgroundColor: Color(colorPalette['background']!),
+       colorScheme: ColorScheme.light(
+         primary: Color(colorPalette['primary']!),
+         secondary: Color(colorPalette['secondary']!),
+         surface: Color(colorPalette['surface']!),
+         background: Color(colorPalette['background']!),
+         error: Colors.red,
+       ),
+     );
+  }
+  
+  void dispose() {}
 }

@@ -40,12 +40,12 @@ void main() {
     // =========================================================================
     
     test('Semantic search service initializes correctly', () async {
-      expect(searchService._isInitialized, isTrue);
-      expect(searchService._searchDb, isNotNull);
+      expect(searchService.isInitialized, isTrue);
+      expect(searchService.searchDb, isNotNull);
     });
 
     test('FTS5 virtual table is created', () async {
-      final db = searchService._searchDb!;
+      final db = searchService.searchDb!;
       final tables = await db.rawQuery(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='content_search'"
       );
@@ -63,11 +63,13 @@ void main() {
     test('Media asset is indexed correctly', () async {
       final asset = MediaAsset(
         id: 'test_media_1',
+        eventId: 'test_event_1',
+        type: AssetType.photo,
         localPath: '/path/to/photo.jpg',
         createdAt: DateTime(2023, 7, 15),
         width: 1920,
         height: 1080,
-        mimeType: 'image/jpeg',
+        isKeyAsset: false,
         mimeType: 'image/jpeg',
       );
 
@@ -147,11 +149,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'expansion_1',
+          eventId: 'expansion_event_1',
+          type: AssetType.photo,
           localPath: '/path/to/beach.jpg',
+          isKeyAsset: false,
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Playing in the ocean waves',
@@ -168,11 +172,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'time_1',
+          eventId: 'event_time_1',
+          type: AssetType.photo,
           localPath: '/path/to/recent.jpg',
+          isKeyAsset: false,
           createdAt: DateTime.now().subtract(Duration(days: 1)),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Yesterday\'s adventure',
@@ -192,11 +198,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'relevance_1',
+          eventId: 'event_rel_1',
+          type: AssetType.photo,
           localPath: '/path/to/exact.jpg',
+          isKeyAsset: false,
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Beach sunset',
@@ -205,11 +213,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'relevance_2',
+          eventId: 'event_rel_2',
+          type: AssetType.photo,
           localPath: '/path/to/partial.jpg',
+          isKeyAsset: false,
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Mountain view',
@@ -218,11 +228,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'relevance_3',
+          eventId: 'event_rel_3',
+          type: AssetType.photo,
           localPath: '/path/to/related.jpg',
+          isKeyAsset: false,
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Ocean waves',
@@ -243,11 +255,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'filter_1',
+          eventId: 'event_fil_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
           localPath: '/path/to/photo.jpg',
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Family photo',
@@ -281,11 +295,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'suggest_1',
+          eventId: 'event_sug_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
           localPath: '/path/to/beach.jpg',
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Beach vacation',
@@ -313,13 +329,15 @@ void main() {
     
     test('Text embedding generates keywords correctly', () async {
       final asset = MediaAsset(
-        id: 'embed_1',
-        localPath: '/path/to/photo.jpg',
-        createdAt: DateTime(2023, 7, 15),
-        width: 1920,
-        height: 1080,
-        mimeType: 'image/jpeg',
-        mimeType: 'image/jpeg',
+          id: 'embed_1',
+          eventId: 'event_emb_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
+          localPath: '/path/to/photo.jpg',
+          createdAt: DateTime(2023, 7, 15),
+          width: 1920,
+          height: 1080,
+          mimeType: 'image/jpeg',
       );
 
       final content = await embeddingService.generateFromMediaAsset(
@@ -345,11 +363,13 @@ void main() {
           type: 'media',
           mediaAsset: MediaAsset(
             id: 'tfidf_1',
+            eventId: 'event_tfidf_1',
+            type: AssetType.photo,
+            isKeyAsset: false,
             localPath: '/path/to/photo1.jpg',
             createdAt: DateTime.now(),
             width: 1920,
             height: 1080,
-            mimeType: 'image/jpeg',
             mimeType: 'image/jpeg',
           ),
           caption: 'Beach vacation',
@@ -358,11 +378,13 @@ void main() {
           type: 'media',
           mediaAsset: MediaAsset(
             id: 'tfidf_2',
+            eventId: 'event_tfidf_2',
+            type: AssetType.photo,
+            isKeyAsset: false,
             localPath: '/path/to/photo2.jpg',
             createdAt: DateTime.now(),
             width: 1920,
             height: 1080,
-            mimeType: 'image/jpeg',
             mimeType: 'image/jpeg',
           ),
           caption: 'Mountain hiking',
@@ -380,11 +402,13 @@ void main() {
       final content = await embeddingService.generateFromMediaAsset(
         MediaAsset(
           id: 'weight_1',
+          eventId: 'event_wgh_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
           localPath: '/path/to/photo.jpg',
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Birthday celebration',
@@ -398,11 +422,13 @@ void main() {
       final content = await embeddingService.generateFromMediaAsset(
         MediaAsset(
           id: 'stop_1',
+          eventId: 'event_stop_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
           localPath: '/path/to/photo.jpg',
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'The beautiful beach and the ocean',
@@ -426,11 +452,13 @@ void main() {
         await searchService.indexMediaAsset(
           MediaAsset(
             id: 'perf_$i',
+            eventId: 'event_perf_$i',
+            type: AssetType.photo,
+            isKeyAsset: false,
             localPath: '/path/to/photo$i.jpg',
             createdAt: DateTime.now(),
             width: 1920,
             height: 1080,
-            mimeType: 'image/jpeg',
             mimeType: 'image/jpeg',
           ),
           caption: 'Test photo number $i',
@@ -463,11 +491,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'special_1',
+          eventId: 'event_spec_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
           localPath: '/path/to/photo.jpg',
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Beach & Ocean! #vacation',
@@ -481,11 +511,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'unicode_1',
+          eventId: 'event_uni_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
           localPath: '/path/to/photo.jpg',
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Café ☕️ in Paris 🗼',
@@ -503,11 +535,13 @@ void main() {
       // 1. Create and index content
       final asset = MediaAsset(
         id: 'workflow_1',
+        eventId: 'event_work_1',
+        type: AssetType.photo,
+        isKeyAsset: false,
         localPath: '/path/to/vacation.jpg',
         createdAt: DateTime(2023, 7, 15),
         width: 1920,
         height: 1080,
-        mimeType: 'image/jpeg',
         mimeType: 'image/jpeg',
       );
 
@@ -555,11 +589,13 @@ void main() {
       await searchService.indexMediaAsset(
         MediaAsset(
           id: 'rebuild_1',
+          eventId: 'event_reb_1',
+          type: AssetType.photo,
+          isKeyAsset: false,
           localPath: '/path/to/photo.jpg',
           createdAt: DateTime.now(),
           width: 1920,
           height: 1080,
-          mimeType: 'image/jpeg',
           mimeType: 'image/jpeg',
         ),
         caption: 'Test content',
@@ -569,7 +605,7 @@ void main() {
       await searchService.rebuildIndex();
       
       // Verify table still exists
-      final db = searchService._searchDb!;
+      final db = searchService.searchDb!;
       final tables = await db.rawQuery(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='content_search'"
       );
