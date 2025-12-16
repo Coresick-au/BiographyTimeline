@@ -393,11 +393,11 @@ class BreadcrumbNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: _buildBreadcrumbItems(),
+      children: _buildBreadcrumbItems(context),
     );
   }
 
-  List<Widget> _buildBreadcrumbItems() {
+  List<Widget> _buildBreadcrumbItems(BuildContext context) {
     final List<Widget> widgets = [];
     
     for (int i = 0; i < items.length; i++) {

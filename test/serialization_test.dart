@@ -42,7 +42,7 @@ void main() {
           allowTimelineMerging: true,
           allowLocationSharing: false,
           allowFaceDetection: true,
-          defaultEventPrivacy: PrivacyLevel.private,
+          defaultEventIsPrivate: true,
         ),
         contextIds: [faker.guid.guid(), faker.guid.guid()],
         createdAt: faker.date.dateTime(),
