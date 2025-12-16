@@ -27,7 +27,6 @@ void main() {
         // Create timeline event with context-specific event type
         final event = TimelineEvent.create(
           id: testScenario.eventId,
-          contextId: testScenario.contextId,
           ownerId: testScenario.ownerId,
           timestamp: testScenario.timestamp,
           eventType: testScenario.eventType,
@@ -64,10 +63,6 @@ void main() {
         expect(event.eventType, equals(testScenario.eventType),
           reason: 'Event type should be preserved during creation');
         
-        // Verify that context ID is preserved
-        expect(event.contextId, equals(testScenario.contextId),
-          reason: 'Context ID should be preserved during creation');
-        
         // Verify that custom attributes can be modified without affecting defaults
         final modifiedAttributes = Map<String, dynamic>.from(event.customAttributes);
         modifiedAttributes['custom_field'] = 'custom_value';
@@ -99,7 +94,6 @@ void main() {
         for (int j = 0; j < 5; j++) {
           final event = TimelineEvent.create(
             id: 'test_event_${i}_$j',
-            contextId: 'test_context_$i',
             ownerId: 'test_owner_$i',
             timestamp: DateTime.now(),
             eventType: eventType,
@@ -129,7 +123,6 @@ void main() {
         
         final event = TimelineEvent.create(
           id: 'explicit_test_$i',
-          contextId: 'test_context',
           ownerId: 'test_owner',
           timestamp: DateTime.now(),
           eventType: eventType,
@@ -162,7 +155,6 @@ void main() {
         // Test with null custom attributes
         final eventWithNull = TimelineEvent.create(
           id: 'null_test_$i',
-          contextId: 'test_context',
           ownerId: 'test_owner',
           timestamp: DateTime.now(),
           eventType: eventType,
@@ -176,7 +168,6 @@ void main() {
         // Test with empty custom attributes
         final eventWithEmpty = TimelineEvent.create(
           id: 'empty_test_$i',
-          contextId: 'test_context',
           ownerId: 'test_owner',
           timestamp: DateTime.now(),
           eventType: eventType,

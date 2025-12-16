@@ -76,6 +76,11 @@ class AppDatabase {
     await databaseFactory.deleteDatabase(path);
     _database = null;
   }
+
+  /// Create tables (exposed for testing)
+  static Future<void> createTables(Database db) async {
+    await _onCreate(db, _databaseVersion);
+  }
 }
 
 /// Example usage of ContextManagementService:

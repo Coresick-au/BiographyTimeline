@@ -4,6 +4,7 @@ import '../lib/shared/models/story.dart';
 import '../lib/shared/models/media_asset.dart';
 import '../lib/features/stories/data/repositories/story_repository.dart';
 import '../lib/core/database/database.dart';
+import 'helpers/db_test_helper.dart';
 
 void main() {
   group('StoryRepository Tests', () {
@@ -12,18 +13,16 @@ void main() {
 
     setUpAll(() async {
       // Initialize FFI
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
+      // Initialize FFI and PathProvider mock
+      initializeTestDatabase();
       
       // Create test database
       database = await openDatabase(
         inMemoryDatabasePath,
-        options: OpenDatabaseOptions(
-          version: 1,
-          onCreate: (db, version) async {
-            await AppDatabase.createTables(db);
-          },
-        ),
+        version: 1,
+        onCreate: (db, version) async {
+          await AppDatabase.createTables(db);
+        },
       );
       
       repository = LocalStoryRepository(database);
