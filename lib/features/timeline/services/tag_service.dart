@@ -1,4 +1,4 @@
-import 'package:users_timeline/shared/models/timeline_event.dart';
+import 'package:legacy_flow/shared/models/timeline_event.dart';
 
 /// Simple tag management service to replace complex context system.
 /// Provides predefined tags and custom tag management for timeline events.

@@ -458,14 +458,14 @@ TimelineEvent _createTestEvent() {
   
   return TimelineEvent(
     id: uuid.v4(),
-    contextId: uuid.v4(),
+    tags: ['shared', 'collaborative'],
     ownerId: 'user1',
     timestamp: now.subtract(const Duration(days: 1)),
     eventType: 'shared_event',
     customAttributes: {},
     assets: [],
     participantIds: ['user1', 'user2', 'user3'],
-    privacyLevel: PrivacyLevel.shared,
+    isPrivate: false,
     createdAt: now.subtract(const Duration(days: 1)),
     updatedAt: now.subtract(const Duration(days: 1)),
   );

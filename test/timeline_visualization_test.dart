@@ -1,16 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:users_timeline/features/timeline/services/timeline_renderer_interface.dart';
-import 'package:users_timeline/features/timeline/services/timeline_renderer_factory.dart';
-import 'package:users_timeline/features/timeline/renderers/chronological_timeline_renderer.dart';
-import 'package:users_timeline/features/timeline/renderers/clustered_timeline_renderer.dart';
-import 'package:users_timeline/features/timeline/renderers/map_timeline_renderer.dart';
-import 'package:users_timeline/features/timeline/renderers/story_timeline_renderer.dart';
-import 'package:users_timeline/shared/models/timeline_event.dart';
-import 'package:users_timeline/shared/models/context.dart';
-import 'package:users_timeline/shared/models/timeline_theme.dart';
-import 'package:users_timeline/shared/models/geo_location.dart';
-import 'package:users_timeline/shared/models/user.dart';
+import 'package:legacy_flow/features/timeline/services/timeline_renderer_interface.dart';
+import 'package:legacy_flow/features/timeline/services/timeline_renderer_factory.dart';
+import 'package:legacy_flow/features/timeline/renderers/chronological_timeline_renderer.dart';
+import 'package:legacy_flow/features/timeline/renderers/clustered_timeline_renderer.dart';
+import 'package:legacy_flow/features/timeline/renderers/map_timeline_renderer.dart';
+import 'package:legacy_flow/features/timeline/renderers/story_timeline_renderer.dart';
+import 'package:legacy_flow/shared/models/timeline_event.dart';
+import 'package:legacy_flow/shared/models/context.dart';
+import 'package:legacy_flow/shared/models/timeline_theme.dart';
+import 'package:legacy_flow/shared/models/geo_location.dart';
+import 'package:legacy_flow/shared/models/user.dart';
+import 'helpers/db_test_helper.dart';
 
 void main() {
   group('Timeline Visualization Engine Tests', () {
@@ -19,11 +20,14 @@ void main() {
     late List<TimelineEvent> testEvents;
     late List<Context> testContexts;
 
+    setUpAll(() {
+      initializeTestDatabase();
+    });
+
     setUp(() {
       testEvents = [
         TimelineEvent.create(
           id: 'event-1',
-          contextId: 'context-1',
           ownerId: 'user-1',
           timestamp: DateTime.now().subtract(const Duration(days: 30)),
           eventType: 'photo',
@@ -37,7 +41,6 @@ void main() {
         ),
         TimelineEvent.create(
           id: 'event-2',
-          contextId: 'context-1',
           ownerId: 'user-1',
           timestamp: DateTime.now().subtract(const Duration(days: 20)),
           eventType: 'milestone',
@@ -46,7 +49,6 @@ void main() {
         ),
         TimelineEvent.create(
           id: 'event-3',
-          contextId: 'context-2',
           ownerId: 'user-1',
           timestamp: DateTime.now().subtract(const Duration(days: 10)),
           eventType: 'text',
@@ -348,7 +350,6 @@ void main() {
         
         final newEvent = TimelineEvent.create(
           id: 'event-new',
-          contextId: 'context-1',
           ownerId: 'user-1',
           timestamp: DateTime.now(),
           eventType: 'photo',
@@ -405,7 +406,6 @@ void main() {
         final largeEventList = List.generate(1000, (index) => 
           TimelineEvent.create(
             id: 'event-$index',
-            contextId: 'context-1',
             ownerId: 'user-1',
             timestamp: DateTime.now().subtract(Duration(days: index)),
             eventType: 'photo',
@@ -430,7 +430,6 @@ void main() {
         final largeEventList = List.generate(1000, (index) => 
           TimelineEvent.create(
             id: 'event-$index',
-            contextId: index % 2 == 0 ? 'context-1' : 'context-2',
             ownerId: 'user-1',
             timestamp: DateTime.now().subtract(Duration(days: index)),
             eventType: index % 3 == 0 ? 'photo' : 'text',

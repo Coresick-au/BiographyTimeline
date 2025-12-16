@@ -263,7 +263,7 @@ class _ConsentManagementScreenState extends ConsumerState<ConsentManagementScree
                   request.requestMessage,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                if (request.detailedDescription.isNotEmpty) ...[
+                if (request.detailedDescription.isNotEmpty == true) ...[
                   const SizedBox(height: 8),
                   Text(
                     request.detailedDescription,

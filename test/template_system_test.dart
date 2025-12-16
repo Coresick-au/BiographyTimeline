@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:users_timeline/core/templates/template_manager.dart';
-import 'package:users_timeline/core/templates/template_definition.dart';
-import 'package:users_timeline/shared/models/context.dart';
-import 'package:users_timeline/shared/models/timeline_event.dart';
-import 'package:users_timeline/shared/models/timeline_theme.dart';
-import 'package:users_timeline/shared/models/user.dart';
+import 'package:legacy_flow/core/templates/template_manager.dart';
+import 'package:legacy_flow/core/templates/template_definition.dart';
+import 'package:legacy_flow/shared/models/context.dart';
+import 'package:legacy_flow/shared/models/timeline_event.dart';
+import 'package:legacy_flow/shared/models/timeline_theme.dart';
+import 'package:legacy_flow/shared/models/user.dart';
 
 void main() {
   group('Template System Tests', () {
@@ -73,7 +73,6 @@ void main() {
       // Valid event
       final validEvent = TimelineEvent.create(
         id: 'test-1',
-        contextId: 'context-1',
         ownerId: 'user-1',
         timestamp: DateTime.now(),
         eventType: 'photo',
@@ -109,7 +108,6 @@ void main() {
     test('Create event card widget', () {
       final event = TimelineEvent.create(
         id: 'test-2',
-        contextId: 'context-2',
         ownerId: 'user-2',
         timestamp: DateTime.now(),
         eventType: 'photo',
@@ -161,7 +159,6 @@ void main() {
     test('Create attribute editor widget', () {
       final event = TimelineEvent.create(
         id: 'test-3',
-        contextId: 'context-3',
         ownerId: 'user-3',
         timestamp: DateTime.now(),
         eventType: 'vet_visit',

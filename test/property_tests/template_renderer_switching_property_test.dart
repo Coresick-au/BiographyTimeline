@@ -29,7 +29,6 @@ void main() {
     TimelineEvent createRandomEvent(ContextType contextType, String eventType) {
       return TimelineEvent.create(
         id: faker.guid.guid(),
-        contextId: faker.guid.guid(),
         ownerId: faker.guid.guid(),
         timestamp: faker.date.dateTime(),
         eventType: eventType,

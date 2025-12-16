@@ -3,11 +3,11 @@ import 'package:faker/faker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 
-import 'package:users_timeline/shared/models/timeline_event.dart';
-import 'package:users_timeline/shared/models/context.dart';
-import 'package:users_timeline/shared/models/user.dart';
-import 'package:users_timeline/features/timeline/services/timeline_renderer_interface.dart';
-import 'package:users_timeline/features/timeline/services/timeline_service.dart';
+import 'package:legacy_flow/shared/models/timeline_event.dart';
+import 'package:legacy_flow/shared/models/context.dart';
+import 'package:legacy_flow/shared/models/user.dart';
+import 'package:legacy_flow/features/timeline/services/timeline_renderer_interface.dart';
+import 'package:legacy_flow/features/timeline/services/timeline_service.dart';
 
 /**
  * Feature: users-timeline, Property 20: Visualization Mode Completeness
@@ -299,7 +299,7 @@ TimelineEvent _generateRandomEvent() {
   
   return TimelineEvent(
     id: uuid.v4(),
-    contextId: uuid.v4(),
+    tags: [faker.lorem.word()],
     ownerId: uuid.v4(),
     timestamp: faker.date.dateTime(),
     eventType: faker.lorem.word(),
@@ -311,7 +311,7 @@ TimelineEvent _generateRandomEvent() {
     title: faker.lorem.sentence(),
     description: faker.lorem.sentences(3).join(' '),
     participantIds: [],
-    privacyLevel: PrivacyLevel.values[faker.randomGenerator.integer(PrivacyLevel.values.length)],
+    isPrivate: faker.randomGenerator.boolean(),
     createdAt: faker.date.dateTime(),
     updatedAt: faker.date.dateTime(),
   );

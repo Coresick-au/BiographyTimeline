@@ -43,7 +43,6 @@ void main() {
         // Create timeline event using the factory
         final timelineEvent = TimelineEventFactory.createPhotoEvent(
           id: faker.guid.guid(),
-          contextId: faker.guid.guid(),
           ownerId: faker.guid.guid(),
           contextType: ContextType.person,
           photoAssets: [mediaAsset],
@@ -121,7 +120,6 @@ void main() {
         // Create timeline event using the factory
         final timelineEvent = TimelineEventFactory.createPhotoEvent(
           id: faker.guid.guid(),
-          contextId: faker.guid.guid(),
           ownerId: faker.guid.guid(),
           contextType: ContextType.person,
           photoAssets: [mediaAsset],
@@ -237,7 +235,6 @@ void main() {
 
         final timelineEvent = TimelineEventFactory.createPhotoEvent(
           id: faker.guid.guid(),
-          contextId: faker.guid.guid(),
           ownerId: faker.guid.guid(),
           contextType: ContextType.person,
           photoAssets: [mediaAsset],

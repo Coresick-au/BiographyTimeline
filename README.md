@@ -1,4 +1,4 @@
-# Timeline Biography App
+# Legacy Flow
 
 A beautiful Flutter application for visualizing and organizing your life story through multiple timeline views with advanced features and production-ready architecture.
 
@@ -65,8 +65,8 @@ lib/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/timeline-biography-app.git
-cd timeline-biography-app
+git clone https://github.com/YOUR_USERNAME/legacy-flow.git
+cd legacy-flow
 ```
 
 2. Install dependencies:

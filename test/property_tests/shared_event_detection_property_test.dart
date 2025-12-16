@@ -336,7 +336,7 @@ TimelineEvent _createTestEvent({
 }) {
   return TimelineEvent(
     id: const Uuid().v4(),
-    contextId: const Uuid().v4(),
+    tags: ['test'],
     ownerId: userId,
     timestamp: timestamp,
     location: location,
@@ -346,7 +346,7 @@ TimelineEvent _createTestEvent({
     title: 'Test Event',
     description: 'Test event description',
     participantIds: [userId],
-    privacyLevel: shared_user.PrivacyLevel.private,
+    isPrivate: true,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );
@@ -360,7 +360,7 @@ TimelineEvent _createTestEventWithFaces({
 }) {
   return TimelineEvent(
     id: const Uuid().v4(),
-    contextId: const Uuid().v4(),
+    tags: ['faces'],
     ownerId: userId,
     timestamp: timestamp,
     location: location,
@@ -382,7 +382,7 @@ TimelineEvent _createTestEventWithFaces({
     title: 'Event with Faces',
     description: 'Event with face detection',
     participantIds: [userId],
-    privacyLevel: shared_user.PrivacyLevel.private,
+    isPrivate: true,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );

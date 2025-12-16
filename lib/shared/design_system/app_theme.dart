@@ -255,6 +255,63 @@ class AppTheme {
   String toString() {
     return 'AppTheme(id: $id, name: $name, mode: $mode)';
   }
+
+  /// Get AppTheme accessor from BuildContext
+  /// Returns a helper that provides convenient access to theme colors and text styles
+  static AppThemeColors of(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return AppThemeColors(theme);
+  }
+}
+
+/// Helper class providing convenient access to theme colors
+class AppThemeColors {
+  final ThemeData _theme;
+  
+  const AppThemeColors(this._theme);
+  
+  AppThemeColorAccessor get colors => AppThemeColorAccessor(_theme);
+  AppThemeTextStyleAccessor get textStyles => AppThemeTextStyleAccessor(_theme);
+}
+
+/// Accessor for theme colors
+class AppThemeColorAccessor {
+  final ThemeData _theme;
+  
+  const AppThemeColorAccessor(this._theme);
+  
+  Color get background => _theme.colorScheme.background;
+  Color get surface => _theme.colorScheme.surface;
+  Color get surfaceVariant => _theme.colorScheme.surfaceVariant;
+  Color get primary => _theme.colorScheme.primary;
+  Color get onPrimary => _theme.colorScheme.onPrimary;
+  Color get secondary => _theme.colorScheme.secondary;
+  Color get error => _theme.colorScheme.error;
+  Color get textPrimary => _theme.colorScheme.onSurface;
+  Color get textSecondary => _theme.colorScheme.onSurfaceVariant;
+}
+
+/// Accessor for theme text styles
+class AppThemeTextStyleAccessor {
+  final ThemeData _theme;
+  
+  const AppThemeTextStyleAccessor(this._theme);
+  
+  TextStyle get displayLarge => _theme.textTheme.displayLarge ?? const TextStyle();
+  TextStyle get displayMedium => _theme.textTheme.displayMedium ?? const TextStyle();
+  TextStyle get displaySmall => _theme.textTheme.displaySmall ?? const TextStyle();
+  TextStyle get headlineLarge => _theme.textTheme.headlineLarge ?? const TextStyle();
+  TextStyle get headlineMedium => _theme.textTheme.headlineMedium ?? const TextStyle();
+  TextStyle get headlineSmall => _theme.textTheme.headlineSmall ?? const TextStyle();
+  TextStyle get titleLarge => _theme.textTheme.titleLarge ?? const TextStyle();
+  TextStyle get titleMedium => _theme.textTheme.titleMedium ?? const TextStyle();
+  TextStyle get titleSmall => _theme.textTheme.titleSmall ?? const TextStyle();
+  TextStyle get bodyLarge => _theme.textTheme.bodyLarge ?? const TextStyle();
+  TextStyle get bodyMedium => _theme.textTheme.bodyMedium ?? const TextStyle();
+  TextStyle get bodySmall => _theme.textTheme.bodySmall ?? const TextStyle();
+  TextStyle get labelLarge => _theme.textTheme.labelLarge ?? const TextStyle();
+  TextStyle get labelMedium => _theme.textTheme.labelMedium ?? const TextStyle();
+  TextStyle get labelSmall => _theme.textTheme.labelSmall ?? const TextStyle();
 }
 
 /// Predefined themes for the Users Timeline app

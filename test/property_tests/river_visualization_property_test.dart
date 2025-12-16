@@ -317,7 +317,7 @@ TimelineRenderData _createTestRenderData() {
     events: [
       TimelineEvent(
         id: uuid.v4(),
-        contextId: uuid.v4(),
+        tags: ['meeting', 'work'],
         ownerId: 'user1',
         timestamp: now.subtract(const Duration(days: 30)),
         eventType: 'meeting',
@@ -327,13 +327,13 @@ TimelineRenderData _createTestRenderData() {
         },
         assets: [],
         participantIds: ['user1', 'user2'],
-        privacyLevel: shared_user.PrivacyLevel.private,
+        isPrivate: true,
         createdAt: now.subtract(const Duration(days: 30)),
         updatedAt: now.subtract(const Duration(days: 30)),
       ),
       TimelineEvent(
         id: uuid.v4(),
-        contextId: uuid.v4(),
+        tags: ['shared', 'event'],
         ownerId: 'user2',
         timestamp: now.subtract(const Duration(days: 25)),
         eventType: 'shared_event',
@@ -343,13 +343,13 @@ TimelineRenderData _createTestRenderData() {
         },
         assets: [],
         participantIds: ['user1', 'user2', 'user3'],
-        privacyLevel: shared_user.PrivacyLevel.private,
+        isPrivate: true,
         createdAt: now.subtract(const Duration(days: 25)),
         updatedAt: now.subtract(const Duration(days: 25)),
       ),
       TimelineEvent(
         id: uuid.v4(),
-        contextId: uuid.v4(),
+        tags: ['personal'],
         ownerId: 'user3',
         timestamp: now.subtract(const Duration(days: 20)),
         eventType: 'personal',
@@ -358,7 +358,7 @@ TimelineRenderData _createTestRenderData() {
         },
         assets: [],
         participantIds: ['user3'],
-        privacyLevel: shared_user.PrivacyLevel.private,
+        isPrivate: true,
         createdAt: now.subtract(const Duration(days: 20)),
         updatedAt: now.subtract(const Duration(days: 20)),
       ),
@@ -378,14 +378,14 @@ TimelineRenderData _createTestRenderData() {
       'team_activities': [
         TimelineEvent(
           id: uuid.v4(),
-          contextId: uuid.v4(),
+          tags: ['team', 'activity'],
           ownerId: 'user1',
           timestamp: now.subtract(const Duration(days: 27)),
           eventType: 'team_activity',
           customAttributes: {'title': 'Team Activity'},
           assets: [],
           participantIds: ['user1', 'user2'],
-          privacyLevel: shared_user.PrivacyLevel.private,
+          isPrivate: true,
           createdAt: now.subtract(const Duration(days: 27)),
           updatedAt: now.subtract(const Duration(days: 27)),
         ),
@@ -405,7 +405,7 @@ TimelineRenderData _createLargeRenderData(int userCount, int eventsPerUser) {
     for (int eventIndex = 0; eventIndex < eventsPerUser; eventIndex++) {
       events.add(TimelineEvent(
         id: uuid.v4(),
-        contextId: uuid.v4(),
+        tags: ['event'],
         ownerId: userId,
         timestamp: now.subtract(Duration(days: eventIndex)),
         eventType: eventIndex % 5 == 0 ? 'shared_event' : 'personal',
@@ -419,7 +419,7 @@ TimelineRenderData _createLargeRenderData(int userCount, int eventsPerUser) {
         participantIds: eventIndex % 5 == 0 
             ? [userId, 'user${(userIndex + 1) % userCount}']
             : [userId],
-        privacyLevel: shared_user.PrivacyLevel.private,
+        isPrivate: true,
         createdAt: now.subtract(Duration(days: eventIndex)),
         updatedAt: now.subtract(Duration(days: eventIndex)),
       ));

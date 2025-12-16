@@ -1,4 +1,4 @@
-name: users_timeline
+name: legacy_flow
 description: A collaborative digital historiography platform that transforms personal photo collections into rich, interactive timelines.
 publish_to: 'none'
 version: 1.0.0+1
@@ -86,6 +86,7 @@ dev_dependencies:
   json_serializable: ^6.7.1
   freezed: ^2.4.5
   faker: ^2.1.0
+  sqflite_common_ffi: ^2.3.6
 
 flutter:
   uses-material-design: true

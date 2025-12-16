@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:users_timeline/shared/models/user.dart';
+import 'package:legacy_flow/shared/models/user.dart';
 import '../services/timeline_renderer_interface.dart';
 import 'filter_dialog.dart';
 

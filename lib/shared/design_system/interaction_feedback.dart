@@ -57,6 +57,7 @@ class InteractionFeedback {
   static Future<void> success() => haptic(HapticIntensity.medium);
   static Future<void> error() => haptic(HapticIntensity.heavy);
   static Future<void> milestone() => haptic(HapticIntensity.heavy);
+  static Future<void> trigger() => tap(); // Alias for general interaction feedback
 
   // ===========================================================================
   // ANIMATION HELPERS

@@ -2,16 +2,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
 
-import 'package:users_timeline/shared/models/context.dart';
-import 'package:users_timeline/shared/models/timeline_event.dart';
-import 'package:users_timeline/shared/models/timeline_theme.dart';
-import 'package:users_timeline/shared/models/user.dart';
-import 'package:users_timeline/shared/models/fuzzy_date.dart';
-import 'package:users_timeline/shared/models/geo_location.dart';
-import 'package:users_timeline/shared/models/media_asset.dart';
-import 'package:users_timeline/shared/models/story.dart';
-import 'package:users_timeline/shared/models/relationship.dart';
-import 'package:users_timeline/shared/models/exif_data.dart';
+import 'package:legacy_flow/shared/models/context.dart';
+import 'package:legacy_flow/shared/models/timeline_event.dart';
+import 'package:legacy_flow/shared/models/timeline_theme.dart';
+import 'package:legacy_flow/shared/models/user.dart';
+import 'package:legacy_flow/shared/models/fuzzy_date.dart';
+import 'package:legacy_flow/shared/models/geo_location.dart';
+import 'package:legacy_flow/shared/models/media_asset.dart';
+import 'package:legacy_flow/shared/models/story.dart';
+import 'package:legacy_flow/shared/models/relationship.dart';
+import 'package:legacy_flow/shared/models/exif_data.dart';
 
 void main() {
   group('Data Model Serialization Tests', () {
@@ -191,7 +191,6 @@ void main() {
     test('TimelineEvent serialization round-trip', () {
       final timelineEvent = TimelineEvent.create(
         id: faker.guid.guid(),
-        contextId: faker.guid.guid(),
         ownerId: faker.guid.guid(),
         timestamp: faker.date.dateTime(),
         eventType: 'photo',
@@ -234,7 +233,6 @@ void main() {
 
       final timelineEvent = TimelineEvent.create(
         id: faker.guid.guid(),
-        contextId: faker.guid.guid(),
         ownerId: faker.guid.guid(),
         timestamp: faker.date.dateTime(),
         location: geoLocation,

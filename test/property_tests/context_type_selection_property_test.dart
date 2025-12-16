@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
 import 'package:sqflite_common/sqlite_api.dart';
+import '../helpers/db_test_helper.dart';
 import '../../lib/shared/models/context.dart';
 import '../../lib/shared/models/user.dart';
 import '../../lib/features/context/services/context_management_service.dart';
@@ -14,6 +15,10 @@ void main() {
   group('Context Type Selection Property Tests', () {
     late ContextManagementService contextService;
     final faker = Faker();
+
+    setUpAll(() {
+      initializeTestDatabase();
+    });
 
     setUp(() {
       // Note: Since ContextManagementService requires a real Database connection,

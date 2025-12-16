@@ -11,7 +11,6 @@ class TimelineEventFactory {
   /// Creates a timeline event with context-specific defaults and validation
   static TimelineEvent createEvent({
     required String id,
-    required String contextId,
     required String ownerId,
     required ContextType contextType,
     required DateTime timestamp,
@@ -68,7 +67,6 @@ class TimelineEventFactory {
   /// Creates a photo event with EXIF data integration
   static TimelineEvent createPhotoEvent({
     required String id,
-    required String contextId,
     required String ownerId,
     required ContextType contextType,
     required List<MediaAsset> photoAssets,
@@ -96,7 +94,6 @@ class TimelineEventFactory {
 
     return createEvent(
       id: id,
-      contextId: contextId,
       ownerId: ownerId,
       contextType: contextType,
       timestamp: timestamp,
@@ -114,7 +111,6 @@ class TimelineEventFactory {
   /// Creates a text-only event (quick entry)
   static TimelineEvent createTextEvent({
     required String id,
-    required String contextId,
     required String ownerId,
     required ContextType contextType,
     required DateTime timestamp,
@@ -127,7 +123,6 @@ class TimelineEventFactory {
   }) {
     return createEvent(
       id: id,
-      contextId: contextId,
       ownerId: ownerId,
       contextType: contextType,
       timestamp: timestamp,
@@ -145,7 +140,6 @@ class TimelineEventFactory {
   /// Creates a context-specific milestone event
   static TimelineEvent createMilestoneEvent({
     required String id,
-    required String contextId,
     required String ownerId,
     required ContextType contextType,
     required DateTime timestamp,
@@ -160,7 +154,6 @@ class TimelineEventFactory {
     
     return createEvent(
       id: id,
-      contextId: contextId,
       ownerId: ownerId,
       contextType: contextType,
       timestamp: timestamp,
