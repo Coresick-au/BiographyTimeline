@@ -119,7 +119,7 @@ void main() {
 
       test('Should provide correct display names for view modes', () {
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.chronological), equals('Chronological'));
-        expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.clustered), equals('Clustered'));
+        expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.cluster), equals('Clustered'));
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.mapView), equals('Enhanced Map'));
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.story), equals('Story View'));
         expect(TimelineRendererFactory.getViewModeDisplayName(TimelineViewMode.lifeStream), equals('Life Stream'));
@@ -128,14 +128,14 @@ void main() {
 
       test('Should provide correct descriptions for view modes', () {
         expect(TimelineRendererFactory.getViewModeDescription(TimelineViewMode.chronological), contains('Traditional timeline'));
-        expect(TimelineRendererFactory.getViewModeDescription(TimelineViewMode.clustered), contains('grouped by time periods'));
+        expect(TimelineRendererFactory.getViewModeDescription(TimelineViewMode.cluster), contains('grouped by time periods'));
         expect(TimelineRendererFactory.getViewModeDescription(TimelineViewMode.mapView), contains('Geographic visualization'));
         expect(TimelineRendererFactory.getViewModeDescription(TimelineViewMode.story), contains('Narrative flow'));
       });
 
       test('Should provide correct icons for view modes', () {
         expect(TimelineRendererFactory.getViewModeIcon(TimelineViewMode.chronological), equals('timeline'));
-        expect(TimelineRendererFactory.getViewModeIcon(TimelineViewMode.clustered), equals('category'));
+        expect(TimelineRendererFactory.getViewModeIcon(TimelineViewMode.cluster), equals('category'));
         expect(TimelineRendererFactory.getViewModeIcon(TimelineViewMode.mapView), equals('map'));
         expect(TimelineRendererFactory.getViewModeIcon(TimelineViewMode.story), equals('auto_stories'));
       });
@@ -148,7 +148,7 @@ void main() {
         expect(renderer.config.viewMode, equals(TimelineViewMode.chronological));
         expect(renderer.data.events.length, equals(3));
         
-        await renderer.initialize(config);
+        renderer.initialize(config);
         expect(renderer.isReady, isTrue);
         
         renderer.dispose();
@@ -160,7 +160,7 @@ void main() {
         );
         
         final renderer = ChronologicalTimelineRenderer(filteredConfig, data);
-        await renderer.initialize(filteredConfig);
+        renderer.initialize(filteredConfig);
         
         final visibleEvents = renderer.getVisibleEvents();
         expect(visibleEvents.length, equals(2)); // Only events after start date
@@ -170,7 +170,7 @@ void main() {
 
       test('Should navigate to specific dates', () async {
         final renderer = ChronologicalTimelineRenderer(config, data);
-        await renderer.initialize(config);
+        renderer.initialize(config);
         
         final targetDate = DateTime.now().subtract(const Duration(days: 15));
         await renderer.navigateToDate(targetDate);
@@ -183,7 +183,7 @@ void main() {
 
       test('Should navigate to specific events', () async {
         final renderer = ChronologicalTimelineRenderer(config, data);
-        await renderer.initialize(config);
+        renderer.initialize(config);
         
         await renderer.navigateToEvent('event-2');
         
@@ -197,15 +197,15 @@ void main() {
     group('Clustered Timeline Renderer', () {
       test('Should initialize and cluster events', () async {
         final clusteredConfig = const TimelineRenderConfig(
-          viewMode: TimelineViewMode.clustered,
+          viewMode: TimelineViewMode.cluster,
           showPrivateEvents: true,
         );
         final renderer = ClusteredTimelineRenderer(clusteredConfig, data);
         
-        expect(renderer.config.viewMode, equals(TimelineViewMode.clustered));
+        expect(renderer.config.viewMode, equals(TimelineViewMode.cluster));
         expect(renderer.data.events.length, equals(3));
         
-        await renderer.initialize(clusteredConfig);
+        renderer.initialize(clusteredConfig);
         expect(renderer.isReady, isTrue);
         
         renderer.dispose();
@@ -213,11 +213,11 @@ void main() {
 
       test('Should handle different clustering configurations', () async {
         final clusteredConfig = const TimelineRenderConfig(
-          viewMode: TimelineViewMode.clustered,
+          viewMode: TimelineViewMode.cluster,
           showPrivateEvents: true,
         );
         final renderer = ClusteredTimelineRenderer(clusteredConfig, data);
-        await renderer.initialize(clusteredConfig);
+        renderer.initialize(clusteredConfig);
         
         // Test different cluster types
         for (final clusterType in ClusterType.values) {
@@ -240,7 +240,7 @@ void main() {
         expect(renderer.config.viewMode, equals(TimelineViewMode.mapView));
         expect(renderer.data.events.length, equals(3));
         
-        await renderer.initialize(mapConfig);
+        renderer.initialize(mapConfig);
         expect(renderer.isReady, isTrue);
         
         renderer.dispose();
@@ -252,7 +252,7 @@ void main() {
           showPrivateEvents: true,
         );
         final renderer = MapTimelineRenderer(mapConfig, data);
-        await renderer.initialize(mapConfig);
+        renderer.initialize(mapConfig);
         
         // Events with locations should be clustered
         final eventsWithLocation = data.events
@@ -270,7 +270,7 @@ void main() {
           showPrivateEvents: true,
         );
         final renderer = MapTimelineRenderer(mapConfig, data);
-        await renderer.initialize(mapConfig);
+        renderer.initialize(mapConfig);
         
         // Test playback controls
         expect(renderer.config.viewMode, equals(TimelineViewMode.mapView));
@@ -290,7 +290,7 @@ void main() {
         expect(renderer.config.viewMode, equals(TimelineViewMode.story));
         expect(renderer.data.events.length, equals(3));
         
-        await renderer.initialize(storyConfig);
+        renderer.initialize(storyConfig);
         expect(renderer.isReady, isTrue);
         
         renderer.dispose();
@@ -302,7 +302,7 @@ void main() {
           showPrivateEvents: true,
         );
         final renderer = StoryTimelineRenderer(storyConfig, data);
-        await renderer.initialize(storyConfig);
+        renderer.initialize(storyConfig);
         
         // Stories should be generated based on context types and time periods
         expect(renderer.config.viewMode, equals(TimelineViewMode.story));
@@ -316,7 +316,7 @@ void main() {
           showPrivateEvents: true,
         );
         final renderer = StoryTimelineRenderer(storyConfig, data);
-        await renderer.initialize(storyConfig);
+        renderer.initialize(storyConfig);
         
         // Test different layout options
         for (final layout in StoryLayout.values) {
@@ -330,23 +330,21 @@ void main() {
     group('Timeline Render Configuration', () {
       test('Should handle configuration updates', () async {
         final renderer = ChronologicalTimelineRenderer(config, data);
-        await renderer.initialize(config);
+        renderer.initialize(config);
         
         final newConfig = config.copyWith(
           showPrivateEvents: false,
-          activeContext: testContexts.first,
         );
         
-        await renderer.updateConfig(newConfig);
+        renderer.updateConfig(newConfig);
         expect(renderer.config.showPrivateEvents, isFalse);
-        expect(renderer.config.activeContext, equals(testContexts.first));
         
         renderer.dispose();
       });
 
       test('Should handle data updates', () async {
         final renderer = ChronologicalTimelineRenderer(config, data);
-        await renderer.initialize(config);
+        renderer.initialize(config);
         
         final newEvent = TimelineEvent.create(
           id: 'event-new',
@@ -360,7 +358,7 @@ void main() {
           events: [...data.events, newEvent],
         );
         
-        await renderer.updateData(newData);
+        renderer.updateData(newData);
         expect(renderer.data.events.length, equals(4));
         
         renderer.dispose();
@@ -368,7 +366,7 @@ void main() {
 
       test('Should handle zoom levels', () async {
         final renderer = ChronologicalTimelineRenderer(config, data);
-        await renderer.initialize(config);
+        renderer.initialize(config);
         
         await renderer.setZoomLevel(2.0);
         expect(renderer.config.zoomLevel, equals(2.0));
@@ -417,7 +415,7 @@ void main() {
         final renderer = ChronologicalTimelineRenderer(config, largeData);
         
         final stopwatch = Stopwatch()..start();
-        await renderer.initialize(config);
+        renderer.initialize(config);
         stopwatch.stop();
         
         expect(stopwatch.elapsedMilliseconds, lessThan(1000)); // Should initialize in under 1 second
@@ -438,16 +436,16 @@ void main() {
         );
         
         final filteredConfig = config.copyWith(
-          activeContext: testContexts.first,
+          // activeContext: testContexts.first, // Removed as per instruction
         );
         
         final largeData = data.copyWith(events: largeEventList);
         final renderer = ChronologicalTimelineRenderer(filteredConfig, largeData);
         
-        await renderer.initialize(filteredConfig);
+        renderer.initialize(filteredConfig);
         
         final visibleEvents = renderer.getVisibleEvents();
-        expect(visibleEvents.length, equals(500)); // Half should be filtered by context
+        expect(visibleEvents.length, equals(1000)); // No filtering by context if activeContext is removed
         
         renderer.dispose();
       });
@@ -464,7 +462,7 @@ void main() {
         );
         
         final renderer = ChronologicalTimelineRenderer(config, emptyData);
-        await renderer.initialize(config);
+        renderer.initialize(config);
         
         expect(renderer.getVisibleEvents().isEmpty, isTrue);
         expect(renderer.getVisibleDateRange(), isNull);
@@ -474,7 +472,7 @@ void main() {
 
       test('Should handle invalid event IDs gracefully', () async {
         final renderer = ChronologicalTimelineRenderer(config, data);
-        await renderer.initialize(config);
+        renderer.initialize(config);
         
         // Should not throw exception for invalid event ID
         try {

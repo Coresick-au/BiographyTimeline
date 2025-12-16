@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../lib/features/offline/services/conflict_resolution_service.dart';
 import '../../lib/features/offline/services/offline_database_service.dart';
 import '../../lib/features/offline/models/offline_models.dart';
+import '../helpers/db_test_helper.dart';
 
 /// Property 29: Concurrent Edit Conflict Resolution
 /// 
@@ -18,6 +19,7 @@ import '../../lib/features/offline/models/offline_models.dart';
 void main() {
   // Initialize Flutter binding for tests
   TestWidgetsFlutterBinding.ensureInitialized();
+  initializeTestDatabase();
   
   group('Property 29: Concurrent Edit Conflict Resolution', () {
     late ConflictResolutionService conflictService;

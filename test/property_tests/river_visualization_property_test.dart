@@ -10,6 +10,7 @@ import '../../lib/features/timeline/renderers/river_timeline_renderer.dart';
 import '../../lib/features/timeline/services/timeline_renderer_interface.dart';
 import '../../lib/features/timeline/services/timeline_renderer_factory.dart';
 import '../../lib/shared/models/context.dart';
+import '../helpers/db_test_helper.dart';
 
 /// Property 17: River Visualization Rendering
 /// 
@@ -29,6 +30,10 @@ void main() {
     late TimelineRenderConfig renderConfig;
     late TimelineRenderData renderData;
     const uuid = Uuid();
+
+    setUpAll(() {
+      initializeTestDatabase();
+    });
 
     setUp(() {
       riverRenderer = RiverTimelineRenderer();

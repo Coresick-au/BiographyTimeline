@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../lib/shared/design_system/app_theme.dart';
 import '../../lib/shared/design_system/theme_engine.dart';
 import '../../lib/shared/design_system/color_palettes.dart';
+import '../helpers/db_test_helper.dart';
 
 /// Property 31: Theme System Functionality
 /// 
@@ -18,6 +19,10 @@ import '../../lib/shared/design_system/color_palettes.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  
+  setUpAll(() {
+    initializeTestDatabase();
+  });
   
   group('Property 31: Theme System Functionality', () {
     late ProviderContainer container;

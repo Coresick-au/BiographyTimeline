@@ -68,7 +68,7 @@ void main() {
         width: 1920,
         height: 1080,
         mimeType: 'image/jpeg',
-        fileSize: 1000000,
+        mimeType: 'image/jpeg',
       );
 
       await searchService.indexMediaAsset(
@@ -152,7 +152,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Playing in the ocean waves',
         tags: ['ocean', 'water'],
@@ -173,7 +173,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Yesterday\'s adventure',
       );
@@ -197,7 +197,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Beach sunset',
       );
@@ -210,7 +210,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Mountain view',
       );
@@ -223,7 +223,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Ocean waves',
       );
@@ -248,7 +248,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Family photo',
       );
@@ -286,7 +286,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Beach vacation',
       );
@@ -319,7 +319,7 @@ void main() {
         width: 1920,
         height: 1080,
         mimeType: 'image/jpeg',
-        fileSize: 1000000,
+        mimeType: 'image/jpeg',
       );
 
       final content = await embeddingService.generateFromMediaAsset(
@@ -350,7 +350,7 @@ void main() {
             width: 1920,
             height: 1080,
             mimeType: 'image/jpeg',
-            fileSize: 1000000,
+            mimeType: 'image/jpeg',
           ),
           caption: 'Beach vacation',
         ),
@@ -363,7 +363,7 @@ void main() {
             width: 1920,
             height: 1080,
             mimeType: 'image/jpeg',
-            fileSize: 1000000,
+            mimeType: 'image/jpeg',
           ),
           caption: 'Mountain hiking',
         ),
@@ -385,7 +385,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Birthday celebration',
       );
@@ -403,7 +403,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'The beautiful beach and the ocean',
       );
@@ -431,7 +431,7 @@ void main() {
             width: 1920,
             height: 1080,
             mimeType: 'image/jpeg',
-            fileSize: 1000000,
+            mimeType: 'image/jpeg',
           ),
           caption: 'Test photo number $i',
         );
@@ -468,7 +468,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Beach & Ocean! #vacation',
       );
@@ -486,7 +486,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Café ☕️ in Paris 🗼',
       );
@@ -508,7 +508,7 @@ void main() {
         width: 1920,
         height: 1080,
         mimeType: 'image/jpeg',
-        fileSize: 1000000,
+        mimeType: 'image/jpeg',
       );
 
       // 2. Generate embeddings
@@ -560,7 +560,7 @@ void main() {
           width: 1920,
           height: 1080,
           mimeType: 'image/jpeg',
-          fileSize: 1000000,
+          mimeType: 'image/jpeg',
         ),
         caption: 'Test content',
       );
