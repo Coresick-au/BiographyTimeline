@@ -43,8 +43,8 @@ void main() {
 
     test('Sankey-style timeline merging visualization renders properly', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Act
       final widget = riverRenderer.build();
@@ -57,14 +57,14 @@ void main() {
       expect(riverRenderer.isReady, isTrue);
       expect(riverRenderer.viewMode, equals(TimelineViewMode.river));
       expect(riverRenderer.displayName, equals('River View'));
-      expect(riverRenderer.description, equals('Sankey-style visualization of merged timelines'));
+      expect(riverRenderer.description, equals('Flowing visualization of timeline events'));
       expect(riverRenderer.icon, equals(Icons.water));
     });
 
     test('Bézier curve rendering creates smooth merge/diverge transitions', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Act
       final widget = riverRenderer.build();
@@ -83,8 +83,8 @@ void main() {
 
     test('Interactive elements allow exploration of merged timeline segments', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Act
       final widget = riverRenderer.build(onEventTap: (event) {
@@ -103,8 +103,8 @@ void main() {
     test('Color coding distinguishes different users timeline flows', () async {
       // Arrange
       final configWithMultipleUsers = _createRenderConfigWithMultipleUsers();
-      await riverRenderer.initialize(configWithMultipleUsers);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(configWithMultipleUsers);
+      riverRenderer.updateData(renderData);
 
       // Act
       final widget = riverRenderer.build();
@@ -118,8 +118,8 @@ void main() {
 
     test('Timeline scaling and zoom maintains visual coherence', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Test different configurations
       final configs = [
@@ -131,7 +131,7 @@ void main() {
 
       for (final config in configs) {
         // Act
-        await riverRenderer.updateConfig(config);
+        riverRenderer.updateConfig(config);
         final widget = riverRenderer.build();
 
         // Assert
@@ -146,8 +146,8 @@ void main() {
       
       // Act
       final stopwatch = Stopwatch()..start();
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(largeRenderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(largeRenderData);
       final widget = riverRenderer.build();
       stopwatch.stop();
 
@@ -161,8 +161,8 @@ void main() {
 
     test('Touch interactions work correctly on mobile devices', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Act
       final widget = riverRenderer.build(
@@ -184,8 +184,8 @@ void main() {
 
     test('Accessibility features are properly implemented', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Act
       final widget = riverRenderer.build();
@@ -210,8 +210,8 @@ void main() {
       );
 
       // Act
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(emptyData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(emptyData);
       final widget = riverRenderer.build();
 
       // Assert
@@ -224,8 +224,8 @@ void main() {
       final originalEventCount = renderData.events.length;
       
       // Act
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
       final widget = riverRenderer.build();
 
       // Assert
@@ -239,15 +239,15 @@ void main() {
 
     test('Configuration updates work correctly', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Act - Update configuration
       final newConfig = renderConfig.copyWith(
         showPrivateEvents: false,
         zoomLevel: 1.5,
       );
-      await riverRenderer.updateConfig(newConfig);
+      riverRenderer.updateConfig(newConfig);
       final widget = riverRenderer.build();
 
       // Assert
@@ -257,8 +257,8 @@ void main() {
 
     test('Filtering capabilities work as expected', () async {
       // Arrange
-      await riverRenderer.initialize(renderConfig);
-      await riverRenderer.updateData(renderData);
+      riverRenderer.initialize(renderConfig);
+      riverRenderer.updateData(renderData);
 
       // Act
       final widget = riverRenderer.build();

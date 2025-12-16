@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'helpers/db_test_helper.dart';
 
 import '../lib/app/app.dart';
+import '../lib/features/timeline/services/timeline_repository.dart';
+import '../lib/features/timeline/services/mock_timeline_repository.dart';
 
 void main() {
   setUpAll(() {
@@ -19,7 +21,15 @@ void main() {
 
   testWidgets('Timeline app loads successfully', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const ProviderScope(child: UsersTimelineApp()));
+    // Override the repository provider to use MockTimelineRepository
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          timelineRepositoryProvider.overrideWith((ref) async => MockTimelineRepository()),
+        ],
+        child: const UsersTimelineApp(),
+      ),
+    );
 
     // Wait for initial frame
     await tester.pump();
