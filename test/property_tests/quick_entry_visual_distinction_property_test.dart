@@ -31,7 +31,6 @@ void main() {
         // Create a text-only event
         final textEvent = TimelineEvent.create(
           id: 'text_visual_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -43,7 +42,6 @@ void main() {
         // Create a photo event for comparison
         final photoEvent = TimelineEvent.create(
           id: 'photo_visual_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp.add(const Duration(minutes: 1)),
           eventType: 'photo',
@@ -100,7 +98,6 @@ void main() {
         // Create text-only event
         final textEvent = TimelineEvent.create(
           id: 'coherence_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -151,8 +148,7 @@ void main() {
           // Text event
           TimelineEvent.create(
             id: 'mixed_text_${DateTime.now().millisecondsSinceEpoch}_$i',
-            contextId: contextId,
-            ownerId: ownerId,
+              ownerId: ownerId,
             timestamp: baseTimestamp,
             eventType: 'text',
             description: PropertyTestUtils.randomString(100),
@@ -161,8 +157,7 @@ void main() {
           // Photo event
           TimelineEvent.create(
             id: 'mixed_photo_${DateTime.now().millisecondsSinceEpoch}_$i',
-            contextId: contextId,
-            ownerId: ownerId,
+              ownerId: ownerId,
             timestamp: baseTimestamp.add(const Duration(minutes: 1)),
             eventType: 'photo',
             description: PropertyTestUtils.randomString(100),
@@ -207,7 +202,6 @@ void main() {
         // Create text-only event
         final textEvent = TimelineEvent.create(
           id: 'accessible_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -261,7 +255,6 @@ void main() {
         // Create text event with varying content length
         final textEvent = TimelineEvent.create(
           id: 'length_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',

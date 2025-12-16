@@ -33,7 +33,6 @@ void main() {
         // Create quick entry with precise date
         final event = TimelineEvent.create(
           id: 'quick_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -44,7 +43,6 @@ void main() {
 
         // Verify the event is created correctly
         expect(event.id, isNotEmpty);
-        expect(event.contextId, equals(contextId));
         expect(event.ownerId, equals(ownerId));
         expect(event.timestamp, equals(timestamp));
         expect(event.eventType, equals('text'));
@@ -75,7 +73,6 @@ void main() {
         // Create quick entry with fuzzy date
         final event = TimelineEvent.create(
           id: 'quick_fuzzy_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: fuzzyDate.toApproximateDateTime(),
           fuzzyDate: fuzzyDate,
@@ -87,7 +84,6 @@ void main() {
 
         // Verify the event is created correctly
         expect(event.id, isNotEmpty);
-        expect(event.contextId, equals(contextId));
         expect(event.ownerId, equals(ownerId));
         expect(event.timestamp, equals(fuzzyDate.toApproximateDateTime()));
         expect(event.fuzzyDate, equals(fuzzyDate));
@@ -114,7 +110,6 @@ void main() {
         // Create a text-only event
         final textEvent = TimelineEvent.create(
           id: 'text_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -125,7 +120,6 @@ void main() {
         // Create a photo-based event for comparison
         final photoEvent = TimelineEvent.create(
           id: 'photo_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp.add(const Duration(minutes: 1)),
           eventType: 'photo',
@@ -134,7 +128,6 @@ void main() {
         );
 
         // Verify both events have the same structure and can be sorted together
-        expect(textEvent.contextId, equals(photoEvent.contextId));
         expect(textEvent.ownerId, equals(photoEvent.ownerId));
         expect(textEvent.runtimeType, equals(photoEvent.runtimeType));
         
@@ -147,7 +140,6 @@ void main() {
         // Verify both have all required timeline event fields
         for (final event in events) {
           expect(event.id, isNotEmpty);
-          expect(event.contextId, isNotEmpty);
           expect(event.ownerId, isNotEmpty);
           expect(event.timestamp, isNotNull);
           expect(event.eventType, isNotEmpty);
@@ -173,7 +165,6 @@ void main() {
         // Create quick entry
         final event = TimelineEvent.create(
           id: 'content_${DateTime.now().millisecondsSinceEpoch}_$i',
-          contextId: contextId,
           ownerId: ownerId,
           timestamp: timestamp,
           eventType: 'text',
@@ -190,7 +181,6 @@ void main() {
         
         // Verify the event is valid regardless of title presence
         expect(event.id, isNotEmpty);
-        expect(event.contextId, equals(contextId));
         expect(event.ownerId, equals(ownerId));
         expect(event.timestamp, equals(timestamp));
       }
@@ -226,9 +216,6 @@ void main() {
         );
 
         // Verify context isolation
-        expect(event1.contextId, isNot(equals(event2.contextId)));
-        expect(event1.contextId, equals(contextId1));
-        expect(event2.contextId, equals(contextId2));
         
         // Verify both have default privacy settings
         expect(event1.privacyLevel, equals(PrivacyLevel.private));

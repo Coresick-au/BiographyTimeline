@@ -67,7 +67,6 @@ void main() {
           viewMode: viewMode,
           startDate: startDate,
           endDate: endDate,
-          activeContext: context,
           selectedEventIds: selectedEventIds,
           showPrivateEvents: showPrivateEvents,
           zoomLevel: zoomLevel,
@@ -77,7 +76,6 @@ void main() {
         expect(config.viewMode, equals(viewMode));
         expect(config.startDate, equals(startDate));
         expect(config.endDate, equals(endDate));
-        expect(config.activeContext, equals(context));
         expect(config.selectedEventIds, equals(selectedEventIds));
         expect(config.showPrivateEvents, equals(showPrivateEvents));
         expect(config.zoomLevel, equals(zoomLevel));
