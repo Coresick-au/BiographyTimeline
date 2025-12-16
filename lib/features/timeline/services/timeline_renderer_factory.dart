@@ -64,7 +64,7 @@ class TimelineRendererFactory {
       case TimelineViewMode.swimlanes:
         return 'Swimlanes';
       case TimelineViewMode.river:
-        return 'River Flow';
+        return 'Life Flow';
       default:
         return 'Timeline';
     }

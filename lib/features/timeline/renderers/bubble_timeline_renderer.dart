@@ -19,6 +19,7 @@ class BubbleTimelineRenderer extends BaseTimelineRenderer {
     ScrollController? scrollController,
   }) {
     return BubbleOverviewView(
+      events: data.events,
       onBubbleTap: (start, end) {
         // When a bubble is tapped, navigate to that date and switch to chronological/maximal view
         // effectively "zooming in"

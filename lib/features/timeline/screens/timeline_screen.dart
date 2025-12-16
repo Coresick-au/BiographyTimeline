@@ -24,6 +24,9 @@ import '../providers/timeline_viewport_provider.dart';
 import '../models/timeline_view_state.dart';
 import '../widgets/timeline_viewport.dart';
 import '../../dashboard/screens/dashboard_screen.dart';
+import '../widgets/person_selector_dropdown.dart';
+import '../providers/person_filter_provider.dart';
+import '../../../shared/models/timeline_event.dart' as timeline_models;
 
 /// Main timeline screen with view switcher and controls
 class TimelineScreen extends ConsumerStatefulWidget {
@@ -208,6 +211,19 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
         ),
       ),
       actions: [
+        // Person filter dropdown
+        Consumer(
+          builder: (context, ref, _) {
+            final allPeople = state.allEvents
+                .expand((e) => [e.ownerId, ...e.participantIds])
+                .where((id) => id.isNotEmpty) // Filter out empty IDs if any
+                .toSet()
+                .toList()
+              ..sort();
+            return PersonSelectorDropdown(availablePeople: allPeople);
+          },
+        ),
+        const SizedBox(width: 8),
         IconButton(
           onPressed: () => showDialog(
             context: context,
@@ -233,21 +249,33 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   Widget _buildTimelineRenderer(BuildContext context, TimelineState state) {
-    // Create config and data objects
-    final config = TimelineRenderConfig(
-      viewMode: _currentViewMode,
-      showPrivateEvents: state.showPrivateEvents,
-    );
+    return Consumer(
+      builder: (context, ref, _) {
+        final selectedPeople = ref.watch(personFilterProvider);
+        
+        // Filter events by selected people (empty set = show all)
+        final filteredByPerson = selectedPeople.isEmpty
+            ? state.filteredEvents
+            : state.filteredEvents.where((event) {
+                return selectedPeople.contains(event.ownerId) ||
+                       event.participantIds.any((id) => selectedPeople.contains(id));
+              }).toList();
+        
+        // Create config and data objects
+        final config = TimelineRenderConfig(
+          viewMode: _currentViewMode,
+          showPrivateEvents: state.showPrivateEvents,
+        );
 
-    final data = TimelineRenderData(
-      events: state.filteredEvents,
-      contexts: state.contexts,
-      clusteredEvents: state.clusteredEvents,
-      earliestDate: state.filteredEvents.isEmpty ? DateTime.now() : 
-          state.filteredEvents.map((e) => e.timestamp).reduce((a, b) => a.isBefore(b) ? a : b),
-      latestDate: state.filteredEvents.isEmpty ? DateTime.now() : 
-          state.filteredEvents.map((e) => e.timestamp).reduce((a, b) => a.isAfter(b) ? a : b),
-    );
+        final data = TimelineRenderData(
+          events: filteredByPerson,
+          contexts: state.contexts,
+          clusteredEvents: state.clusteredEvents,
+          earliestDate: filteredByPerson.isEmpty ? DateTime.now() : 
+              filteredByPerson.map((e) => e.timestamp).reduce((a, b) => a.isBefore(b) ? a : b),
+          latestDate: filteredByPerson.isEmpty ? DateTime.now() : 
+              filteredByPerson.map((e) => e.timestamp).reduce((a, b) => a.isAfter(b) ? a : b),
+        );
 
     // Check if we have a cached renderer for this view mode
     if (!_rendererCache.containsKey(_currentViewMode)) {
@@ -284,7 +312,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       onContextTap: (ctx) => _switchToContext(ctx, ref),
       // ... other callbacks
     );
-     
+      },
+    );
   }
 
   void _showAddEventDialog(BuildContext context, WidgetRef ref) {
@@ -333,9 +362,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       case TimelineViewMode.lifeStream: return 'Life Stream';
       case TimelineViewMode.bentoGrid: return 'Grid';
       case TimelineViewMode.story: return 'Story';
-      case TimelineViewMode.bubble: return 'Overview';
+      case TimelineViewMode.bubble: return 'Bubbles';
       case TimelineViewMode.swimlanes: return 'Timeline Lanes';
-      case TimelineViewMode.river: return 'Flow View';
+      case TimelineViewMode.river: return 'Life Flow';
       default: return mode.toString();
     }
   }

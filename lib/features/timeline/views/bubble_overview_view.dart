@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/bubble_aggregation_service.dart';
-import '../widgets/bubble_widget.dart';
 import '../models/timeline_view_state.dart';
 import '../services/timeline_data_service.dart';
+import '../../../shared/models/timeline_event.dart';
 
-/// Bubble Overview View - high-level entry point showing time buckets as bubbles
+/// Bubbles View - Vertical timeline with activity bubbles along a central line
+/// Highlights high activity periods with larger, more vibrant bubbles
 class BubbleOverviewView extends ConsumerStatefulWidget {
+  final List<TimelineEvent> events;
   final Function(DateTime start, DateTime end)? onBubbleTap;
   
   const BubbleOverviewView({
     super.key,
+    required this.events,
     this.onBubbleTap,
   });
 
@@ -20,44 +23,23 @@ class BubbleOverviewView extends ConsumerStatefulWidget {
 
 class _BubbleOverviewViewState extends ConsumerState<BubbleOverviewView> {
   final BubbleAggregationService _aggregationService = BubbleAggregationService();
+  final ScrollController _scrollController = ScrollController();
   ZoomTier _currentTier = ZoomTier.year;
   
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final timelineDataAsync = ref.watch(timelineDataProvider);
-    
-    return timelineDataAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
-      error: (error, stack) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.bubble_chart,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading timeline',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text(
-              error.toString(),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-      data: (data) => _buildBubbleView(context, data.filteredEvents),
-    );
+    // Use widget.events directly
+    return _buildBubblesView(context, widget.events);
   }
   
-  Widget _buildBubbleView(BuildContext context, List<dynamic> events) {
-    // Cast to TimelineEvent list
-    final timelineEvents = events.cast<dynamic>().toList();
+  Widget _buildBubblesView(BuildContext context, List<dynamic> events) {
+    final timelineEvents = events.cast<TimelineEvent>().toList();
     
     if (timelineEvents.isEmpty) {
       return _buildEmptyState(context);
@@ -65,137 +47,397 @@ class _BubbleOverviewViewState extends ConsumerState<BubbleOverviewView> {
     
     // Aggregate events into bubbles
     final bubbles = _aggregationService.aggregate(
-      events: timelineEvents.map((e) => e as dynamic).whereType<dynamic>().toList().cast(),
+      events: timelineEvents,
       tier: _currentTier,
     );
     
-    return Column(
-      children: [
-        // Tier selector
-        _buildTierSelector(context),
-        
-        // Bubbles grid
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: _buildBubbleLayout(context, bubbles),
-          ),
-        ),
-        
-        // Legend
-        _buildLegend(context),
-      ],
-    );
-  }
-  
-  Widget _buildTierSelector(BuildContext context) {
+    // Calculate max event count for relative sizing
+    final maxEvents = bubbles.isEmpty ? 1 : 
+        bubbles.map((b) => b.eventCount).reduce((a, b) => a > b ? a : b);
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      color: const Color(0xFF0A0F1A),
+      child: Column(
         children: [
-          Text(
-            'View by: ',
-            style: Theme.of(context).textTheme.labelMedium,
-          ),
-          const SizedBox(width: 8),
-          SegmentedButton<ZoomTier>(
-            segments: const [
-              ButtonSegment(
-                value: ZoomTier.year,
-                label: Text('Year'),
-                icon: Icon(Icons.calendar_today, size: 16),
-              ),
-              ButtonSegment(
-                value: ZoomTier.month,
-                label: Text('Month'),
-                icon: Icon(Icons.date_range, size: 16),
-              ),
-              ButtonSegment(
-                value: ZoomTier.week,
-                label: Text('Week'),
-                icon: Icon(Icons.view_week, size: 16),
-              ),
-            ],
-            selected: {_currentTier},
-            onSelectionChanged: (tiers) {
-              setState(() {
-                _currentTier = tiers.first;
-              });
-            },
+          // Header with tier selector
+          _buildHeader(context),
+          
+          // Vertical timeline with bubbles
+          Expanded(
+            child: _buildVerticalTimeline(context, bubbles, maxEvents),
           ),
         ],
       ),
     );
   }
   
-  Widget _buildBubbleLayout(BuildContext context, List<BubbleData> bubbles) {
-    if (bubbles.isEmpty) {
-      return _buildEmptyState(context);
-    }
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1420),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.bubble_chart,
+            color: Colors.purple.shade300,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            'Activity Bubbles',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Spacer(),
+          // Tier selector
+          SegmentedButton<ZoomTier>(
+            segments: const [
+              ButtonSegment(
+                value: ZoomTier.year,
+                label: Text('Year', style: TextStyle(fontSize: 11)),
+              ),
+              ButtonSegment(
+                value: ZoomTier.month,
+                label: Text('Month', style: TextStyle(fontSize: 11)),
+              ),
+            ],
+            selected: {_currentTier},
+            onSelectionChanged: (tiers) {
+              setState(() => _currentTier = tiers.first);
+            },
+            style: ButtonStyle(
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildVerticalTimeline(
+    BuildContext context,
+    List<BubbleData> bubbles,
+    int maxEvents,
+  ) {
+    return Stack(
+      children: [
+        // Background gradient
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF1A1F2E).withOpacity(0.3),
+                  const Color(0xFF0A0F1A),
+                  const Color(0xFF0A0F1A),
+                  const Color(0xFF1A1F2E).withOpacity(0.3),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        // Central timeline line
+        Positioned(
+          left: MediaQuery.of(context).size.width / 2 - 1.5,
+          top: 0,
+          bottom: 0,
+          child: Container(
+            width: 3,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.purple.withOpacity(0.1),
+                  Colors.purple.withOpacity(0.5),
+                  Colors.blue.withOpacity(0.5),
+                  Colors.cyan.withOpacity(0.1),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        // Scrollable bubbles
+        SingleChildScrollView(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            children: bubbles.asMap().entries.map((entry) {
+              final index = entry.key;
+              final bubble = entry.value;
+              final isLeft = index.isEven;
+              
+              return _buildBubbleRow(
+                context,
+                bubble,
+                maxEvents,
+                isLeft,
+                index == 0,
+                index == bubbles.length - 1,
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildBubbleRow(
+    BuildContext context,
+    BubbleData bubble,
+    int maxEvents,
+    bool isLeft,
+    bool isFirst,
+    bool isLast,
+  ) {
+    // Calculate bubble size based on event count (40-120 range)
+    final sizeRatio = bubble.eventCount / maxEvents;
+    final bubbleSize = 40.0 + (sizeRatio * 80.0);
     
-    // Use a wrap layout for flexible bubble positioning
-    return SingleChildScrollView(
-      child: Center(
-        child: Wrap(
-          spacing: 24,
-          runSpacing: 24,
-          alignment: WrapAlignment.center,
-          runAlignment: WrapAlignment.center,
-          children: bubbles.map((bubble) {
-            return BubbleWidget(
-              data: bubble,
-              baseSize: _getBaseSizeForTier(),
-              onTap: () {
-                widget.onBubbleTap?.call(bubble.start, bubble.end);
-                _showBubbleDetails(context, bubble);
-              },
-            );
-          }).toList(),
+    // Get color based on dominant category
+    final color = BubbleAggregationService.categoryColors[bubble.dominantCategory] 
+        ?? Colors.purple;
+    
+    // Intensity of glow based on activity
+    final glowIntensity = 0.3 + (sizeRatio * 0.4);
+    
+    final screenWidth = MediaQuery.of(context).size.width;
+    final centerX = screenWidth / 2;
+    
+    return Padding(
+      padding: EdgeInsets.only(
+        top: isFirst ? 0 : 20,
+        bottom: isLast ? 0 : 20,
+      ),
+      child: SizedBox(
+        height: bubbleSize + 20,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Connection line to center
+            Positioned(
+              left: isLeft ? centerX - bubbleSize / 2 - 30 : centerX,
+              top: bubbleSize / 2 + 10,
+              child: Container(
+                width: bubbleSize / 2 + 30,
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isLeft
+                        ? [color.withOpacity(0.8), color.withOpacity(0.1)]
+                        : [color.withOpacity(0.1), color.withOpacity(0.8)],
+                  ),
+                ),
+              ),
+            ),
+            
+            // Center dot on timeline
+            Positioned(
+              left: centerX - 6,
+              top: bubbleSize / 2 + 4,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.6),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Bubble
+            Positioned(
+              left: isLeft 
+                  ? centerX - bubbleSize - 50
+                  : centerX + 50,
+              top: 10,
+              child: GestureDetector(
+                onTap: () {
+                  widget.onBubbleTap?.call(bubble.start, bubble.end);
+                  _showBubbleDetails(context, bubble);
+                },
+                child: _buildBubble(
+                  context,
+                  bubble,
+                  bubbleSize,
+                  color,
+                  glowIntensity,
+                ),
+              ),
+            ),
+            
+            // Label on opposite side
+            Positioned(
+              left: isLeft 
+                  ? centerX + 24
+                  : null,
+              right: isLeft
+                  ? null
+                  : centerX + 24,
+              top: bubbleSize / 2 - 8,
+              child: _buildLabel(context, bubble, color, isLeft),
+            ),
+          ],
         ),
       ),
     );
   }
   
-  double _getBaseSizeForTier() {
-    switch (_currentTier) {
-      case ZoomTier.year:
-        return 100.0;
-      case ZoomTier.month:
-        return 80.0;
-      case ZoomTier.week:
-        return 70.0;
-      case ZoomTier.day:
-      case ZoomTier.focus:
-        return 60.0;
-    }
+  Widget _buildBubble(
+    BuildContext context,
+    BubbleData bubble,
+    double size,
+    Color color,
+    double glowIntensity,
+  ) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color.withOpacity(0.8),
+            color.withOpacity(0.4),
+            color.withOpacity(0.1),
+          ],
+          stops: const [0.3, 0.7, 1.0],
+        ),
+        border: Border.all(
+          color: color.withOpacity(0.8),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(glowIntensity),
+            blurRadius: size / 3,
+            spreadRadius: size / 10,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              bubble.eventCount.toString(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: size / 3,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (size > 60)
+              Text(
+                'events',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: size / 6,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildLabel(
+    BuildContext context,
+    BubbleData bubble,
+    Color color,
+    bool isLeft,
+  ) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 120),
+      child: Column(
+        crossAxisAlignment: isLeft 
+            ? CrossAxisAlignment.start 
+            : CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            bubble.label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            bubble.dominantCategory,
+            style: TextStyle(
+              color: color.withOpacity(0.8),
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
   }
   
   void _showBubbleDetails(BuildContext context, BubbleData bubble) {
+    final color = BubbleAggregationService.categoryColors[bubble.dominantCategory] 
+        ?? Colors.purple;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(bubble.label),
+        backgroundColor: const Color(0xFF1A1F2E),
+        title: Row(
+          children: [
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              bubble.label,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow('Events', bubble.eventCount.toString()),
-            _buildDetailRow('Category', bubble.dominantCategory),
-            _buildDetailRow('Participants', bubble.participantIds.length.toString()),
+            _buildDetailRow('Events', bubble.eventCount.toString(), color),
+            _buildDetailRow('Primary Category', bubble.dominantCategory, color),
+            _buildDetailRow('People Involved', bubble.participantIds.length.toString(), color),
             const SizedBox(height: 16),
             Text(
-              'Tap "Zoom In" to view events in this period',
-              style: Theme.of(context).textTheme.bodySmall,
+              'Tap "Explore" to view events from this period',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: 12,
+              ),
             ),
           ],
         ),
@@ -209,72 +451,36 @@ class _BubbleOverviewViewState extends ConsumerState<BubbleOverviewView> {
               Navigator.pop(context);
               widget.onBubbleTap?.call(bubble.start, bubble.end);
             },
-            child: const Text('Zoom In'),
+            child: const Text('Explore'),
           ),
         ],
       ),
     );
   }
   
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.6),
+              fontSize: 13,
             ),
           ),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
-    );
-  }
-  
-  Widget _buildLegend(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-      ),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 8,
-        alignment: WrapAlignment.center,
-        children: BubbleAggregationService.categoryColors.entries
-            .take(6)
-            .map((entry) => _buildLegendItem(context, entry.key, entry.value))
-            .toList(),
-      ),
-    );
-  }
-  
-  Widget _buildLegendItem(BuildContext context, String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
-      ],
     );
   }
   
@@ -286,18 +492,49 @@ class _BubbleOverviewViewState extends ConsumerState<BubbleOverviewView> {
           Icon(
             Icons.bubble_chart,
             size: 80,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            color: Colors.purple.withOpacity(0.3),
           ),
           const SizedBox(height: 24),
-          Text(
+          const Text(
             'No events yet',
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Add events to see your timeline bubbles',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            'Add events to see your activity bubbles',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildErrorState(BuildContext context, Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Colors.red.withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Error loading timeline',
+            style: TextStyle(color: Colors.white),
+          ),
+          Text(
+            error.toString(),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 12,
             ),
           ),
         ],

@@ -1029,6 +1029,538 @@ class MockTimelineRepository {
         description: 'Last year of my 30s! Looking back at 39 years of adventures. Electrician to mining superintendent, 5 properties, amazing travels. Can\'t wait to see what\'s next.',
         isPrivate: false,
       ),
+      
+      // === WIFE - EMMA LEEMING (née Thompson) ===
+      // Met in 2018, married in 2020
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Birth'],
+        ownerId: 'emma-leeming',
+        timestamp: DateTime(1989, 7, 15),
+        eventType: 'milestone',
+        title: 'Emma Born',
+        description: 'Emma Thompson born in Sydney. Future wife of Brad!',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Relationship', 'Milestone', 'Love'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2018, 3, 22),
+        eventType: 'milestone',
+        title: 'Met Emma',
+        description: 'Met Emma at a winery event in Orange. She was a nurse at the local hospital. Instant connection!',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Relationship', 'Memory'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2018, 4, 15),
+        eventType: 'photo',
+        title: 'First Date with Emma',
+        description: 'Dinner at a restaurant overlooking the vineyard. She loves red wine as much as I do!',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=2001',
+            createdAt: DateTime(2018, 4, 15),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Relationship', 'Milestone'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2018, 12, 25),
+        eventType: 'photo',
+        title: 'First Christmas Together',
+        description: 'Emma spent Christmas at my place. Rusty approved of her immediately.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=2002',
+            createdAt: DateTime(2018, 12, 25),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Relationship', 'Travel'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2019, 6, 10),
+        eventType: 'photo_burst',
+        title: 'Trip to Tasmania with Emma',
+        description: 'Exploring Tassie together. Cradle Mountain, Wineglass Bay, and too many cheese platters.',
+        assets: List.generate(4, (index) => MediaAsset.photo(
+          id: _uuid.v4(),
+          eventId: '',
+          localPath: 'https://picsum.photos/400/300?random=${2003+index}',
+          createdAt: DateTime(2019, 6, 10),
+        )),
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Relationship', 'Milestone'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2019, 8, 20),
+        eventType: 'milestone',
+        title: 'Emma Moved In',
+        description: 'Emma moved into the Orange house. Finally feels like a proper home.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Relationship', 'Milestone', 'Love'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2019, 12, 31),
+        eventType: 'milestone',
+        title: 'Proposed to Emma',
+        description: 'Asked Emma to marry me at midnight on New Years Eve. She said YES!',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Wedding', 'Milestone', 'Love', 'Family'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming', 'jake-leeming'],
+        timestamp: DateTime(2020, 10, 17),
+        eventType: 'photo_burst',
+        title: 'Wedding Day - Brad & Emma',
+        description: 'Married the love of my life at a vineyard in Orange. Perfect autumn day. Jake was my best man.',
+        assets: List.generate(6, (index) => MediaAsset.photo(
+          id: _uuid.v4(),
+          eventId: '',
+          localPath: 'https://picsum.photos/400/300?random=${2010+index}',
+          createdAt: DateTime(2020, 10, 17),
+        )),
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Travel', 'Honeymoon'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2020, 11, 5),
+        eventType: 'photo_burst',
+        title: 'Honeymoon - Whitsundays',
+        description: 'Sailed around the Whitsundays for our honeymoon. Heart Reef, Whitehaven Beach. Paradise!',
+        assets: List.generate(5, (index) => MediaAsset.photo(
+          id: _uuid.v4(),
+          eventId: '',
+          localPath: 'https://picsum.photos/400/300?random=${2020+index}',
+          createdAt: DateTime(2020, 11, 5),
+        )),
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Holiday'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming'],
+        timestamp: DateTime(2021, 12, 25),
+        eventType: 'photo',
+        title: 'Christmas 2021 - Our First as Married',
+        description: 'First Christmas as Mr and Mrs Leeming. Emma made an incredible Christmas lunch.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=2025',
+            createdAt: DateTime(2021, 12, 25),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      // === BROTHER - JAKE LEEMING ===
+      // Younger brother, born 1990
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Birth'],
+        ownerId: 'jake-leeming',
+        timestamp: DateTime(1990, 5, 8),
+        eventType: 'milestone',
+        title: 'Jake Born',
+        description: 'Little brother Jake born. Now I have someone to share toys with (and blame)!',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Memory'],
+        ownerId: 'brad-leeming',
+        participantIds: ['jake-leeming'],
+        timestamp: DateTime(1995, 12, 25),
+        eventType: 'photo',
+        title: 'Christmas 1995 - Brothers',
+        description: 'Classic 90s Christmas with Jake. We both got Nerf guns and had an epic battle.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=3001',
+            createdAt: DateTime(1995, 12, 25),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Sports'],
+        ownerId: 'brad-leeming',
+        participantIds: ['jake-leeming'],
+        timestamp: DateTime(2002, 8, 15),
+        eventType: 'photo',
+        title: 'Rugby Grand Final - Brothers Playing Together',
+        description: 'Jake joined my rugby team this year. We won the grand final together!',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=3002',
+            createdAt: DateTime(2002, 8, 15),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Travel'],
+        ownerId: 'brad-leeming',
+        participantIds: ['jake-leeming'],
+        timestamp: DateTime(2010, 7, 20),
+        eventType: 'photo_burst',
+        title: 'Brothers Trip to Thailand',
+        description: 'Boys trip to Thailand with Jake. Bangkok, Phuket, Full Moon Party. Wild times!',
+        assets: List.generate(4, (index) => MediaAsset.photo(
+          id: _uuid.v4(),
+          eventId: '',
+          localPath: 'https://picsum.photos/400/300?random=${3010+index}',
+          createdAt: DateTime(2010, 7, 20),
+        )),
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Milestone'],
+        ownerId: 'jake-leeming',
+        participantIds: ['brad-leeming'],
+        timestamp: DateTime(2015, 4, 18),
+        eventType: 'milestone',
+        title: 'Jake Got Married',
+        description: 'Jake married his girlfriend Sarah. I was his best man. Proud moment.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'BBQ'],
+        ownerId: 'brad-leeming',
+        participantIds: ['jake-leeming', 'emma-leeming'],
+        timestamp: DateTime(2022, 1, 26),
+        eventType: 'photo',
+        title: 'Australia Day BBQ - Family',
+        description: 'Big Australia Day BBQ at my place. Jake and his family came up from Newcastle. Great to see him.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=3020',
+            createdAt: DateTime(2022, 1, 26),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Holiday'],
+        ownerId: 'brad-leeming',
+        participantIds: ['emma-leeming', 'jake-leeming'],
+        timestamp: DateTime(2023, 12, 25),
+        eventType: 'photo',
+        title: 'Christmas 2023 - Full Family',
+        description: 'Christmas at mums with Emma and Jake\'s family. Three generations together.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=3025',
+            createdAt: DateTime(2023, 12, 25),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      // Emma's solo events
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Career', 'Milestone'],
+        ownerId: 'emma-leeming',
+        timestamp: DateTime(2012, 6, 15),
+        eventType: 'milestone',
+        title: 'Emma - Graduated Nursing',
+        description: 'Emma graduated from nursing school at UTS Sydney.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Career', 'Milestone'],
+        ownerId: 'emma-leeming',
+        timestamp: DateTime(2017, 3, 1),
+        eventType: 'milestone',
+        title: 'Emma - Moved to Orange',
+        description: 'Emma took a position at Orange Base Hospital. Best decision she ever made!',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Career', 'Achievement'],
+        ownerId: 'emma-leeming',
+        timestamp: DateTime(2022, 8, 10),
+        eventType: 'milestone',
+        title: 'Emma - Promoted to Nurse Unit Manager',
+        description: 'Emma promoted to Nurse Unit Manager at the hospital. So proud of her!',
+        isPrivate: false,
+      ),
+      
+      // Jake's career events
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Career', 'Milestone'],
+        ownerId: 'jake-leeming',
+        timestamp: DateTime(2012, 2, 15),
+        eventType: 'milestone',
+        title: 'Jake - Started Plumbing Apprenticeship',
+        description: 'Jake followed the trades path too. Started his plumbing apprenticeship.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Career', 'Achievement'],
+        ownerId: 'jake-leeming',
+        timestamp: DateTime(2020, 6, 1),
+        eventType: 'milestone',
+        title: 'Jake - Started Own Plumbing Business',
+        description: 'Jake started his own plumbing business in Newcastle. Leeming Plumbing Services.',
+        isPrivate: false,
+      ),
+      
+      // === MUM - KAREN LEEMING ===
+      // Brad's mother
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Birth'],
+        ownerId: 'karen-leeming',
+        timestamp: DateTime(1960, 3, 22),
+        eventType: 'milestone',
+        title: 'Karen Born',
+        description: 'Karen born in Newcastle. Future mum of Brad and Jake.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Milestone'],
+        ownerId: 'karen-leeming',
+        participantIds: ['peter-leeming'],
+        timestamp: DateTime(1982, 11, 15),
+        eventType: 'milestone',
+        title: 'Mum & Dad Got Married',
+        description: 'Karen and Peter tied the knot at St Johns Church, Newcastle.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Birth'],
+        ownerId: 'karen-leeming',
+        participantIds: ['peter-leeming', 'brad-leeming'],
+        timestamp: DateTime(1986, 2, 1),
+        eventType: 'milestone',
+        title: 'Brad Was Born',
+        description: 'Karen and Peter welcomed their first son, Brad.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Birth'],
+        ownerId: 'karen-leeming',
+        participantIds: ['peter-leeming', 'jake-leeming'],
+        timestamp: DateTime(1990, 5, 8),
+        eventType: 'milestone',
+        title: 'Jake Was Born',
+        description: 'Karen and Peter welcomed their second son, Jake.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Holiday'],
+        ownerId: 'karen-leeming',
+        participantIds: ['peter-leeming', 'brad-leeming', 'jake-leeming'],
+        timestamp: DateTime(1998, 12, 25),
+        eventType: 'photo',
+        title: 'Family Christmas 1998',
+        description: 'Whole family Christmas at the Leeming house. Boys got Playstations!',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=4001',
+            createdAt: DateTime(1998, 12, 25),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Holiday'],
+        ownerId: 'karen-leeming',
+        participantIds: ['peter-leeming', 'brad-leeming', 'jake-leeming', 'emma-leeming'],
+        timestamp: DateTime(2019, 12, 25),
+        eventType: 'photo',
+        title: 'Family Christmas 2019',
+        description: 'First Christmas with Emma as part of the family. Mum was so happy.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=4002',
+            createdAt: DateTime(2019, 12, 25),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      // === DAD - PETER LEEMING ===
+      // Brad's father
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Birth'],
+        ownerId: 'peter-leeming',
+        timestamp: DateTime(1958, 8, 10),
+        eventType: 'milestone',
+        title: 'Peter Born',
+        description: 'Peter born in Newcastle. Future dad of Brad and Jake.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Career', 'Milestone'],
+        ownerId: 'peter-leeming',
+        timestamp: DateTime(1976, 6, 15),
+        eventType: 'milestone',
+        title: 'Dad Started Mining',
+        description: 'Peter started working at the local coal mine. Career that would span 40 years.',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Hobby'],
+        ownerId: 'peter-leeming',
+        participantIds: ['brad-leeming'],
+        timestamp: DateTime(1992, 4, 5),
+        eventType: 'photo',
+        title: 'Dad Taught Brad to Fish',
+        description: 'First fishing trip with Dad at Lake Macquarie. Caught my first fish!',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=4003',
+            createdAt: DateTime(1992, 4, 5),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Hobby'],
+        ownerId: 'peter-leeming',
+        participantIds: ['brad-leeming', 'jake-leeming'],
+        timestamp: DateTime(2000, 7, 15),
+        eventType: 'photo',
+        title: 'Camping Trip - Three Generations',
+        description: 'Dad took both boys camping to the same spot grandpa took him.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=4004',
+            createdAt: DateTime(2000, 7, 15),
+          )
+        ],
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Career', 'Milestone'],
+        ownerId: 'peter-leeming',
+        participantIds: ['karen-leeming', 'brad-leeming', 'jake-leeming'],
+        timestamp: DateTime(2016, 8, 12),
+        eventType: 'milestone',
+        title: 'Dad Retired',
+        description: 'Peter retired after 40 years in mining. Big family celebration!',
+        isPrivate: false,
+      ),
+      
+      TimelineEvent.create(
+        id: _uuid.v4(),
+        tags: ['Family', 'Wedding'],
+        ownerId: 'peter-leeming',
+        participantIds: ['karen-leeming', 'brad-leeming', 'emma-leeming', 'jake-leeming'],
+        timestamp: DateTime(2020, 10, 17),
+        eventType: 'photo',
+        title: 'Dad at Brad\'s Wedding',
+        description: 'Proudest moment - watching my son marry the love of his life.',
+        assets: [
+          MediaAsset.photo(
+            id: _uuid.v4(),
+            eventId: '',
+            localPath: 'https://picsum.photos/400/300?random=4005',
+            createdAt: DateTime(2020, 10, 17),
+          )
+        ],
+        isPrivate: false,
+      ),
     ];
   }
   

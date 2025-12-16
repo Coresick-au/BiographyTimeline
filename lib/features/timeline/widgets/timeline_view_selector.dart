@@ -52,11 +52,11 @@ class TimelineViewSelector extends StatelessWidget {
       case TimelineViewMode.cluster:
         return 'Clustered';
       case TimelineViewMode.bubble:
-        return 'Overview';
+        return 'Bubbles';
       case TimelineViewMode.swimlanes:
         return 'Lanes';
       case TimelineViewMode.river:
-        return 'Flow';
+        return 'Life Flow';
     }
   }
 
