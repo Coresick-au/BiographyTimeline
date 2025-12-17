@@ -5,6 +5,7 @@ import '../../../shared/widgets/core/core.dart';
 import '../../../shared/widgets/modern/shimmer_loading.dart';
 import '../../../shared/design_system/design_system.dart';
 import '../../../shared/design_system/responsive_layout.dart';
+import '../models/river_flow_models.dart';
 
 /// Widget that displays a timeline event with photo count indicators
 class TimelineEventCard extends StatefulWidget {
@@ -95,6 +96,7 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
 
   Widget _buildHeader(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildEventTypeIcon(context),
         SizedBox(width: AppSpacing.md),
@@ -104,6 +106,9 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Person Badge (New)
+              _buildPersonBadge(context),
+              
               if (widget.event.title != null)
                 Text(
                   widget.event.title!,
@@ -140,6 +145,43 @@ class _TimelineEventCardState extends State<TimelineEventCard> {
           ),
       ],
     );
+  }
+
+  Widget _buildPersonBadge(BuildContext context) {
+    if (widget.event.ownerId.isEmpty) return const SizedBox.shrink();
+    
+    // Generate distinct color from ID
+    // We use a simplified index 0 here, but in a real list we might want consistent indexing
+    // However, getColorForPerson primarily logic is hash-based on ID if index is generic
+    final color = RiverFlowColors.getColorForPerson(widget.event.ownerId);
+    final name = _formatPersonName(widget.event.ownerId);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withOpacity(0.4), width: 0.5),
+      ),
+      child: Text(
+        name.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: 9, 
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  String _formatPersonName(String personId) {
+    return personId
+        .replaceAll('-', ' ')
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : w)
+        .join(' ');
   }
 
   Widget _buildEventTypeIcon(BuildContext context) {

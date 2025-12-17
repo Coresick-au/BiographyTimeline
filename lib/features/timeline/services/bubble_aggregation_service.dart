@@ -13,6 +13,7 @@ class BubbleData {
   final String dominantCategory;
   final Set<String> participantIds;
   final List<String> eventIds;
+  final Map<String, int> personCounts;
   final ZoomTier tier;
 
   const BubbleData({
@@ -25,6 +26,7 @@ class BubbleData {
     required this.dominantCategory,
     required this.participantIds,
     required this.eventIds,
+    required this.personCounts,
     required this.tier,
   });
 
@@ -76,6 +78,13 @@ class BubbleAggregationService {
       final (start, end, label) = _parseBucketKey(key, tier);
       final dominantCategory = _getDominantCategory(bucketEvents);
       final participantIds = bucketEvents.map((e) => e.ownerId).toSet();
+      
+      // Calculate person distribution
+      final personCounts = <String, int>{};
+      for (final e in bucketEvents) {
+         final personId = e.ownerId;
+         personCounts[personId] = (personCounts[personId] ?? 0) + 1;
+      }
 
       bubbles.add(BubbleData(
         id: 'bubble_$key',
@@ -87,6 +96,7 @@ class BubbleAggregationService {
         dominantCategory: dominantCategory,
         participantIds: participantIds,
         eventIds: bucketEvents.map((e) => e.id).toList(),
+        personCounts: personCounts,
         tier: tier,
       ));
     });

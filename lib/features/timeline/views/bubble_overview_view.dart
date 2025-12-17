@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:math' as math;
 import '../services/bubble_aggregation_service.dart';
 import '../models/timeline_view_state.dart';
 import '../services/timeline_data_service.dart';
 import '../../../shared/models/timeline_event.dart';
+import '../models/river_flow_models.dart';
 
 /// Bubbles View - Vertical timeline with activity bubbles along a central line
 /// Highlights high activity periods with larger, more vibrant bubbles
@@ -313,6 +315,10 @@ class _BubbleOverviewViewState extends ConsumerState<BubbleOverviewView> {
     Color color,
     double glowIntensity,
   ) {
+    if (bubble.personCounts.length > 1) {
+      return _buildMultiPersonBubble(bubble, size, glowIntensity);
+    }
+
     return Container(
       width: size,
       height: size,
@@ -338,28 +344,64 @@ class _BubbleOverviewViewState extends ConsumerState<BubbleOverviewView> {
           ),
         ],
       ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      child: _buildBubbleContent(bubble, size),
+    );
+  }
+
+  Widget _buildMultiPersonBubble(BubbleData bubble, double size, double glowIntensity) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withOpacity(glowIntensity * 0.5), // Generic glow
+            blurRadius: size / 3,
+            spreadRadius: size / 10,
+          ),
+        ],
+      ),
+      child: CustomPaint(
+        painter: PieChartBubblePainter(
+          personCounts: bubble.personCounts,
+          total: bubble.eventCount,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+          ),
+          child: _buildBubbleContent(bubble, size),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBubbleContent(BubbleData bubble, double size) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            bubble.eventCount.toString(),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: size / 3,
+              fontWeight: FontWeight.bold,
+              shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+            ),
+          ),
+          if (size > 60)
             Text(
-              bubble.eventCount.toString(),
+              'events',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: size / 3,
-                fontWeight: FontWeight.bold,
+                color: Colors.white.withOpacity(0.9),
+                fontSize: size / 6,
+                shadows: [Shadow(color: Colors.black54, blurRadius: 2)],
               ),
             ),
-            if (size > 60)
-              Text(
-                'events',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: size / 6,
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -540,5 +582,43 @@ class _BubbleOverviewViewState extends ConsumerState<BubbleOverviewView> {
         ],
       ),
     );
+  }
+}
+
+class PieChartBubblePainter extends CustomPainter {
+  final Map<String, int> personCounts;
+  final int total;
+
+  PieChartBubblePainter({required this.personCounts, required this.total});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    var startAngle = -math.pi / 2; // Start from top
+
+    personCounts.forEach((personId, count) {
+      final sweepAngle = (count / total) * 2 * math.pi;
+      final color = RiverFlowColors.getColorForPerson(personId);
+      
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = color.withOpacity(0.8);
+
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        true,
+        paint,
+      );
+      
+      startAngle += sweepAngle;
+    });
+  }
+
+  @override
+  bool shouldRepaint(covariant PieChartBubblePainter oldDelegate) {
+    return oldDelegate.personCounts != personCounts || oldDelegate.total != total;
   }
 }
